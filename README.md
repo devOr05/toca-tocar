@@ -1,5 +1,20 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+# Toca Tocar 🎷
+
+Organizador de Jams de Jazz en Tiempo Real.
+
+## Características Nuevas
+- **Autenticación:** Login con Google o modo Invitado.
+- **Dashboard:** Ve todas las Jams activas.
+- **Base de Datos Real:** Integración con Vercel Postgres.
+
+## Tech Stack
+- Next.js 15
+- Tailwind CSS v4
+- Prisma (Postgres)
+- NextAuth.js v5
+
 ## Getting Started
 
 First, run the development server:
