@@ -30,25 +30,36 @@ export async function createJam(formData: FormData) {
         userId = session.user.id;
         userName = session.user.name || 'Anfitrión';
     } else {
-        // If not logged in (fallback for guest flow without auth middleware?)
-        const hostName = formData.get('name') as string;
-        if (!hostName) return { error: 'Nombre requerido' };
-
-        const user = await prisma.user.create({
-            data: { name: hostName, role: 'ADMIN' },
-        });
-        userId = user.id;
-        userName = user.name!;
+        // Fallback or Error if auth required
+        return { error: 'Debes iniciar sesión para ser anfitrión' };
     }
+
+    // Parse new fields
+    const name = formData.get('name') as string;
+    const location = formData.get('location') as string;
+    const city = formData.get('city') as string;
+    const description = formData.get('description') as string;
+    const startTimeStr = formData.get('startTime') as string;
+
+    // Simple validation
+    if (!name || !location || !city || !startTimeStr) {
+        return { error: 'Faltan campos obligatorios' };
+    }
+
+    const startTime = new Date(startTimeStr);
 
     try {
         const code = generateCode();
         const jam = await prisma.jam.create({
             data: {
                 code,
-                name: `${userName}'s Jam`,
+                name: name,
+                description: description,
+                location: location,
+                city: city,
+                startTime: startTime,
                 hostId: userId,
-                status: 'ACTIVE',
+                status: 'SCHEDULED',
             },
         });
 
@@ -62,10 +73,15 @@ export async function createJam(formData: FormData) {
             })),
         });
 
-        return { success: true, jamCode: code, userId, userName };
+        // Redirect to the new jam
+        redirect(`/jam/${code}`);
 
     } catch (error) {
         console.error('Error creating jam:', error);
+        // If it's a redirect error, rethrow it (Next.js internals)
+        if ((error as any).digest?.startsWith('NEXT_REDIRECT')) {
+            throw error;
+        }
         return { error: 'Error al crear la Jam' };
     }
 }

@@ -1,93 +1,104 @@
-'use client';
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import { createJam } from "../actions";
+import { MapPin, Calendar, Music, Info, AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createJam } from '../actions';
-import { Music2, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+export default async function CreateJamPage() {
+    const session = await auth();
+    if (!session?.user?.id) redirect("/");
 
-export default function CreateJamPage() {
-    const router = useRouter();
-    const [name, setName] = useState(''); // Host name (redundant if logged in, but useful for Jam Name context)
-    const [isLoading, setIsLoading] = useState(false);
+    // 1. Check Profile Completeness
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id }
+    });
 
-    // In a real app we might use the logged-in user's name automatically
-    // But letting them name the "Host" alias or Jam Name is fine.
-    // Let's assume we use their session name if available, but for now we ask for "Jam Name"?
-    // The previous action `createJam` took "name" as Host Name. 
-    // We should probably update `createJam` to use the session User ID if logged in?
+    const isProfileComplete = user?.name && user?.mainInstrument;
 
-    // For MVP "Guest" flow, the guest name IS the user name.
-    // Since we are now behind Auth, `createJam` should ideally use `auth()` to get the user.
-    // BUT the previous `createJam` created a NEW user.
-    // We should UPDATE `createJam` to respect the logged-in user.
-
-    // WORKAROUND FOR MVP SPEED:
-    // We'll keep `createJam` as is (creates a user) BUT since we are logged in, 
-    // we want to attach the Jam to the CURRENT user.
-
-    // I will stick to the previous `createJam` logic for now, even if it duplicates users, to ensure it works.
-    // Wait, if I'm logged in, `createJam` creates ANOTHER user? That's bad.
-
-    // I NEED TO UPDATE `createJam` action to handle logged-in users.
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        const formData = new FormData();
-        formData.append('name', name || 'Jam'); // We'll just pass a name for now
-
-        // Note: The actions/createJam.ts logic currently creates a NEW user.
-        // I should update it to use the session. 
-        // Failing that, this form just works as a "Guest" creator.
-
-        try {
-            const result = await createJam(formData);
-            if (result.success && result.jamCode) {
-                router.push(`/jam/${result.jamCode}`);
-            } else {
-                alert('Error al crear jam');
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    if (!isProfileComplete) {
+        return (
+            <div className="min-h-screen bg-background p-6 flex flex-col items-center justify-center text-center">
+                <div className="bg-jazz-surface border border-jazz-gold/20 p-8 rounded-2xl max-w-sm shadow-2xl">
+                    <AlertCircle className="w-12 h-12 text-jazz-gold mx-auto mb-4" />
+                    <h1 className="text-xl font-bold text-white mb-2">Perfil Incompleto</h1>
+                    <p className="text-white/60 mb-6">Para organizar una Jam, necesitamos saber quién eres y qué tocas.</p>
+                    <Link href="/profile" className="block w-full bg-jazz-gold text-black font-bold p-3 rounded-xl hover:scale-105 transition-transform">
+                        Completar Perfil
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-background p-6 flex flex-col items-center justify-center">
-            <div className="w-full max-w-md space-y-8">
-                <Link href="/dashboard" className="text-white/50 hover:text-white flex items-center gap-2 mb-8">
-                    <ArrowLeft className="w-4 h-4" /> Volver al Dashboard
+        <div className="min-h-screen bg-background p-6 flex flex-col items-center">
+            <header className="w-full max-w-md flex items-center justify-between mb-8">
+                <Link href="/dashboard" className="text-white/60 hover:text-white transition-colors">
+                    <ArrowLeft className="w-6 h-6" />
                 </Link>
+                <h1 className="text-2xl font-bold text-white">Nueva Jam 🎷</h1>
+                <div className="w-6" />
+            </header>
 
-                <div className="text-center">
-                    <h1 className="text-3xl font-bold text-white mb-2">Crear Nueva Jam</h1>
-                    <p className="text-white/40">Define el nombre del anfitrión</p>
+            <form action={createJam} className="w-full max-w-md space-y-5 bg-jazz-surface p-6 rounded-2xl border border-white/10 shadow-xl">
+
+                {/* Jam Name */}
+                <div>
+                    <label className="block text-sm font-medium text-white/60 mb-2">Nombre del Evento</label>
+                    <input type="text" name="name" defaultValue={`${user.name}'s Jam`} required
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
                 </div>
 
-                <form onSubmit={handleSubmit} className="bg-jazz-surface border border-white/5 p-6 rounded-2xl shadow-xl space-y-6">
-                    <div>
-                        <label className="text-xs text-jazz-muted uppercase tracking-widest font-bold ml-1">Nombre para la Jam</label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                            placeholder="Ej. Miles Davis Trio"
-                            className="w-full mt-2 bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-jazz-gold/50 transition-colors"
-                        />
+                {/* Date & Time */}
+                <div>
+                    <label className="block text-sm font-medium text-white/60 mb-2">Fecha y Hora de Inicio</label>
+                    <div className="relative">
+                        <Calendar className="absolute left-3 top-3.5 w-5 h-5 text-white/40" />
+                        <input type="datetime-local" name="startTime" required
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold transition-all [color-scheme:dark]" />
                     </div>
+                </div>
 
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full bg-jazz-gold text-black font-bold p-4 rounded-xl hover:bg-jazz-gold/90 transition-colors disabled:opacity-50"
-                    >
-                        {isLoading ? 'Creando...' : 'Comenzar Jam'}
+                {/* Location - Expanded */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                        <label className="block text-sm font-medium text-white/60 mb-2">Ubicación (Lugar/Dirección)</label>
+                        <div className="relative">
+                            <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-white/40" />
+                            <input type="text" name="location" placeholder="Ej: Club de Jazz El Perseguidor" required
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold transition-all" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-white/60 mb-2">Ciudad</label>
+                        <input type="text" name="city" placeholder="Ej: Buenos Aires" required
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-white/60 mb-2">Link Mapa (Opcional)</label>
+                        <input type="url" name="mapLink" placeholder="https://maps.app..."
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
+                    </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                    <label className="block text-sm font-medium text-white/60 mb-2">Descripción / Detalles</label>
+                    <textarea name="description" rows={3} placeholder="¿Qué vamos a tocar? ¿Hay backline?"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
+                </div>
+
+                <div className="pt-4">
+                    <button type="submit" className="w-full bg-jazz-gold text-black font-bold p-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-jazz-gold/20">
+                        Crear Jam & Generar Flyer
                     </button>
-                </form>
-            </div>
+                    <p className="text-xs text-center text-white/30 mt-3">
+                        Al crearla, se generará un código único para compartir.
+                    </p>
+                </div>
+            </form>
         </div>
     );
 }

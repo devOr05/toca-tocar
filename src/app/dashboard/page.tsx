@@ -61,9 +61,9 @@ export default async function Dashboard() {
                     )}
                 </div>
 
-                <Link href="/create-jam?from=dashboard" className="w-full bg-jazz-gold text-black font-bold p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-jazz-gold/20">
+                <Link href="/create-jam" className="w-full bg-jazz-gold text-black font-bold p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-jazz-gold/20">
                     <Plus className="w-6 h-6" />
-                    Crear Nueva Jam
+                    Organizar Nueva Jam
                 </Link>
             </div>
         </div>
