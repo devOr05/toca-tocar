@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  role      String   @default("USER") // USER, ADMIN
+  createdAt DateTime @default(now())
+
+  participations Participation[]
+  hostedJams     Jam[]
+  messages       Message[]
+}
+
+model Jam {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  location    String?
+  status      String   @default("SCHEDULED") // SCHEDULED, ACTIVE, FINISHED
+  hostId      String
+  host        User     @relation(fields: [hostId], references: [id])
+  
+  themes      Theme[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Theme {
+  id        String   @id @default(cuid())
+  name      String
+  tonality  String?
+  status    String   @default("OPEN") // OPEN, QUEUED, PLAYING, FINISHED
+  jamId     String
+  jam       Jam      @relation(fields: [jamId], references: [id])
+  
+  participations Participation[]
+  messages       Message[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Participation {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  themeId    String
+  theme      Theme    @relation(fields: [themeId], references: [id])
+  instrument String
+  status     String   @default("WAITING") // WAITING, SELECTED
+  
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, themeId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  themeId   String
+  theme     Theme    @relation(fields: [themeId], references: [id])
+  
+  createdAt DateTime @default(now())
+}
