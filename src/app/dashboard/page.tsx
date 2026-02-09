@@ -11,7 +11,7 @@ export default async function Dashboard() {
     // Fetch active jams (or all jams for now)
     const jams = await prisma.jam.findMany({
         where: { status: { not: "FINISHED" } },
-        include: { _count: { select: { themes: true, participants: true } } }, // Assuming participants relation exists via themes?
+        include: { _count: { select: { themes: true } } },
         // Wait, Jam doesn't have direct participants relation in my schema?
         // User -> participations -> Theme -> Jam
         // Let's just fetch basic jam info for now
