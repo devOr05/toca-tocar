@@ -119,3 +119,32 @@ export async function getJam(code: string) {
         return null;
     }
 }
+
+export async function updateProfile(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: 'No autorizado' };
+
+    const name = formData.get('name') as string;
+    const mainInstrument = formData.get('mainInstrument') as string;
+    const favoriteTheme = formData.get('favoriteTheme') as string;
+    const externalLink = formData.get('externalLink') as string;
+    // Checkbox returns 'on' if checked, null if not
+    const hasRecorded = formData.get('hasRecorded') === 'on';
+
+    try {
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: {
+                name,
+                mainInstrument,
+                favoriteTheme,
+                externalLink,
+                hasRecorded
+            }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        return { error: 'Error al actualizar perfil' };
+    }
+}
