@@ -27,6 +27,16 @@ model User {
   
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt @default(now())
+  
+  // Profile Fields
+  mainInstrument String?
+  favoriteTheme  String?
+  hasRecorded    Boolean         @default(false)
+  externalLink   String?
+  isVerifiedOrganizer Boolean    @default(false)
+
+  sentMessages     DirectMessage[] @relation("SentMessages")
+  receivedMessages DirectMessage[] @relation("ReceivedMessages")
 }
 
 model Account {
@@ -70,6 +80,14 @@ model Jam {
   name        String
   description String?
   location    String?
+  lat         Float?
+  lng         Float?
+  city        String?
+  
+  startTime   DateTime?
+  endTime     DateTime?
+  flyerUrl    String?
+  
   status      String   @default("SCHEDULED") // SCHEDULED, ACTIVE, FINISHED
   hostId      String
   host        User     @relation(fields: [hostId], references: [id])
@@ -84,6 +102,8 @@ model Theme {
   name      String
   tonality  String?
   status    String   @default("OPEN") // OPEN, QUEUED, PLAYING, FINISHED
+  visibility String  @default("PUBLIC") // PUBLIC, PRIVATE
+  
   jamId     String
   jam       Jam      @relation(fields: [jamId], references: [id])
   
@@ -117,4 +137,16 @@ model Message {
   theme     Theme    @relation(fields: [themeId], references: [id])
   
   createdAt DateTime @default(now())
+}
+
+model DirectMessage {
+  id        String   @id @default(cuid())
+  content   String
+  senderId  String
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
 }

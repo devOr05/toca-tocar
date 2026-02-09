@@ -51,4 +51,24 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             },
         }),
     ],
+    callbacks: {
+        async jwt({ token, user, trigger, session }) {
+            if (user) {
+                token.id = user.id;
+                token.role = user.role;
+                token.mainInstrument = user.mainInstrument;
+                token.isVerifiedOrganizer = user.isVerifiedOrganizer;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                session.user.id = token.sub!;
+                session.user.role = token.role as string;
+                session.user.mainInstrument = token.mainInstrument as string | null;
+                session.user.isVerifiedOrganizer = token.isVerifiedOrganizer as boolean;
+            }
+            return session;
+        }
+    }
 });
