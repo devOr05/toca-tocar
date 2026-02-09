@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
 
 const STANDARD_THEMES = [
     { name: 'Autumn Leaves', tonality: 'Gm' },
@@ -18,30 +19,40 @@ function generateCode() {
 }
 
 export async function createJam(formData: FormData) {
-    const hostName = formData.get('name') as string;
-    if (!hostName) return { error: 'Nombre requerido' };
+    // Try to get session
+    const session = await auth();
+
+    let userId = '';
+    let userName = '';
+
+    // If logged in, use that user
+    if (session?.user?.id) {
+        userId = session.user.id;
+        userName = session.user.name || 'Anfitrión';
+    } else {
+        // If not logged in (fallback for guest flow without auth middleware?)
+        const hostName = formData.get('name') as string;
+        if (!hostName) return { error: 'Nombre requerido' };
+
+        const user = await prisma.user.create({
+            data: { name: hostName, role: 'ADMIN' },
+        });
+        userId = user.id;
+        userName = user.name!;
+    }
 
     try {
-        // 1. Create Host User
-        const user = await prisma.user.create({
-            data: {
-                name: hostName,
-                role: 'ADMIN',
-            },
-        });
-
-        // 2. Create Jam with Code
         const code = generateCode();
         const jam = await prisma.jam.create({
             data: {
                 code,
-                name: `${hostName}'s Jam`,
-                hostId: user.id,
+                name: `${userName}'s Jam`,
+                hostId: userId,
                 status: 'ACTIVE',
             },
         });
 
-        // 3. Create Default Themes
+        // Create Default Themes
         await prisma.theme.createMany({
             data: STANDARD_THEMES.map(t => ({
                 name: t.name,
@@ -51,7 +62,7 @@ export async function createJam(formData: FormData) {
             })),
         });
 
-        return { success: true, jamCode: code, userId: user.id, userName: user.name };
+        return { success: true, jamCode: code, userId, userName };
 
     } catch (error) {
         console.error('Error creating jam:', error);

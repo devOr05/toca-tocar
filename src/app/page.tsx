@@ -1,93 +1,40 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Mic2, Music2, ArrowRight, Plus } from 'lucide-react';
-import { createJam, joinJamAction } from './actions';
+import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { Music2, Mic2, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
-export default function LandingPage() {
+export default function LoginPage() {
+  const [guestName, setGuestName] = useState("");
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [jamCode, setJamCode] = useState('');
-  const [isClient, setIsClient] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-    const storedName = localStorage.getItem('toca_tocar_user_name');
-    if (storedName) setName(storedName);
-  }, []);
-
-  const handleSaveUser = (userId: string, userName: string) => {
-    localStorage.setItem('toca_tocar_user_name', userName);
-    localStorage.setItem('toca_tocar_user_id', userId);
-  };
-
-  const handleJoin = async (e: React.FormEvent) => {
+  const handleGuestLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return alert('Por favor, ingresa tu nombre de músico.');
-    if (!jamCode.trim()) return alert('Ingresa el código de la Jam.');
+    if (!guestName.trim()) return;
 
-    setIsLoading(true);
-
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('code', jamCode);
-
-    try {
-      const result = await joinJamAction(formData);
-      if (result.error) {
-        alert(result.error);
-      } else if (result.success && result.jamCode) {
-        handleSaveUser(result.userId!, result.userName!);
-        router.push(`/jam/${result.jamCode}`);
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error al unirse. ¿Está la base de datos conectada?');
-    } finally {
-      setIsLoading(false);
-    }
+    // We use the "credentials" provider we set up for "Guest"
+    await signIn("credentials", {
+      name: guestName,
+      redirectTo: "/dashboard"
+    });
   };
 
-  const handleCreate = async () => {
-    if (!name.trim()) return alert('Por favor, ingresa tu nombre de músico.');
-
-    setIsLoading(true);
-    const formData = new FormData();
-    formData.append('name', name);
-
-    try {
-      const result = await createJam(formData);
-      if (result.error) {
-        alert(result.error);
-      } else if (result.success && result.jamCode) {
-        handleSaveUser(result.userId!, result.userName!);
-        router.push(`/jam/${result.jamCode}`);
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error al crear. Necesitas configurar la Base de Datos en Vercel.');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleGoogleLogin = () => {
+    signIn("google", { redirectTo: "/dashboard" });
   };
-
-  if (!isClient) return null;
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-background">
       {/* Background Decor */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-jazz-gold/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-jazz-accent/10 rounded-full blur-[100px] pointer-events-none" />
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md space-y-8 z-10"
       >
-        {/* Header */}
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             <div className="p-4 bg-jazz-surface border border-white/5 rounded-full shadow-2xl">
@@ -97,68 +44,45 @@ export default function LandingPage() {
           <h1 className="text-4xl font-bold tracking-tighter text-white">
             Toca <span className="text-jazz-gold">Tocar</span>
           </h1>
-          <p className="text-jazz-muted text-sm font-medium tracking-wide">
-            ORGANIZACIÓN DE JAMS EN TIEMPO REAL
-          </p>
+          <p className="text-white/40 text-sm">Organiza tu Jam Session</p>
         </div>
 
-        {/* User Identity */}
-        <div className="bg-jazz-surface border border-white/5 p-6 rounded-2xl shadow-xl space-y-4">
-          <div>
-            <label className="text-xs text-jazz-muted uppercase tracking-widest font-bold ml-1">Tu Nombre / Apodo</label>
-            <div className="mt-2 relative">
-              <Mic2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+        <div className="grid gap-4">
+          {/* Google Login */}
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full bg-white text-black font-medium p-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 transition-colors"
+          >
+            <img src="https://authjs.dev/img/providers/google.svg" className="w-5 h-5" alt="Google" />
+            Continuar con Google
+          </button>
+
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-white/10"></div>
+            <span className="flex-shrink-0 mx-4 text-white/30 text-xs uppercase">O entra como invitado</span>
+            <div className="flex-grow border-t border-white/10"></div>
+          </div>
+
+          {/* Guest Login */}
+          <form onSubmit={handleGuestLogin} className="space-y-4">
+            <div className="relative">
+              <Mic2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ej. Miles Davis"
-                className="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-jazz-gold/50 transition-colors"
+                placeholder="Tu Nombre de Músico"
+                value={guestName}
+                onChange={e => setGuestName(e.target.value)}
+                className="w-full bg-jazz-surface border border-white/10 p-4 pl-12 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-jazz-gold/50"
               />
             </div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="grid grid-cols-1 gap-4">
-          {/* Join Jam */}
-          <form onSubmit={handleJoin} className="bg-jazz-surface border border-white/5 p-6 rounded-2xl shadow-xl space-y-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs text-jazz-muted uppercase tracking-widest font-bold ml-1">Unirse a una Jam</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={jamCode}
-                  onChange={(e) => setJamCode(e.target.value.toUpperCase())}
-                  placeholder="CÓDIGO (EJ: JAZZ)"
-                  maxLength={4}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-center text-lg font-mono tracking-[0.2em] text-white placeholder:text-white/20 uppercase focus:outline-none focus:border-jazz-accent/50 transition-colors"
-                />
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="bg-jazz-accent hover:bg-jazz-accent/90 text-white p-3 rounded-xl transition-colors shrink-0 disabled:opacity-50"
-                >
-                  <ArrowRight className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-jazz-accent hover:bg-jazz-accent/90 text-white font-bold p-4 rounded-xl transition-colors flex justify-center items-center gap-2"
+            >
+              Entrar <ArrowRight className="w-5 h-5" />
+            </button>
           </form>
-
-          {/* Create Jam */}
-          <button
-            onClick={handleCreate}
-            disabled={isLoading}
-            className="w-full bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center justify-center gap-2 text-jazz-muted hover:text-white transition-all group disabled:opacity-50"
-          >
-            <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="font-medium">{isLoading ? 'Creando...' : 'Crear Nueva Jam (DB Real)'}</span>
-          </button>
         </div>
-
-        <p className="text-center text-xs text-white/20 font-mono">
-          v0.2.0 • Base de Datos Integrada
-        </p>
       </motion.div>
     </main>
   );
