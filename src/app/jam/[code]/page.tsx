@@ -33,7 +33,7 @@ export default async function JamPage({ params }: PageProps) {
         t.participations.map(p => ({
             id: p.id,
             userId: p.userId,
-            userName: p.user.name,
+            userName: p.user.name || "Invitado",
             themeId: p.themeId,
             instrument: p.instrument,
             status: p.status as 'WAITING' | 'SELECTED',
