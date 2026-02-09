@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Jam, Theme, Participation, User } from '../types';
-import { MOCK_JAM, MOCK_THEMES, MOCK_PARTICIPATIONS, MOCK_USER } from '../lib/mock-data';
+import { MOCK_JAM, MOCK_THEMES, MOCK_PARTICIPATIONS } from '../lib/mock-data';
 
 interface JamState {
     jam: Jam;
@@ -9,12 +9,14 @@ interface JamState {
     currentUser: User | null;
 
     setUser: (name: string) => void;
+    setJamState: (jam: Jam, themes: Theme[], participations: Participation[]) => void;
     joinTheme: (themeId: string, instrument: string) => void;
     leaveTheme: (themeId: string) => void;
     checkEnsembles: () => void;
 }
 
 export const useJamStore = create<JamState>((set, get) => ({
+    // Initialize with MOCK data as fallback, but setJamState will override it
     jam: MOCK_JAM,
     themes: MOCK_THEMES,
     participations: MOCK_PARTICIPATIONS,
@@ -24,9 +26,18 @@ export const useJamStore = create<JamState>((set, get) => ({
         set({ currentUser: { id: `user-${Date.now()}`, name, role: 'USER' } });
     },
 
+    setJamState: (jam, themes, participations) => {
+        set({ jam, themes, participations });
+    },
+
     joinTheme: (themeId: string, instrument: string) => {
         const { currentUser, participations } = get();
         if (!currentUser) return;
+
+        // Optimistic Update
+        // In a real app with DB, we would call a Server Action here too.
+        // For this MVP step, we update local state.
+        // NEXT STEP: Call joinThemeAction(themeId, instrument)
 
         const existing = participations.find((p) => p.userId === currentUser.id && p.themeId === themeId);
         if (existing) return;

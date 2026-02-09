@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useStore } from 'zustand';
 import { Mic2, Music2, ArrowRight, Plus } from 'lucide-react';
+import { createJam, joinJamAction } from './actions';
 
 export default function LandingPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [jamCode, setJamCode] = useState('');
   const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -18,28 +19,59 @@ export default function LandingPage() {
     if (storedName) setName(storedName);
   }, []);
 
-  const handleSaveUser = () => {
-    if (name.trim()) {
-      localStorage.setItem('toca_tocar_user_name', name);
-    }
+  const handleSaveUser = (userId: string, userName: string) => {
+    localStorage.setItem('toca_tocar_user_name', userName);
+    localStorage.setItem('toca_tocar_user_id', userId);
   };
 
-  const handleJoin = (e: React.FormEvent) => {
+  const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return alert('Por favor, ingresa tu nombre de músico.');
     if (!jamCode.trim()) return alert('Ingresa el código de la Jam.');
 
-    handleSaveUser();
-    router.push(`/jam/${jamCode.toUpperCase()}`);
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('code', jamCode);
+
+    try {
+      const result = await joinJamAction(formData);
+      if (result.error) {
+        alert(result.error);
+      } else if (result.success && result.jamCode) {
+        handleSaveUser(result.userId!, result.userName!);
+        router.push(`/jam/${result.jamCode}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error al unirse. ¿Está la base de datos conectada?');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!name.trim()) return alert('Por favor, ingresa tu nombre de músico.');
 
-    handleSaveUser();
-    // For MVP, we'll just redirect to a demo jam
-    const newCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-    router.push(`/jam/${newCode}?create=true`);
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append('name', name);
+
+    try {
+      const result = await createJam(formData);
+      if (result.error) {
+        alert(result.error);
+      } else if (result.success && result.jamCode) {
+        handleSaveUser(result.userId!, result.userName!);
+        router.push(`/jam/${result.jamCode}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error al crear. Necesitas configurar la Base de Datos en Vercel.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isClient) return null;
@@ -104,7 +136,8 @@ export default function LandingPage() {
                 />
                 <button
                   type="submit"
-                  className="bg-jazz-accent hover:bg-jazz-accent/90 text-white p-3 rounded-xl transition-colors shrink-0"
+                  disabled={isLoading}
+                  className="bg-jazz-accent hover:bg-jazz-accent/90 text-white p-3 rounded-xl transition-colors shrink-0 disabled:opacity-50"
                 >
                   <ArrowRight className="w-6 h-6" />
                 </button>
@@ -115,15 +148,16 @@ export default function LandingPage() {
           {/* Create Jam */}
           <button
             onClick={handleCreate}
-            className="w-full bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center justify-center gap-2 text-jazz-muted hover:text-white transition-all group"
+            disabled={isLoading}
+            className="w-full bg-white/5 hover:bg-white/10 border border-white/5 p-4 rounded-2xl flex items-center justify-center gap-2 text-jazz-muted hover:text-white transition-all group disabled:opacity-50"
           >
             <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="font-medium">Crear Nueva Jam</span>
+            <span className="font-medium">{isLoading ? 'Creando...' : 'Crear Nueva Jam (DB Real)'}</span>
           </button>
         </div>
 
         <p className="text-center text-xs text-white/20 font-mono">
-          v0.1.0 MVP • Sin Audio, Solo Intención
+          v0.2.0 • Base de Datos Integrada
         </p>
       </motion.div>
     </main>
