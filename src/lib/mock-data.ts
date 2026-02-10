@@ -28,12 +28,12 @@ export const MOCK_THEMES: Theme[] = [
 ];
 
 export const MOCK_PARTICIPATIONS: Participation[] = [
-    { id: 'p-1', userId: 'u-2', userName: 'Miles', themeId: 't-1', instrument: 'Trumpet', status: 'SELECTED', createdAt: MOCK_DATE },
-    { id: 'p-2', userId: 'u-3', userName: 'Trane', themeId: 't-1', instrument: 'Tenor Sax', status: 'SELECTED', createdAt: MOCK_DATE },
-    { id: 'p-3', userId: 'u-4', userName: 'Bill', themeId: 't-1', instrument: 'Piano', status: 'SELECTED', createdAt: MOCK_DATE },
-    { id: 'p-4', userId: 'u-5', userName: 'Paul', themeId: 't-1', instrument: 'Bass', status: 'SELECTED', createdAt: MOCK_DATE },
-    { id: 'p-5', userId: 'u-6', userName: 'Jimmy', themeId: 't-1', instrument: 'Drums', status: 'SELECTED', createdAt: MOCK_DATE },
+    { id: 'p-1', userId: 'u-2', userName: 'Miles', themeId: 't-1', instrument: 'Trumpet', status: 'SELECTED', createdAt: MOCK_DATE, user: { id: 'u-2', name: 'Miles', role: 'USER' } },
+    { id: 'p-2', userId: 'u-3', userName: 'Trane', themeId: 't-1', instrument: 'Tenor Sax', status: 'SELECTED', createdAt: MOCK_DATE, user: { id: 'u-3', name: 'Trane', role: 'USER' } },
+    { id: 'p-3', userId: 'u-4', userName: 'Bill', themeId: 't-1', instrument: 'Piano', status: 'SELECTED', createdAt: MOCK_DATE, user: { id: 'u-4', name: 'Bill', role: 'USER' } },
+    { id: 'p-4', userId: 'u-5', userName: 'Paul', themeId: 't-1', instrument: 'Bass', status: 'SELECTED', createdAt: MOCK_DATE, user: { id: 'u-5', name: 'Paul', role: 'USER' } },
+    { id: 'p-5', userId: 'u-6', userName: 'Jimmy', themeId: 't-1', instrument: 'Drums', status: 'SELECTED', createdAt: MOCK_DATE, user: { id: 'u-6', name: 'Jimmy', role: 'USER' } },
 
     // Waiting for Blue Bossa
-    { id: 'p-6', userId: 'u-7', userName: 'Dexter', themeId: 't-2', instrument: 'Tenor Sax', status: 'WAITING', createdAt: MOCK_DATE },
+    { id: 'p-6', userId: 'u-7', userName: 'Dexter', themeId: 't-2', instrument: 'Tenor Sax', status: 'WAITING', createdAt: MOCK_DATE, user: { id: 'u-7', name: 'Dexter', role: 'USER' } },
 ];
