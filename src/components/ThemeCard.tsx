@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Theme, Participation, User } from '../types';
-import { Mic2, Music, Drum, Guitar, Keyboard } from 'lucide-react';
+import { Mic2, Music, Drum, Guitar, Keyboard, Info } from 'lucide-react';
+import ThemeDetailsModal from './ThemeDetailsModal';
 
 interface ThemeCardProps {
     theme: Theme;
@@ -25,6 +26,7 @@ const INSTRUMENTS = [
 
 export default function ThemeCard({ theme, participations, currentUser, onJoin, onLeave }: ThemeCardProps) {
     const [showInstruments, setShowInstruments] = useState(false);
+    const [showDetails, setShowDetails] = useState(false);
 
     const myParticipation = currentUser
         ? participations.find(p => p.userId === currentUser.id)
@@ -51,6 +53,16 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
                 </div>
                 {isPlaying && <span className="animate-pulse text-jazz-accent font-bold text-xs uppercase tracking-widest bg-jazz-accent/10 px-2 py-1 rounded">En Escenario</span>}
                 {isQueued && <span className="text-jazz-gold font-bold text-xs uppercase tracking-widest bg-jazz-gold/10 px-2 py-1 rounded">Siguiente</span>}
+
+                {(theme.description || theme.sheetMusicUrl) && (
+                    <button
+                        onClick={() => setShowDetails(true)}
+                        className="text-jazz-muted hover:text-white transition-colors"
+                        title="Ver detalles"
+                    >
+                        <Info size={18} />
+                    </button>
+                )}
             </div>
 
             {/* Participants */}
@@ -119,6 +131,12 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
                     )}
                 </div>
             )}
+
+            <ThemeDetailsModal
+                isOpen={showDetails}
+                onClose={() => setShowDetails(false)}
+                theme={theme}
+            />
         </div>
     );
 }

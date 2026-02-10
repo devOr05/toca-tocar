@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Music2, ArrowRight, Trash2 } from 'lucide-react';
+import { Search, Music2, ArrowRight, Trash2, Edit2 } from 'lucide-react';
+import EditJamModal from './EditJamModal'; // Ensure this matches file name
 
 interface Jam {
     id: string;
@@ -16,6 +17,7 @@ interface Jam {
 
 export default function JamList({ jams, currentUserId }: { jams: Jam[], currentUserId?: string }) {
     const [query, setQuery] = useState('');
+    const [editingJam, setEditingJam] = useState<Jam | null>(null);
 
     const filteredJams = jams.filter(jam =>
         jam.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -79,6 +81,21 @@ export default function JamList({ jams, currentUserId }: { jams: Jam[], currentU
                                                 </span>
                                             )}
 
+                                            {/* Edit Button (Host Only) */}
+                                            {currentUserId?.trim() === jam.hostId?.trim() && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setEditingJam(jam);
+                                                    }}
+                                                    className="flex items-center gap-1 bg-jazz-gold/10 hover:bg-jazz-gold/20 text-jazz-gold px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-jazz-gold/20 transition-all z-20"
+                                                >
+                                                    <Edit2 className="w-3 h-3" />
+                                                    Editar
+                                                </button>
+                                            )}
+
                                             {/* Delete Button (Host Only or 5J1E override) */}
                                             {(currentUserId?.trim() === jam.hostId?.trim() || jam.code === '5J1E') && (
                                                 <button
@@ -108,6 +125,14 @@ export default function JamList({ jams, currentUserId }: { jams: Jam[], currentU
                         </li>
                     ))}
                 </ul>
+            )}
+
+            {editingJam && (
+                <EditJamModal
+                    isOpen={!!editingJam}
+                    onClose={() => setEditingJam(null)}
+                    jam={editingJam}
+                />
             )}
         </div>
     );

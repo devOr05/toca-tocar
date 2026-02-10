@@ -7,6 +7,8 @@ import ThemeList from './ThemeList';
 import { Share2, Users, Music2, LogOut, Trash2, Calendar, MapPin, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Jam, Theme, Participation, User } from '../types';
+import CreateThemeModal from './CreateThemeModal';
+import { Plus } from 'lucide-react';
 
 interface JamViewProps {
     initialJam: Jam;
@@ -20,6 +22,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const { jam, setUser, setAuthenticatedUser, currentUser, setJamState } = useJamStore();
     const [mounted, setMounted] = useState(false);
     const [formattedDate, setFormattedDate] = useState<string>('');
+    const [isCreateThemeOpen, setIsCreateThemeOpen] = useState(false);
 
     useEffect(() => {
         // Hydrate store with server data
@@ -168,6 +171,23 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 {/* ThemeList */}
                 <ThemeList />
             </main>
+
+            {/* Float Button for Create Theme */}
+            <button
+                onClick={() => setIsCreateThemeOpen(true)}
+                className="fixed bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
+            >
+                <Plus className="w-7 h-7" />
+                <span className="absolute right-full mr-3 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Proponer Tema
+                </span>
+            </button>
+
+            <CreateThemeModal
+                isOpen={isCreateThemeOpen}
+                onClose={() => setIsCreateThemeOpen(false)}
+                jamCode={jam.code}
+            />
         </div>
     );
 }

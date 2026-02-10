@@ -111,6 +111,8 @@ model Theme {
   id        String   @id @default(cuid())
   name      String
   tonality  String?
+  description String?
+  sheetMusicUrl String?
   status    String   @default("OPEN") // OPEN, QUEUED, PLAYING, FINISHED
   visibility String  @default("PUBLIC") // PUBLIC, PRIVATE
   

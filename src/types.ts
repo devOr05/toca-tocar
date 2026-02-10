@@ -25,6 +25,8 @@ export interface Theme {
     id: string;
     name: string;
     tonality?: string;
+    description?: string;
+    sheetMusicUrl?: string;
     status: 'OPEN' | 'QUEUED' | 'PLAYING' | 'FINISHED';
     jamId: string;
 }

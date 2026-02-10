@@ -290,7 +290,13 @@ export async function joinThemeAction(themeId: string, instrument: string) {
     }
 }
 
-export async function createTheme(jamCode: string, name: string, tonality: string) {
+export async function createTheme(
+    jamCode: string,
+    name: string,
+    tonality: string,
+    description?: string,
+    sheetMusicUrl?: string
+) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: 'No autorizado' };
 
@@ -305,6 +311,8 @@ export async function createTheme(jamCode: string, name: string, tonality: strin
             data: {
                 name,
                 tonality,
+                description,
+                sheetMusicUrl,
                 jamId: jam.id,
                 status: 'OPEN',
             }
