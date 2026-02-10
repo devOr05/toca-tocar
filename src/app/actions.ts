@@ -40,6 +40,7 @@ export async function createJam(prevState: any, formData: FormData) {
     const city = formData.get('city') as string;
     const description = formData.get('description') as string;
     const startTimeStr = formData.get('startTime') as string;
+    const isPrivate = formData.get('isPrivate') === 'on'; // Checkbox
 
     // Simple validation
     if (!name || !location || !city || !startTimeStr) {
@@ -60,6 +61,7 @@ export async function createJam(prevState: any, formData: FormData) {
                 startTime: startTime,
                 hostId: userId,
                 status: 'SCHEDULED',
+                isPrivate: isPrivate,
             },
         });
 
@@ -150,10 +152,11 @@ export async function updateProfile(prevState: any, formData: FormData) {
     const instagram = formData.get('instagram') as string;
     const youtube = formData.get('youtube') as string;
     const tiktok = formData.get('tiktok') as string;
-    const externalLink = formData.get('externalLink') as string; // Legacy/Website
+    const bandcamp = formData.get('bandcamp') as string;
+    const website = formData.get('website') as string; // 'Other'
 
-    // Checkbox returns 'on' if checked, null if not
-    const hasRecorded = formData.get('hasRecorded') === 'on';
+    // hasRecorded is now a text string
+    const hasRecorded = formData.get('hasRecorded') as string;
 
     try {
         await prisma.user.update({
@@ -165,7 +168,8 @@ export async function updateProfile(prevState: any, formData: FormData) {
                 instagram,
                 youtube,
                 tiktok,
-                externalLink,
+                bandcamp,
+                website,
                 hasRecorded
             }
         });

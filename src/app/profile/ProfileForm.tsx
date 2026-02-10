@@ -83,13 +83,29 @@ export default function ProfileForm({ user }: { user: any }) {
                     </div>
                 </div>
 
-                {/* Legacy External Link (Hidden or repurposed?) */}
-                <input type="hidden" name="externalLink" value={user.externalLink || ''} />
+                {/* New Socials */}
+                <div className="space-y-3">
+                    <div className="relative group">
+                        <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-teal-400 transition-colors" />
+                        <input type="url" name="bandcamp" defaultValue={user.bandcamp || ''} placeholder="Bandcamp URL"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all placeholder:text-white/20" />
+                    </div>
+                    <div className="relative group">
+                        <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-gray-400 transition-colors" />
+                        <input type="url" name="website" defaultValue={user.website || ''} placeholder="Web Personal / Otros"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all placeholder:text-white/20" />
+                    </div>
+                </div>
 
                 {/* Has Recorded */}
-                <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/20 transition-colors">
-                    <input type="checkbox" name="hasRecorded" defaultChecked={user.hasRecorded} className="w-5 h-5 accent-jazz-gold cursor-pointer" />
-                    <label className="text-white cursor-pointer select-none">¿Has participado en algún disco o tema? 💿</label>
+                <div className="space-y-2 mt-4">
+                    <label className="block text-sm font-medium text-white/60">¿Has participado en algún disco o tema? 💿</label>
+                    <textarea
+                        name="hasRecorded"
+                        defaultValue={user.hasRecorded || ''}
+                        placeholder="Cuéntanos... (Ej: 'Blue Train' - John Coltrane, 1957)"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold transition-all min-h-[80px]"
+                    />
                 </div>
 
                 <button type="submit" disabled={isPending} className="w-full bg-jazz-gold text-black font-bold p-4 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-jazz-gold/20 disabled:opacity-50 disabled:cursor-not-allowed">

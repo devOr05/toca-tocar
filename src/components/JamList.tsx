@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Music2, ArrowRight } from 'lucide-react';
+import { Search, Music2, ArrowRight, Trash2 } from 'lucide-react';
 
 interface Jam {
     id: string;
@@ -10,10 +10,11 @@ interface Jam {
     name: string;
     city?: string | null;
     location?: string | null;
+    hostId: string;
     _count?: { themes: number };
 }
 
-export default function JamList({ jams }: { jams: Jam[] }) {
+export default function JamList({ jams, currentUserId }: { jams: Jam[], currentUserId?: string }) {
     const [query, setQuery] = useState('');
 
     const filteredJams = jams.filter(jam =>
@@ -78,7 +79,26 @@ export default function JamList({ jams }: { jams: Jam[] }) {
                                             )}
                                         </div>
                                     </div>
-                                    <ArrowRight className="text-white/20 group-hover:text-white transition-colors" />
+
+                                    <div className="flex items-center gap-2">
+                                        {currentUserId === jam.hostId && (
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.preventDefault(); // Prevent navigation
+                                                    if (confirm('¿Eliminar esta Jam?')) {
+                                                        const { deleteJam } = await import('@/app/actions');
+                                                        await deleteJam(jam.code);
+                                                        // Refresh handled by page/router usually, or we can force reload
+                                                        window.location.reload();
+                                                    }
+                                                }}
+                                                className="p-2 text-white/20 hover:text-red-500 transition-colors z-20"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                        <ArrowRight className="text-white/20 group-hover:text-white transition-colors" />
+                                    </div>
                                 </div>
                             </Link>
                         </li>

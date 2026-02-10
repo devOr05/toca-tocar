@@ -34,7 +34,7 @@ export default async function Dashboard() {
             </header>
 
             <div className="grid gap-6 max-w-md mx-auto">
-                <JamList jams={jams} />
+                <JamList jams={jams} currentUserId={session.user.id} />
 
                 <Link href="/create-jam" className="w-full bg-jazz-gold text-black font-bold p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-jazz-gold/20">
                     <Plus className="w-6 h-6" />

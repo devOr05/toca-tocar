@@ -106,9 +106,10 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                 alert('Enlace copiado al portapapeles! 📋');
                             }
                         }}
-                        className="p-2 text-white/40 hover:text-white transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-xs font-bold"
                     >
-                        <Share2 className="w-5 h-5" />
+                        <Share2 className="w-4 h-4" />
+                        <span>Invitar</span>
                     </button>
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-jazz-accent to-purple-600 flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-black">
                         {currentUser?.name.slice(0, 2).toUpperCase() || '?'}
