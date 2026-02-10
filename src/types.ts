@@ -35,6 +35,9 @@ export interface Theme {
     status: 'OPEN' | 'QUEUED' | 'PLAYING' | 'FINISHED';
     jamId: string;
     type?: 'SONG' | 'TOPIC' | string;
+    visibility?: 'PUBLIC' | 'PRIVATE' | string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface Participation {

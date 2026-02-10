@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Jam, Theme, Participation, User } from '@/types';
-import JamView from '@/components/JamView';
+import dynamic from 'next/dynamic';
+const JamView = dynamic(() => import('@/components/JamView'), { ssr: false });
 import { Music2 } from 'lucide-react';
 
 interface JamViewWrapperProps {
