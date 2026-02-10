@@ -8,6 +8,7 @@ import { Share2, Users, Music2, LogOut, Trash2, Calendar, MapPin, Image as Image
 import { useRouter } from 'next/navigation';
 import { Jam, Theme, Participation, User } from '../types';
 import CreateThemeModal from './CreateThemeModal';
+import SuggestedThemes from './SuggestedThemes';
 import JamChat from './JamChat';
 import MusicianList from './MusicianList';
 
@@ -24,7 +25,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const [mounted, setMounted] = useState(false);
     const [formattedDate, setFormattedDate] = useState<string>('');
     const [isCreateThemeOpen, setIsCreateThemeOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'THEMES' | 'FORUM'>('THEMES');
+    const [activeTab, setActiveTab] = useState<'THEMES' | 'FORUM' | 'SUGGESTED'>('THEMES');
 
     useEffect(() => {
         setJamState(initialJam, initialThemes, initialParticipations);
@@ -110,16 +111,22 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 {/* CENTER: CONTENT */}
                 <main className="flex-1 flex flex-col min-w-0 bg-black/50 relative">
                     {/* Tabs */}
-                    <div className="flex items-center border-b border-white/10 bg-black/40 px-4 shrink-0">
+                    <div className="flex items-center border-b border-white/10 bg-black/40 px-4 shrink-0 overflow-x-auto">
                         <button
                             onClick={() => setActiveTab('THEMES')}
-                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'THEMES' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
+                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'THEMES' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
                         >
                             <Music2 size={16} /> Repertorio
                         </button>
                         <button
+                            onClick={() => setActiveTab('SUGGESTED')}
+                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'SUGGESTED' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
+                        >
+                            <Plus size={16} /> Sugeridos
+                        </button>
+                        <button
                             onClick={() => setActiveTab('FORUM')}
-                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'FORUM' ? 'border-jazz-accent text-white' : 'border-transparent text-white/40 hover:text-white'}`}
+                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'FORUM' ? 'border-jazz-accent text-white' : 'border-transparent text-white/40 hover:text-white'}`}
                         >
                             <Share2 size={16} /> Foro / Tópicos
                         </button>
@@ -140,11 +147,19 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             )}
                         </div>
 
-                        {activeTab === 'THEMES' ? (
+                        {activeTab === 'THEMES' && (
                             <div className="pb-24">
                                 <ThemeList />
                             </div>
-                        ) : (
+                        )}
+
+                        {activeTab === 'SUGGESTED' && (
+                            <div className="pb-24">
+                                <SuggestedThemes jamCode={initialJam.code} />
+                            </div>
+                        )}
+
+                        {activeTab === 'FORUM' && (
                             <div className="pb-24 text-center py-10">
                                 <h3 className="text-xl font-bold text-white mb-2">Foro de Discusión</h3>
                                 <p className="text-white/40 text-sm">Próximamente: temas de discusión, organización de transporte, etc.</p>

@@ -71,15 +71,15 @@ export async function createJam(prevState: any, formData: FormData) {
             },
         });
 
-        // Create Default Themes
-        await prisma.theme.createMany({
-            data: STANDARD_THEMES.map(t => ({
-                name: t.name,
-                tonality: t.tonality,
-                jamId: jam.id,
-                status: 'OPEN',
-            })),
-        });
+        // No default themes per user request
+        // await prisma.theme.createMany({
+        //     data: STANDARD_THEMES.map(t => ({
+        //         name: t.name,
+        //         tonality: t.tonality,
+        //         jamId: jam.id,
+        //         status: 'OPEN',
+        //     })),
+        // });
 
         // Redirect to the new jam
         redirect(`/jam/${code}`);

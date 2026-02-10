@@ -5,6 +5,8 @@ import { X, Music, FileText, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { createTheme } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 
+import { JAZZ_STANDARDS } from '../data/jazzStandards';
+
 interface CreateThemeModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -21,7 +23,35 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode }: CreateThe
         sheetMusicUrl: ''
     });
 
+    const [suggestions, setSuggestions] = useState<typeof JAZZ_STANDARDS>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
     if (!isOpen) return null;
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setFormData(prev => ({ ...prev, name: value }));
+
+        if (value.length > 1) {
+            const matches = JAZZ_STANDARDS.filter(s =>
+                s.name.toLowerCase().includes(value.toLowerCase())
+            );
+            setSuggestions(matches);
+            setShowSuggestions(true);
+        } else {
+            setShowSuggestions(false);
+        }
+    };
+
+    const selectSuggestion = (standard: typeof JAZZ_STANDARDS[0]) => {
+        setFormData({
+            ...formData,
+            name: standard.name,
+            tonality: standard.tonality,
+            description: `Estilo: ${standard.style}`
+        });
+        setShowSuggestions(false);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -61,7 +91,7 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode }: CreateThe
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
+                        <div className="relative">
                             <label className="block text-xs font-bold text-jazz-muted mb-1 uppercase tracking-wider">
                                 Nombre del Standard *
                             </label>
@@ -69,10 +99,30 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode }: CreateThe
                                 type="text"
                                 required
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={handleNameChange}
+                                onFocus={() => formData.name.length > 1 && setShowSuggestions(true)}
+                                // Delay blur to allow clicking suggestions
+                                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                 placeholder="Ej. Autumn Leaves"
                                 className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white placeholder:text-white/20 focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold outline-none transition-all"
                             />
+
+                            {/* Autocomplete Dropdown */}
+                            {showSuggestions && suggestions.length > 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-neutral-900 border border-white/10 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                                    {suggestions.map((s) => (
+                                        <button
+                                            key={s.name}
+                                            type="button"
+                                            onClick={() => selectSuggestion(s)}
+                                            className="w-full text-left px-4 py-3 hover:bg-white/5 text-sm border-b border-white/5 last:border-0 transition-colors"
+                                        >
+                                            <span className="font-bold text-white block">{s.name}</span>
+                                            <span className="text-xs text-jazz-muted">{s.tonality} • {s.style}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <div>
