@@ -5,6 +5,13 @@ import { Jam, Theme, Participation } from '@/types';
 import JamView from '@/components/JamView';
 import { Music2 } from 'lucide-react';
 
+interface JamViewWrapperProps {
+    initialJam: Jam;
+    initialThemes: Theme[];
+    initialParticipations: Participation[];
+    currentUserId?: string;
+}
+
 export default function JamViewWrapper(props: JamViewWrapperProps) {
     const [mounted, setMounted] = useState(false);
 
