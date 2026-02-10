@@ -44,6 +44,7 @@ export interface Participation {
     instrument: string;
     status: 'WAITING' | 'SELECTED';
     createdAt: Date;
+    user?: User;
 }
 
 export interface Message {

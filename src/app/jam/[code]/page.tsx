@@ -38,7 +38,15 @@ export default async function JamPage({ params }: PageProps) {
             themeId: p.themeId,
             instrument: p.instrument,
             status: p.status as 'WAITING' | 'SELECTED',
-            createdAt: p.createdAt
+            createdAt: p.createdAt,
+            user: {
+                id: p.user.id,
+                name: p.user.name || 'Invitado',
+                role: p.user.role as 'USER' | 'ADMIN',
+                image: p.user.image,
+                city: p.user.city,
+                mainInstrument: p.user.mainInstrument
+            }
         }))
     );
 

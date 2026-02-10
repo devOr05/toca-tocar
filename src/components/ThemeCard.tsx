@@ -1,5 +1,10 @@
+'use client';
+
+import { useState } from 'react';
+import { Theme, Participation, User } from '../types';
+import { Mic2, Music, Drum, Guitar, Keyboard, Info, Pencil } from 'lucide-react';
+import ThemeDetailsModal from './ThemeDetailsModal';
 import EditThemeModal from './EditThemeModal';
-import { Pencil } from 'lucide-react';
 
 interface ThemeCardProps {
     theme: Theme;
@@ -10,7 +15,16 @@ interface ThemeCardProps {
     onLeave: () => void;
 }
 
-// ... INSTRUMENTS array ...
+const INSTRUMENTS = [
+    { id: 'Sax', icon: Music, label: 'Saxo/Vientos' },
+    { id: 'Trumpet', icon: Music, label: 'Trompeta' },
+    { id: 'Piano', icon: Keyboard, label: 'Piano' },
+    { id: 'Guitar', icon: Guitar, label: 'Guitarra' },
+    { id: 'Bass', icon: Guitar, label: 'Bajo' },
+    { id: 'Drums', icon: Drum, label: 'Batería' },
+    { id: 'Voice', icon: Mic2, label: 'Voz' },
+    { id: 'Other', icon: Music, label: 'Otro' },
+];
 
 export default function ThemeCard({ theme, participations, currentUser, isHost, onJoin, onLeave }: ThemeCardProps) {
     const [showInstruments, setShowInstruments] = useState(false);
