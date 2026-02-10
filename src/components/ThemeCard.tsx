@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Theme, Participation, User } from '../types';
 import { Mic2, Music, Drum, Guitar, Keyboard } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface ThemeCardProps {
     theme: Theme;

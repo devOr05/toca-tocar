@@ -162,8 +162,8 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                     </div>
                 </div>
 
-                {/* ThemeList COMMENTED OUT */}
-                {/* <ThemeList /> */}
+                {/* ThemeList */}
+                <ThemeList />
             </main>
         </div>
     );
