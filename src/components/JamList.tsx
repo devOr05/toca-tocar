@@ -72,12 +72,7 @@ export default function JamList({ jams, currentUserId }: { jams: Jam[], currentU
                                             <span className="text-xs text-white/40 font-mono bg-black/30 px-1.5 py-0.5 rounded border border-white/5">
                                                 {jam.code}
                                             </span>
-                                            {/* DEBUG INFO - REMOVE LATER */}
-                                            {currentUserId !== jam.hostId && (
-                                                <span className="text-[8px] text-yellow-500/50">
-                                                    Not Host (Me:{currentUserId?.slice(0, 4)}... Host:{jam.hostId.slice(0, 4)}...)
-                                                </span>
-                                            )}
+
                                             {jam.city && (
                                                 <span className="text-xs text-jazz-muted">
                                                     📍 {jam.city}
