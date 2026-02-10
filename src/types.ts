@@ -11,6 +11,7 @@ export interface Jam {
     description?: string;
     location?: string;
     status: 'SCHEDULED' | 'ACTIVE' | 'FINISHED';
+    isPrivate?: boolean;
     hostId: string;
     createdAt: Date;
 }
