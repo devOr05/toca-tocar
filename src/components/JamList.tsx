@@ -1,0 +1,90 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Search, Music2, ArrowRight } from 'lucide-react';
+
+interface Jam {
+    id: string;
+    code: string;
+    name: string;
+    city?: string | null;
+    location?: string | null;
+    _count?: { themes: number };
+}
+
+export default function JamList({ jams }: { jams: Jam[] }) {
+    const [query, setQuery] = useState('');
+
+    const filteredJams = jams.filter(jam =>
+        jam.name.toLowerCase().includes(query.toLowerCase()) ||
+        jam.code.toLowerCase().includes(query.toLowerCase()) ||
+        (jam.city && jam.city.toLowerCase().includes(query.toLowerCase()))
+    );
+
+    return (
+        <div className="bg-jazz-surface border border-white/5 rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <Music2 className="text-jazz-accent" /> Jams Activas
+                </h2>
+                <span className="bg-white/10 text-xs px-2 py-1 rounded-md text-white/50 font-mono">
+                    {filteredJams.length}
+                </span>
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative mb-6">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-white/40" />
+                <input
+                    type="text"
+                    placeholder="Buscar por nombre, código o ciudad..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full bg-black/20 border border-white/10 rounded-xl py-2.5 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-jazz-gold transition-all placeholder:text-white/30"
+                />
+            </div>
+
+            {filteredJams.length === 0 ? (
+                <div className="text-center py-8 text-white/30">
+                    {query ? (
+                        <p>No se encontraron jams con "{query}"</p>
+                    ) : (
+                        <>
+                            <p>No hay Jams activas.</p>
+                            <p className="text-sm">¡Sé el primero en crear una!</p>
+                        </>
+                    )}
+                </div>
+            ) : (
+                <ul className="space-y-3">
+                    {filteredJams.map((jam) => (
+                        <li key={jam.id}>
+                            <Link href={`/jam/${jam.code}`} className="block bg-white/5 hover:bg-white/10 p-4 rounded-xl transition-colors border border-white/5 group relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Music2 className="w-12 h-12 text-jazz-gold rotate-12" />
+                                </div>
+                                <div className="relative z-10 flex justify-between items-center">
+                                    <div>
+                                        <h3 className="font-bold text-white group-hover:text-jazz-gold transition-colors">{jam.name}</h3>
+                                        <div className="flex items-center gap-3 mt-1">
+                                            <span className="text-xs text-white/40 font-mono bg-black/30 px-1.5 py-0.5 rounded border border-white/5">
+                                                {jam.code}
+                                            </span>
+                                            {jam.city && (
+                                                <span className="text-xs text-jazz-muted">
+                                                    📍 {jam.city}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <ArrowRight className="text-white/20 group-hover:text-white transition-colors" />
+                                </div>
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+}
