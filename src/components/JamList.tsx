@@ -84,17 +84,18 @@ export default function JamList({ jams, currentUserId }: { jams: Jam[], currentU
                                         {currentUserId === jam.hostId && (
                                             <button
                                                 onClick={async (e) => {
-                                                    e.preventDefault(); // Prevent navigation
+                                                    e.preventDefault();
+                                                    e.stopPropagation(); // Prevent Link navigation
                                                     if (confirm('¿Eliminar esta Jam?')) {
                                                         const { deleteJam } = await import('@/app/actions');
                                                         await deleteJam(jam.code);
-                                                        // Refresh handled by page/router usually, or we can force reload
                                                         window.location.reload();
                                                     }
                                                 }}
-                                                className="p-2 text-white/20 hover:text-red-500 transition-colors z-20"
+                                                className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-all z-20 relative"
+                                                title="Eliminar Jam"
                                             >
-                                                <Trash2 className="w-4 h-4" />
+                                                <Trash2 className="w-5 h-5" />
                                             </button>
                                         )}
                                         <ArrowRight className="text-white/20 group-hover:text-white transition-colors" />
