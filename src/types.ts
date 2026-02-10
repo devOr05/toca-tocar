@@ -8,13 +8,13 @@ export interface Jam {
     id: string;
     code: string;
     name: string;
-    description?: string;
-    location?: string;
-    city?: string;
-    flyerUrl?: string;
-    lat?: number;
-    lng?: number;
-    startTime?: Date | string;
+    description?: string | null;
+    location?: string | null;
+    city?: string | null;
+    flyerUrl?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    startTime?: Date | string | null;
     status: 'SCHEDULED' | 'ACTIVE' | 'FINISHED';
     isPrivate?: boolean;
     hostId: string;
@@ -24,9 +24,9 @@ export interface Jam {
 export interface Theme {
     id: string;
     name: string;
-    tonality?: string;
-    description?: string;
-    sheetMusicUrl?: string;
+    tonality?: string | null;
+    description?: string | null;
+    sheetMusicUrl?: string | null;
     status: 'OPEN' | 'QUEUED' | 'PLAYING' | 'FINISHED';
     jamId: string;
 }
