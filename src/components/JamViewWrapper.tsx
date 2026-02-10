@@ -8,8 +8,7 @@ import { Music2 } from 'lucide-react';
 const JamViewValues = dynamic(() => import('@/components/JamView'), {
     ssr: false,
     loading: () => (
-        loading: () => (
-            <div className = "min-h-screen bg-black" suppressHydrationWarning />
+        <div className="min-h-screen bg-black" suppressHydrationWarning />
     ),
 });
 
