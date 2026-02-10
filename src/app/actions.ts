@@ -136,7 +136,7 @@ export async function getJam(code: string) {
     }
 }
 
-export async function updateProfile(formData: FormData) {
+export async function updateProfile(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) return { error: 'No autorizado' };
 
