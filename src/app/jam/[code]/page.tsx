@@ -1,17 +1,8 @@
 import { use } from 'react';
-import dynamic from 'next/dynamic';
+import JamClientLoader from '@/components/JamClientLoader';
 import { getJam } from '@/app/actions';
 import { notFound } from 'next/navigation';
 import { auth } from '@/auth';
-
-const JamViewWrapper = dynamic(() => import('@/components/JamViewWrapper'), {
-    ssr: false,
-    loading: () => (
-        <div className="min-h-screen flex items-center justify-center bg-black text-jazz-gold animate-pulse">
-            Cargando entorno...
-        </div>
-    )
-});
 
 interface PageProps {
     params: Promise<{ code: string }>;
@@ -89,7 +80,7 @@ export default async function JamPage({ params }: PageProps) {
         role: (session.user.role as 'USER' | 'ADMIN') || 'USER',
     } : undefined;
 
-    return <JamViewWrapper
+    return <JamClientLoader
         initialJam={serializedJam}
         initialThemes={serializedThemes}
         initialParticipations={serializedParticipations}
