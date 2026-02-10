@@ -34,7 +34,6 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
     const isPlaying = theme.status === 'PLAYING';
 
     return (
-    return (
         <div className={`
       relative rounded-xl border p-4 transition-all
       ${isPlaying ? 'bg-jazz-accent/20 border-jazz-accent shadow-[0_0_20px_rgba(99,102,241,0.3)]' :
