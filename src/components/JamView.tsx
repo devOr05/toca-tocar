@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useJamStore } from '../store/jamStore';
 import { leaveJam } from '@/app/actions';
 import ThemeList from './ThemeList';
-import { Share2, Users, Music2, LogOut, Trash2 } from 'lucide-react';
+import { Share2, Users, Music2, LogOut, Trash2, Calendar, MapPin, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Jam, Theme, Participation } from '../types';
 
@@ -161,7 +161,65 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </div>
             </header>
 
-            <main className="p-4 max-w-lg mx-auto">
+            <main className="p-4 max-w-lg mx-auto space-y-6">
+
+                {/* JAM INFO CARD */}
+                <div className="bg-white/5 border border-white/5 rounded-xl p-4 space-y-3 shadow-lg">
+                    {/* Description */}
+                    {initialJam.description && (
+                        <p className="text-white/90 text-sm whitespace-pre-wrap leading-relaxed">
+                            {initialJam.description}
+                        </p>
+                    )}
+
+                    <div className="flex flex-col gap-2 pt-2 border-t border-white/5">
+                        {/* Date */}
+                        {initialJam.startTime && (
+                            <div className="flex items-center gap-2 text-jazz-muted text-xs">
+                                <Calendar className="w-4 h-4 text-jazz-gold shrink-0" />
+                                <span>
+                                    {new Date(initialJam.startTime).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                    {' • '}
+                                    {new Date(initialJam.startTime).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Location */}
+                        {(initialJam.location || initialJam.city) && (
+                            <div className="flex items-center gap-2 text-jazz-muted text-xs">
+                                <MapPin className="w-4 h-4 text-jazz-gold shrink-0" />
+                                <a
+                                    href={initialJam.lat && initialJam.lng
+                                        ? `https://www.google.com/maps/search/?api=1&query=${initialJam.lat},${initialJam.lng}`
+                                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((initialJam.location || '') + ' ' + (initialJam.city || ''))}`
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:text-white underline decoration-jazz-gold/50 transition-colors"
+                                >
+                                    {initialJam.location}{initialJam.city ? `, ${initialJam.city}` : ''}
+                                </a>
+                            </div>
+                        )}
+
+                        {/* Flyer Link */}
+                        {initialJam.flyerUrl && (
+                            <div className="pt-1">
+                                <a
+                                    href={initialJam.flyerUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 text-xs text-jazz-gold hover:text-white transition-colors bg-jazz-gold/10 px-2 py-1.5 rounded-lg border border-jazz-gold/20"
+                                >
+                                    <ImageIcon className="w-3 h-3" />
+                                    Ver Flyer / Evento
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 <ThemeList />
             </main>
 

@@ -10,6 +10,11 @@ export interface Jam {
     name: string;
     description?: string;
     location?: string;
+    city?: string;
+    flyerUrl?: string;
+    lat?: number;
+    lng?: number;
+    startTime?: Date | string;
     status: 'SCHEDULED' | 'ACTIVE' | 'FINISHED';
     isPrivate?: boolean;
     hostId: string;
