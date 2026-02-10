@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Theme, Participation, User } from '../types';
-import { Mic2, Music, Drum, Guitar, Keyboard, Info, Pencil, Trash2 } from 'lucide-react';
+import { Mic2, Music, Drum, Guitar, Keyboard, Info, Pencil, Trash2, MessageSquare } from 'lucide-react';
 import { deleteTheme } from '@/app/actions';
 import ThemeDetailsModal from './ThemeDetailsModal';
 import EditThemeModal from './EditThemeModal';
@@ -55,13 +55,23 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                 <div className="flex-1 min-w-0 mr-2">
                     <div className="flex items-center gap-2">
                         <h3 className="font-bold text-lg text-white leading-tight truncate">{theme.name}</h3>
-                        {hasInfo && (
+                        {hasInfo && theme.type !== 'TOPIC' && (
                             <button
                                 onClick={() => setShowDetails(true)}
                                 className="text-jazz-gold hover:text-white transition-colors"
                                 title="Ver información del tema"
                             >
                                 <Info size={16} />
+                            </button>
+                        )}
+                        {theme.type === 'TOPIC' && (
+                            <button
+                                onClick={() => setShowDetails(true)}
+                                className="text-jazz-accent hover:text-white transition-colors flex items-center gap-1 bg-jazz-accent/10 px-2 py-0.5 rounded-md"
+                                title="Ver discusión"
+                            >
+                                <MessageSquare size={14} />
+                                <span className="text-[10px] font-bold uppercase">Chat</span>
                             </button>
                         )}
                     </div>
@@ -170,6 +180,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                 isOpen={showDetails}
                 onClose={() => setShowDetails(false)}
                 theme={theme}
+                currentUser={currentUser}
             />
 
             <EditThemeModal

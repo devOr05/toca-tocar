@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { updateProfile, logoutAction } from '@/app/actions';
-import { User, Music2, Link as LinkIcon, Save, Disc, LogOut } from "lucide-react";
+import { User, Music2, Link as LinkIcon, Save, Disc, LogOut, MapPin } from "lucide-react";
 
 const initialState = {
     error: '',
@@ -34,6 +34,16 @@ export default function ProfileForm({ user }: { user: any }) {
                     <div className="relative group">
                         <User className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-jazz-gold transition-colors" />
                         <input type="text" name="name" defaultValue={user.name || ''} required
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold transition-all" />
+                    </div>
+                </div>
+
+                {/* City */}
+                <div>
+                    <label className="block text-sm font-medium text-white/60 mb-2">Ciudad Base</label>
+                    <div className="relative group">
+                        <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-jazz-gold transition-colors" />
+                        <input type="text" name="city" defaultValue={user.city || ''} placeholder="Ej: Buenos Aires, CABA..."
                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold transition-all" />
                     </div>
                 </div>

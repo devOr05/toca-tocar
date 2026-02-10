@@ -421,6 +421,8 @@ export async function getMessages(jamId: string, themeId?: string) {
         const where: any = { jamId };
         if (themeId) {
             where.themeId = themeId;
+        } else {
+            where.themeId = null;
         }
 
         const messages = await prisma.message.findMany({
@@ -443,6 +445,20 @@ export async function getMessages(jamId: string, themeId?: string) {
     } catch (error) {
         console.error('Error fetching messages:', error);
         return [];
+    }
+}
+
+export async function getMessageCount(jamId: string, themeId: string) {
+    try {
+        const count = await prisma.message.count({
+            where: {
+                jamId,
+                themeId
+            }
+        });
+        return count;
+    } catch (error) {
+        return 0;
     }
 }
 
