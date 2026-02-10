@@ -153,6 +153,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
     const youtube = formData.get('youtube') as string;
     const tiktok = formData.get('tiktok') as string;
     const bandcamp = formData.get('bandcamp') as string;
+    const soundcloud = formData.get('soundcloud') as string;
     const website = formData.get('website') as string; // 'Other'
 
     // hasRecorded is now a text string
@@ -169,6 +170,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
                 youtube,
                 tiktok,
                 bandcamp,
+                soundcloud,
                 website,
                 hasRecorded
             }
