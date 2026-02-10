@@ -1,5 +1,5 @@
 import { use } from 'react';
-import JamView from '@/components/JamView';
+import JamViewWrapper from '@/components/JamViewWrapper';
 import { getJam } from '@/app/actions';
 import { notFound } from 'next/navigation';
 import { auth } from '@/auth';
