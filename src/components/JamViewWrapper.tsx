@@ -1,28 +1,22 @@
-'use client';
-
-import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
 import { Jam, Theme, Participation } from '@/types';
+import JamView from '@/components/JamView';
 import { Music2 } from 'lucide-react';
 
-// Dynamic import of the real JamView with SSR disabled
-const JamViewValues = dynamic(() => import('@/components/JamView'), {
-    ssr: false,
-    loading: () => (
-        <div className="min-h-screen bg-black" suppressHydrationWarning />
-    ),
-});
-
-interface JamViewWrapperProps {
-    initialJam: Jam;
-    initialThemes: Theme[];
-    initialParticipations: Participation[];
-    currentUserId?: string;
-}
-
 export default function JamViewWrapper(props: JamViewWrapperProps) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return <div className="min-h-screen bg-black" suppressHydrationWarning />;
+    }
+
     return (
         <div suppressHydrationWarning>
-            <JamViewValues {...props} />
+            <JamView {...props} />
         </div>
     );
 }
