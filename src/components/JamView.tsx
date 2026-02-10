@@ -17,7 +17,7 @@ interface JamViewProps {
 
 export default function JamView({ initialJam, initialThemes, initialParticipations, currentUserId }: JamViewProps) {
     const router = useRouter();
-    // const { jam, setUser, currentUser, setJamState } = useJamStore();
+    const { jam, setUser, currentUser, setJamState } = useJamStore();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
