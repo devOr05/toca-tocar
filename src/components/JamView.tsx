@@ -58,11 +58,12 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => router.push('/dashboard')}
-                        className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                        className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-white/10 transition-colors group"
                     >
-                        <div className="bg-jazz-gold/10 p-2 rounded-lg">
-                            <Music2 className="w-5 h-5 text-jazz-gold" />
+                        <div className="bg-jazz-gold/10 p-2 rounded-lg group-hover:bg-jazz-gold group-hover:text-black transition-colors">
+                            <LogOut className="w-4 h-4 text-jazz-gold group-hover:text-black rotate-180" />
                         </div>
+                        <span className="text-xs font-bold text-jazz-gold uppercase tracking-wider">Salir</span>
                     </button>
 
                     <div>

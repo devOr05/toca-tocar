@@ -13,11 +13,14 @@ interface ThemeCardProps {
 }
 
 const INSTRUMENTS = [
-    { id: 'Sax', icon: Music, label: 'Vientos' },
-    { id: 'Piano', icon: Keyboard, label: 'Piano/Git' },
-    { id: 'Bass', icon: Guitar, label: 'Bajo' },
+    { id: 'Sax', icon: Music, label: 'Saxo/Vientos' },
+    { id: 'Trumpet', icon: Music, label: 'Trompeta' }, // Using Music icon as generic for now or find better
+    { id: 'Piano', icon: Keyboard, label: 'Piano' },
+    { id: 'Guitar', icon: Guitar, label: 'Guitarra' },
+    { id: 'Bass', icon: Guitar, label: 'Bajo' }, // Guitar icon is often used for bass too
     { id: 'Drums', icon: Drum, label: 'Batería' },
     { id: 'Voice', icon: Mic2, label: 'Voz' },
+    { id: 'Other', icon: Music, label: 'Otro' },
 ];
 
 export default function ThemeCard({ theme, participations, currentUser, onJoin, onLeave }: ThemeCardProps) {
@@ -72,10 +75,10 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
                             onClick={onLeave}
                             className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border border-red-500/20"
                         >
-                            Salir
+                            Salir del Tema
                         </button>
                     ) : showInstruments ? (
-                        <div className="grid grid-cols-5 gap-1">
+                        <div className="grid grid-cols-4 gap-1">
                             {INSTRUMENTS.map((inst) => (
                                 <button
                                     key={inst.id}
@@ -86,12 +89,12 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
                                     className="flex flex-col items-center justify-center bg-white/5 hover:bg-jazz-gold/20 hover:text-jazz-gold border border-white/5 rounded-lg p-2 transition-all"
                                 >
                                     <inst.icon className="w-4 h-4 mb-1" />
-                                    <span className="text-[8px] uppercase">{inst.id.slice(0, 3)}</span>
+                                    <span className="text-[8px] uppercase">{inst.label}</span>
                                 </button>
                             ))}
                             <button
                                 onClick={() => setShowInstruments(false)}
-                                className="col-span-5 text-xs text-white/40 mt-1 hover:text-white"
+                                className="col-span-4 text-xs text-white/40 mt-1 hover:text-white"
                             >
                                 Cancelar
                             </button>
