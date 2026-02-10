@@ -156,8 +156,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
     const soundcloud = formData.get('soundcloud') as string;
     const website = formData.get('website') as string; // 'Other'
 
-    // hasRecorded is now a text string
-    const hasRecorded = formData.get('hasRecorded') as string;
+    const website = formData.get('website') as string; // 'Other'
 
     try {
         await prisma.user.update({
@@ -172,7 +171,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
                 bandcamp,
                 soundcloud,
                 website,
-                hasRecorded
+                website,
             }
         });
         return { success: true, error: undefined };
