@@ -8,8 +8,14 @@ declare module "next-auth" {
             role: string
             mainInstrument?: string | null
             favoriteTheme?: string | null
-            hasRecorded?: boolean
+            hasRecorded?: string | null
             externalLink?: string | null
+            website?: string | null
+            instagram?: string | null
+            youtube?: string | null
+            tiktok?: string | null
+            bandcamp?: string | null
+            soundcloud?: string | null
             isVerifiedOrganizer?: boolean
         } & DefaultSession["user"]
     }
@@ -18,8 +24,14 @@ declare module "next-auth" {
         role: string
         mainInstrument?: string | null
         favoriteTheme?: string | null
-        hasRecorded?: boolean
+        hasRecorded?: string | null
         externalLink?: string | null
+        website?: string | null
+        instagram?: string | null
+        youtube?: string | null
+        tiktok?: string | null
+        bandcamp?: string | null
+        soundcloud?: string | null
         isVerifiedOrganizer?: boolean
     }
 }
@@ -29,8 +41,14 @@ declare module "next-auth/jwt" {
         role?: string
         mainInstrument?: string | null
         favoriteTheme?: string | null
-        hasRecorded?: boolean
+        hasRecorded?: string | null
         externalLink?: string | null
+        website?: string | null
+        instagram?: string | null
+        youtube?: string | null
+        tiktok?: string | null
+        bandcamp?: string | null
+        soundcloud?: string | null
         isVerifiedOrganizer?: boolean
     }
 }
