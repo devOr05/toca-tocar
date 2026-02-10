@@ -20,5 +20,9 @@ interface JamViewWrapperProps {
 }
 
 export default function JamViewWrapper(props: JamViewWrapperProps) {
-    return <JamViewValues {...props} />;
+    return (
+        <div suppressHydrationWarning>
+            <JamViewValues {...props} />
+        </div>
+    );
 }
