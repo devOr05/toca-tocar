@@ -53,9 +53,45 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     if (!mounted) return null;
 
     return (
-        <div className="min-h-screen bg-black text-white p-10">
-            <h1 className="text-2xl text-green-500">JAM VIEW MOUNTED (SAFE MODE)</h1>
-            <p>Si ves esto, el problema está en la lógica de datos, no en el componente.</p>
+        <div className="min-h-screen bg-black pb-20">
+            <header className="sticky top-0 z-50 bg-jazz-surface/90 backdrop-blur-md border-b border-white/5 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => router.push('/dashboard')}
+                        className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                    >
+                        <div className="bg-jazz-gold/10 p-2 rounded-lg">
+                            <Music2 className="w-5 h-5 text-jazz-gold" />
+                        </div>
+                    </button>
+
+                    <div>
+                        <h1 className="font-bold text-white text-sm leading-tight flex items-center gap-2">
+                            {initialJam.name}
+                            {initialJam.isPrivate && <span className="text-[10px] bg-red-500/20 text-red-200 px-1.5 py-0.5 rounded border border-red-500/30">Privada 🔒</span>}
+                        </h1>
+                        <p className="text-[10px] text-jazz-muted font-mono tracking-widest">CODE: <span className="text-jazz-accent">{initialJam.code}</span></p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-jazz-accent to-purple-600 flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-black">
+                        {currentUser?.name.slice(0, 2).toUpperCase() || '?'}
+                    </div>
+                </div>
+            </header>
+
+            <main className="p-4 max-w-lg mx-auto space-y-6">
+                <h2 className="text-white text-center opacity-50">Info Card Disabled for Debugging</h2>
+                {/* JAM INFO CARD COMMENTED OUT
+                <div className="bg-white/5 border border-white/5 rounded-xl p-4 space-y-3 shadow-lg">
+                   ... content ...
+                </div>
+                */}
+
+                {/* ThemeList COMMENTED OUT */}
+                {/* <ThemeList /> */}
+            </main>
         </div>
     );
 }
