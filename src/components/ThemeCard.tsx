@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Theme, Participation, User } from '../types';
-import { Mic2, Music, Drum, Guitar, Keyboard, Info, Pencil } from 'lucide-react';
+import { Mic2, Music, Drum, Guitar, Keyboard, Info, Pencil, Trash2 } from 'lucide-react';
+import { deleteTheme } from '@/app/actions';
 import ThemeDetailsModal from './ThemeDetailsModal';
 import EditThemeModal from './EditThemeModal';
 
@@ -74,13 +75,26 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                     {isQueued && <span className="text-jazz-gold font-bold text-xs uppercase tracking-widest bg-jazz-gold/10 px-2 py-1 rounded">Siguiente</span>}
 
                     {isHost && (
-                        <button
-                            onClick={() => setShowEdit(true)}
-                            className="text-white/40 hover:text-white transition-colors p-1"
-                            title="Editar Tema"
-                        >
-                            <Pencil size={16} />
-                        </button>
+                        <>
+                            <button
+                                onClick={() => setShowEdit(true)}
+                                className="text-white/40 hover:text-white transition-colors p-1"
+                                title="Editar Tema"
+                            >
+                                <Pencil size={16} />
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    if (confirm('¿Estás seguro de que quieres eliminar este tema?')) {
+                                        await deleteTheme(theme.id);
+                                    }
+                                }}
+                                className="text-white/40 hover:text-red-500 transition-colors p-1"
+                                title="Eliminar Tema"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        </>
                     )}
                 </div>
             </div>

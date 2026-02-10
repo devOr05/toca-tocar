@@ -446,6 +446,37 @@ export async function getMessages(jamId: string, themeId?: string) {
     }
 }
 
+export async function deleteTheme(themeId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        const theme = await prisma.theme.findUnique({
+            where: { id: themeId },
+            include: { jam: true }
+        });
+
+        if (!theme) return { success: false, error: 'Tema no encontrado' };
+
+        // Allow host OR creator to delete? For now, jam host is safest key.
+        // Or if the user created the theme?
+        // Let's allow Jam Host AND Theme Creator
+        // We need to check if schema stores creator. We didn't add creatorId to Theme?
+        // Schema check: Theme has no creatorId. Only jamId.
+        // So only Jam Host can delete for now.
+
+        if (theme.jam.hostId !== session.user.id) {
+            return { success: false, error: 'Solo el anfitrión puede eliminar temas' };
+        }
+
+        await prisma.theme.delete({ where: { id: themeId } });
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting theme:', error);
+        return { success: false, error: 'Error al eliminar el tema' };
+    }
+}
+
 export async function getMusiciansByCity() {
     const session = await auth();
     let cityFilter = {};
