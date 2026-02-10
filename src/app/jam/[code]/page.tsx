@@ -1,80 +1,113 @@
-import { use } from 'react';
+'use client';
+
+import { useEffect, useState } from 'react';
 import JamClientLoader from '@/components/JamClientLoader';
 import { getJam } from '@/app/actions';
-import { notFound } from 'next/navigation';
-import { auth } from '@/auth';
+import { notFound, useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { Jam, Theme, Participation } from '@/types';
 
-interface PageProps {
-    params: Promise<{ code: string }>;
-}
+export default function JamPage() {
+    const params = useParams();
+    const code = params?.code as string;
+    const { data: session } = useSession();
+    const [jamData, setJamData] = useState<{
+        jam: Jam;
+        themes: Theme[];
+        participations: Participation[];
+    } | null>(null);
+    const [loading, setLoading] = useState(true);
 
-export default async function JamPage({ params }: PageProps) {
-    const { code } = await params;
-    const jamData = await getJam(code);
+    useEffect(() => {
+        async function loadJam() {
+            if (!code) {
+                notFound();
+                return;
+            }
+
+            const data = await getJam(code);
+
+            if (!data) {
+                notFound();
+                return;
+            }
+
+            // Transform Prisma data to Store types
+            const themes = data.themes.map((t: any) => ({
+                id: t.id,
+                name: t.name,
+                tonality: t.tonality || '',
+                status: t.status as 'OPEN' | 'QUEUED' | 'PLAYING' | 'FINISHED',
+                jamId: t.jamId
+            }));
+
+            const participations = data.themes.flatMap((t: any) =>
+                t.participations
+                    .filter((p: any) => p.user) // Filter out participations without users
+                    .map((p: any) => ({
+                        id: p.id,
+                        userId: p.userId,
+                        userName: p.user?.name || "Invitado",
+                        themeId: p.themeId,
+                        instrument: p.instrument,
+                        status: p.status as 'WAITING' | 'SELECTED',
+                        createdAt: p.createdAt,
+                        user: {
+                            id: p.user.id,
+                            name: p.user.name || 'Invitado',
+                            role: (p.user.role as 'USER' | 'ADMIN') || 'USER',
+                            image: p.user.image || null,
+                            city: p.user.city || null,
+                            mainInstrument: p.user.mainInstrument || null
+                        }
+                    }))
+            );
+
+            const jam = {
+                id: data.id,
+                code: data.code,
+                name: data.name,
+                description: data.description || undefined,
+                location: data.location || undefined,
+                city: data.city || undefined,
+                flyerUrl: data.flyerUrl || undefined,
+                lat: data.lat || undefined,
+                lng: data.lng || undefined,
+                startTime: data.startTime || undefined,
+                status: data.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED',
+                hostId: data.hostId,
+                createdAt: data.createdAt,
+                isPrivate: data.isPrivate
+            };
+
+            // Serialize for Client Component (fix for Date objects)
+            const serializedJam = JSON.parse(JSON.stringify(jam));
+            const serializedThemes = JSON.parse(JSON.stringify(themes));
+            const serializedParticipations = JSON.parse(JSON.stringify(participations));
+
+            setJamData({
+                jam: serializedJam,
+                themes: serializedThemes,
+                participations: serializedParticipations
+            });
+            setLoading(false);
+        }
+
+        loadJam();
+    }, [code]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-black text-jazz-gold animate-pulse">
+                Cargando jam...
+            </div>
+        );
+    }
 
     if (!jamData) {
         notFound();
+        return null;
     }
-
-    // Transform Prisma data to Store types
-    // Prisma Date objects need to be serializable if passed to client directly?
-    // Next.js Server Components serialize automatically, but let's be safe if needed.
-    // For now we pass as is, assuming basic serialization works for Dates.
-
-    // We need to flatten the themes/participations structure for the store
-    const themes = jamData.themes.map((t: any) => ({
-        id: t.id,
-        name: t.name,
-        tonality: t.tonality || '',
-        status: t.status as 'OPEN' | 'QUEUED' | 'PLAYING' | 'FINISHED',
-        jamId: t.jamId
-    }));
-
-    const participations = jamData.themes.flatMap((t: any) =>
-        t.participations
-            .filter((p: any) => p.user) // Filter out participations without users
-            .map((p: any) => ({
-                id: p.id,
-                userId: p.userId,
-                userName: p.user?.name || "Invitado",
-                themeId: p.themeId,
-                instrument: p.instrument,
-                status: p.status as 'WAITING' | 'SELECTED',
-                createdAt: p.createdAt,
-                user: {
-                    id: p.user.id,
-                    name: p.user.name || 'Invitado',
-                    role: (p.user.role as 'USER' | 'ADMIN') || 'USER',
-                    image: p.user.image || null,
-                    city: p.user.city || null,
-                    mainInstrument: p.user.mainInstrument || null
-                }
-            }))
-    );
-
-    const jam = {
-        id: jamData.id,
-        code: jamData.code,
-        name: jamData.name,
-        description: jamData.description || undefined,
-        location: jamData.location || undefined,
-        city: jamData.city || undefined,
-        flyerUrl: jamData.flyerUrl || undefined,
-        lat: jamData.lat || undefined,
-        lng: jamData.lng || undefined,
-        startTime: jamData.startTime || undefined,
-        status: jamData.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED',
-        hostId: jamData.hostId,
-        createdAt: jamData.createdAt,
-        isPrivate: jamData.isPrivate
-    };
-
-    const session = await auth();
-
-    // Serialize for Client Component (fix for Date objects)
-    const serializedJam = JSON.parse(JSON.stringify(jam));
-    const serializedThemes = JSON.parse(JSON.stringify(themes));
-    const serializedParticipations = JSON.parse(JSON.stringify(participations));
 
     const currentUser = session?.user ? {
         id: session.user.id,
@@ -83,9 +116,9 @@ export default async function JamPage({ params }: PageProps) {
     } : undefined;
 
     return <JamClientLoader
-        initialJam={serializedJam}
-        initialThemes={serializedThemes}
-        initialParticipations={serializedParticipations}
+        initialJam={jamData.jam}
+        initialThemes={jamData.themes}
+        initialParticipations={jamData.participations}
         currentUser={currentUser}
     />;
 }
