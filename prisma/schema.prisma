@@ -117,6 +117,7 @@ model Theme {
   sheetMusicUrl String?
   status    String   @default("OPEN") // OPEN, QUEUED, PLAYING, FINISHED
   visibility String  @default("PUBLIC") // PUBLIC, PRIVATE
+  type      String   @default("SONG") // SONG, TOPIC
   
   jamId     String
   jam       Jam      @relation(fields: [jamId], references: [id])

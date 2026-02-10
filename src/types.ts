@@ -34,6 +34,7 @@ export interface Theme {
     sheetMusicUrl?: string | null;
     status: 'OPEN' | 'QUEUED' | 'PLAYING' | 'FINISHED';
     jamId: string;
+    type?: 'SONG' | 'TOPIC' | string;
 }
 
 export interface Participation {
@@ -45,6 +46,16 @@ export interface Participation {
     status: 'WAITING' | 'SELECTED';
     createdAt: Date;
     user?: User;
+}
+
+export interface DirectMessage {
+    id: string;
+    content: string;
+    senderId: string;
+    senderName?: string;
+    receiverId: string;
+    createdAt: Date;
+    read: boolean;
 }
 
 export interface Message {

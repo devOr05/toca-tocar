@@ -296,7 +296,8 @@ export async function createTheme(
     name: string,
     tonality: string,
     description?: string,
-    sheetMusicUrl?: string
+    sheetMusicUrl?: string,
+    type: string = 'SONG'
 ) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: 'No autorizado' };
@@ -316,6 +317,7 @@ export async function createTheme(
                 sheetMusicUrl,
                 jamId: jam.id,
                 status: 'OPEN',
+                type,
             }
         });
 
@@ -445,10 +447,31 @@ export async function getMessages(jamId: string, themeId?: string) {
 }
 
 export async function getMusiciansByCity() {
+    const session = await auth();
+    let cityFilter = {};
+
+    // If user is logged in and has a city, prioritize that city
+    if (session?.user?.id) {
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { city: true }
+        });
+
+        if (currentUser?.city) {
+            cityFilter = { city: currentUser.city };
+        } else {
+            cityFilter = { city: { not: null } };
+        }
+    } else {
+        cityFilter = { city: { not: null } };
+    }
+
     try {
         const users = await prisma.user.findMany({
             where: {
-                city: { not: null }
+                ...cityFilter,
+                // Exclude current user from list? Maybe keep them to verify they have city set
+                // id: { not: session?.user?.id } 
             },
             select: {
                 id: true,
@@ -457,7 +480,7 @@ export async function getMusiciansByCity() {
                 mainInstrument: true,
                 image: true
             },
-            take: 20
+            take: 50 // Increased limit
         });
         return users;
     } catch (error) {
@@ -501,6 +524,56 @@ export async function getJamParticipants(jamCode: string) {
         return Array.from(uniqueUsers.values());
     } catch (error) {
         console.error('Error fetching jam participants:', error);
+        return [];
+    }
+}
+
+export async function sendDirectMessage(receiverId: string, content: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        await prisma.directMessage.create({
+            data: {
+                content,
+                senderId: session.user.id,
+                receiverId,
+            }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error sending DM:', error);
+        return { success: false, error: 'Error al enviar mensaje directo' };
+    }
+}
+
+export async function getDirectMessages(otherUserId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return [];
+
+    try {
+        const messages = await prisma.directMessage.findMany({
+            where: {
+                OR: [
+                    { senderId: session.user.id, receiverId: otherUserId },
+                    { senderId: otherUserId, receiverId: session.user.id }
+                ]
+            },
+            orderBy: { createdAt: 'asc' },
+            include: { sender: { select: { name: true } } }
+        });
+
+        return messages.map(m => ({
+            id: m.id,
+            content: m.content,
+            senderId: m.senderId,
+            senderName: m.sender.name || 'Usuario',
+            receiverId: m.receiverId,
+            createdAt: m.createdAt,
+            read: m.read
+        }));
+    } catch (error) {
+        console.error('Error fetching DMs:', error);
         return [];
     }
 }
