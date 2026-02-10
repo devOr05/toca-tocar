@@ -97,125 +97,19 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </div>
             </header>
 
-            {/* DESKTOP LAYOUT (3 Cols) */}
+            {/* DESKTOP LAYOUT (3 Cols) - DISABLED FOR DEBUG */}
+            {/*
             <div className="hidden lg:flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
-
-                {/* LEFT: MUSICIANS */}
-                <aside className="w-64 bg-jazz-surface border-r border-white/5 flex flex-col">
-                    <div className="p-4 border-b border-white/5 bg-black/20">
-                        <h2 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
-                            <Users className="w-4 h-4" /> Músicos (DEBUG)
-                        </h2>
-                    </div>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-4 text-white/50">
-                        <p>MusicianList Disabled</p>
-                        {/* 
-                        <MusicianList
-                            users={uniqueMusicians}
-                            title=""
-                            emptyMessage="Nadie se ha unido aún."
-                        /> 
-                        */}
-                    </div>
-                </aside>
-
-                {/* CENTER: CONTENT */}
-                <main className="flex-1 flex flex-col min-w-0 bg-black/50 relative">
-                    {/* Tabs */}
-                    <div className="flex items-center border-b border-white/10 bg-black/40 px-4 shrink-0 overflow-x-auto">
-                        <button
-                            onClick={() => setActiveTab('THEMES')}
-                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'THEMES' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
-                        >
-                            <Music2 size={16} /> Repertorio (DISABLED)
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('SUGGESTED')}
-                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'SUGGESTED' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
-                        >
-                            <Plus size={16} /> Sugeridos (DISABLED)
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('FORUM')}
-                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'FORUM' ? 'border-jazz-accent text-white' : 'border-transparent text-white/40 hover:text-white'}`}
-                        >
-                            <Share2 size={16} /> Foro (DISABLED)
-                        </button>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
-                        {/* INFO CARD */}
-                        <div className="bg-jazz-surface border border-white/5 rounded-xl p-4 shadow-lg shrink-0">
-                            {initialJam.description && <p className="text-white/80 text-sm mb-2">{initialJam.description}</p>}
-                            {formattedDate && <p className="text-jazz-muted text-xs flex items-center gap-2"><Calendar size={14} /> {formattedDate}</p>}
-                            {(initialJam.location || initialJam.city) && (
-                                <p className="text-jazz-muted text-xs flex items-center gap-2 mt-1">
-                                    <MapPin size={14} />
-                                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((initialJam.location || '') + ' ' + (initialJam.city || ''))}`} target="_blank" rel="noopener noreferrer" className="hover:text-white underline">
-                                        {initialJam.location}{initialJam.city ? `, ${initialJam.city}` : ''}
-                                    </a>
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="bg-red-900/20 border border-red-500/20 p-4 rounded text-center">
-                            <h3 className="text-red-400 font-bold">MODO DEBUG EXTREMO</h3>
-                            <p className="text-sm">Todo desactivado excepto layout.</p>
-                        </div>
-
-                        {activeTab === 'THEMES' && (
-                            <div className="pb-24">
-                                {/* <ThemeList type="SONG" /> */}
-                                <p className="text-center text-white/30 italic">ThemeList disabled</p>
-                            </div>
-                        )}
-
-                        {activeTab === 'SUGGESTED' && (
-                            <div className="pb-24">
-                                {/* <SuggestedThemes jamCode={initialJam.code} /> */}
-                                <p className="text-center text-white/30 italic">SuggestedThemes disabled</p>
-                            </div>
-                        )}
-
-                        {activeTab === 'FORUM' && (
-                            <div className="pb-24">
-                                <div className="mb-4 flex items-center justify-between">
-                                    <h3 className="text-xl font-bold text-white">Foro de Discusión</h3>
-                                    <button
-                                        onClick={() => openCreateModal('TOPIC')}
-                                        className="bg-jazz-accent/20 hover:bg-jazz-accent/40 text-jazz-accent px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
-                                    >
-                                        Crear Tópico
-                                    </button>
-                                </div>
-                                {/* <ThemeList type="TOPIC" /> */}
-                                <p className="text-center text-white/30 italic">Topic List disabled</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* FAB */}
-                    {activeTab === 'THEMES' && (
-                        <button
-                            onClick={() => openCreateModal('SONG')}
-                            className="absolute bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
-                        >
-                            <Plus className="w-7 h-7" />
-                        </button>
-                    )}
-                </main>
-
-                {/* RIGHT: CHAT */}
-                <aside className="w-80 bg-jazz-surface border-l border-white/5 flex flex-col">
-                    <div className="p-4 text-white/50">Chat Disabled</div>
-                </aside>
+                <div className="p-10 text-white">Layout Disabled</div>
             </div>
+            */}
 
-
-            {/* MOBILE LAYOUT */}
+            {/* MOBILE LAYOUT - DISABLED FOR DEBUG */}
+            {/*
             <div className="lg:hidden flex-1 overflow-y-auto">
-                <p className="p-10 text-white">Mobile Debug Mode</p>
+                 <p className="p-10 text-white">Mobile Debug Mode</p>
             </div>
+            */}
 
             {/* 
             <CreateThemeModal
