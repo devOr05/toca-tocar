@@ -32,7 +32,13 @@ export const useJamStore = create<JamState>((set, get) => ({
 
     joinTheme: async (themeId: string, instrument: string) => {
         const { currentUser, participations } = get();
-        if (!currentUser) return;
+        console.log('Attempting to join:', { themeId, instrument, currentUser });
+
+        if (!currentUser) {
+            console.error('No current user found in store');
+            alert('Error: No se encontró usuario activo. Intenta recargar.');
+            return;
+        }
 
         // Optimistic Update
         const newParticipation: Participation = {

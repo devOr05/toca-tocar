@@ -73,6 +73,7 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
                 <div className="mt-2">
                     {myParticipation ? (
                         <button
+                            type="button"
                             onClick={onLeave}
                             className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border border-red-500/20"
                         >
@@ -85,7 +86,9 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
                                 return (
                                     <button
                                         key={inst.id}
+                                        type="button"
                                         onClick={() => {
+                                            console.log('Joining with:', inst.id);
                                             onJoin(inst.id);
                                             setShowInstruments(false);
                                         }}
@@ -97,6 +100,7 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
                                 );
                             })}
                             <button
+                                type="button"
                                 onClick={() => setShowInstruments(false)}
                                 className="col-span-4 text-xs text-white/40 mt-1 hover:text-white"
                             >
@@ -105,6 +109,7 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
                         </div>
                     ) : (
                         <button
+                            type="button"
                             onClick={() => setShowInstruments(true)}
                             className="w-full py-3 bg-white/5 hover:bg-jazz-gold hover:text-black hover:font-bold text-jazz-muted text-sm transition-all rounded-xl border border-white/10 group"
                         >
