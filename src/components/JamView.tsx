@@ -19,10 +19,36 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const router = useRouter();
     const { jam, setUser, currentUser, setJamState } = useJamStore();
     const [mounted, setMounted] = useState(false);
+    const [formattedDate, setFormattedDate] = useState<string>('');
 
     useEffect(() => {
+        // Hydrate store with server data
+        setJamState(initialJam, initialThemes, initialParticipations);
+
+        if (initialJam.startTime) {
+            const date = new Date(initialJam.startTime);
+            const dateStr = date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+            const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+            setFormattedDate(`${dateStr} • ${timeStr} hs`);
+        }
+
         setMounted(true);
-    }, []);
+        // ... rest of existing useEffect logic
+
+        // Don't redirect based on localStorage.
+        if (currentUserId && !currentUser) {
+            // we know we are logged in.
+            console.log('Session active, skipping redirect');
+        } else {
+            const storedName = localStorage.getItem('toca_tocar_user_name');
+            if (storedName && !currentUser) {
+                setUser(storedName);
+            } else if (!storedName && !currentUserId) {
+                // Only redirect if NO session AND NO local storage
+                router.push(`/?code=${initialJam.code}`);
+            }
+        }
+    }, [initialJam, initialThemes, initialParticipations, setJamState, currentUser, setUser, router]);
 
     if (!mounted) return null;
 
