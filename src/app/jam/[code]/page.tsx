@@ -66,7 +66,7 @@ export default async function JamPage({ params }: PageProps) {
     const serializedThemes = JSON.parse(JSON.stringify(themes));
     const serializedParticipations = JSON.parse(JSON.stringify(participations));
 
-    return <JamView
+    return <JamViewWrapper
         initialJam={serializedJam}
         initialThemes={serializedThemes}
         initialParticipations={serializedParticipations}
