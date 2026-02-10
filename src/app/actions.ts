@@ -18,7 +18,7 @@ function generateCode() {
     return Math.random().toString(36).substring(2, 6).toUpperCase();
 }
 
-export async function createJam(formData: FormData) {
+export async function createJam(prevState: any, formData: FormData) {
     // Try to get session
     const session = await auth();
 
