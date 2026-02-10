@@ -34,7 +34,10 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
             setFormattedDate(`${dateStr} • ${timeStr} hs`);
         }
 
-        setMounted(true);
+        // Use setTimeout to push the state update to the next tick, avoiding immediate hydration conflicts
+        setTimeout(() => {
+            setMounted(true);
+        }, 0);
         // ... rest of existing useEffect logic
 
         // Don't redirect based on localStorage.
