@@ -6,44 +6,44 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model User {
-  id            String          @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String?         @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-  
-  role          String          @default("USER") // USER, ADMIN
+
+  role           String          @default("USER") // USER, ADMIN
   participations Participation[]
-  hostedJams    Jam[]
-  messages      Message[]
-  
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt @default(now())
-  
+  hostedJams     Jam[]
+  messages       Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
   // Profile Fields
   mainInstrument String?
   city           String?
   favoriteTheme  String?
   hasRecorded    String?
-  
+
   // Social Links
-  instagram    String?
-  youtube      String?
-  tiktok       String?
-  bandcamp     String?
-  soundcloud   String?
-  website      String?
-  
-  externalLink   String? // Keeping for backward compatibility or general link
-  isVerifiedOrganizer Boolean    @default(false)
+  instagram  String?
+  youtube    String?
+  tiktok     String?
+  bandcamp   String?
+  soundcloud String?
+  website    String?
+
+  externalLink        String? // Keeping for backward compatibility or general link
+  isVerifiedOrganizer Boolean @default(false)
 
   sentMessages     DirectMessage[] @relation("SentMessages")
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
@@ -85,85 +85,85 @@ model VerificationToken {
 }
 
 model Jam {
-  id          String   @id @default(cuid())
-  code        String   @unique
+  id          String  @id @default(cuid())
+  code        String  @unique
   name        String
   description String?
   location    String?
   lat         Float?
   lng         Float?
   city        String?
-  
-  startTime   DateTime?
-  endTime     DateTime?
-  flyerUrl    String?
-  
-  status      String   @default("SCHEDULED") // SCHEDULED, ACTIVE, FINISHED
-  isPrivate   Boolean  @default(false)
-  hostId      String
-  host        User     @relation(fields: [hostId], references: [id])
-  
-  themes      Theme[]
-  messages    Message[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  startTime DateTime?
+  endTime   DateTime?
+  flyerUrl  String?
+
+  status    String  @default("SCHEDULED") // SCHEDULED, ACTIVE, FINISHED
+  isPrivate Boolean @default(false)
+  hostId    String
+  host      User    @relation(fields: [hostId], references: [id])
+
+  themes    Theme[]
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Theme {
-  id        String   @id @default(cuid())
-  name      String
-  tonality  String?
-  description String?
+  id            String  @id @default(cuid())
+  name          String
+  tonality      String?
+  description   String?
   sheetMusicUrl String?
-  status    String   @default("OPEN") // OPEN, QUEUED, PLAYING, FINISHED
-  visibility String  @default("PUBLIC") // PUBLIC, PRIVATE
-  type      String   @default("SONG") // SONG, TOPIC
-  
-  jamId     String
-  jam       Jam      @relation(fields: [jamId], references: [id])
-  
+  status        String  @default("OPEN") // OPEN, QUEUED, PLAYING, FINISHED
+  visibility    String  @default("PUBLIC") // PUBLIC, PRIVATE
+  type          String  @default("SONG") // SONG, TOPIC
+
+  jamId String
+  jam   Jam    @relation(fields: [jamId], references: [id])
+
   participations Participation[]
   messages       Message[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Participation {
-  id         String   @id @default(cuid())
+  id         String @id @default(cuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User   @relation(fields: [userId], references: [id])
   themeId    String
-  theme      Theme    @relation(fields: [themeId], references: [id])
+  theme      Theme  @relation(fields: [themeId], references: [id])
   instrument String
-  status     String   @default("WAITING") // WAITING, SELECTED
-  
-  createdAt  DateTime @default(now())
+  status     String @default("WAITING") // WAITING, SELECTED
+
+  createdAt DateTime @default(now())
 
   @@unique([userId, themeId])
 }
 
 model Message {
-  id        String   @id @default(cuid())
-  content   String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  jamId     String
-  jam       Jam      @relation(fields: [jamId], references: [id])
-  themeId   String?
-  theme     Theme?   @relation(fields: [themeId], references: [id])
-  
+  id      String  @id @default(cuid())
+  content String
+  userId  String
+  user    User    @relation(fields: [userId], references: [id])
+  jamId   String
+  jam     Jam     @relation(fields: [jamId], references: [id])
+  themeId String?
+  theme   Theme?  @relation(fields: [themeId], references: [id])
+
   createdAt DateTime @default(now())
 }
 
 model DirectMessage {
-  id        String   @id @default(cuid())
-  content   String
-  senderId  String
-  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  id         String @id @default(cuid())
+  content    String
+  senderId   String
+  sender     User   @relation("SentMessages", fields: [senderId], references: [id])
   receiverId String
-  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  
+  receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
   createdAt DateTime @default(now())
   read      Boolean  @default(false)
 }
