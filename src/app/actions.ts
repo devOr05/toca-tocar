@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
+import { auth, signOut } from '@/auth';
 
 const STANDARD_THEMES = [
     { name: 'Autumn Leaves', tonality: 'Gm' },
@@ -201,4 +201,8 @@ export async function leaveJam(jamCode: string) {
         console.error('Error leaving jam:', error);
         return { success: false, error: 'Error al salir de la Jam' };
     }
+}
+
+export async function logoutAction() {
+    await signOut({ redirectTo: '/' });
 }
