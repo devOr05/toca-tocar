@@ -26,11 +26,22 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         setJamState(initialJam, initialThemes, initialParticipations);
 
         setMounted(true);
-        const storedName = localStorage.getItem('toca_tocar_user_name');
-        if (storedName && !currentUser) {
-            setUser(storedName);
-        } else if (!storedName) {
-            router.push(`/?code=${initialJam.code}`);
+        // If we have a server session (currentUserId), we are authenticated.
+        // Don't redirect based on localStorage.
+        if (currentUserId && !currentUser) {
+            // Can't easily set full user object here without name, but we know we are logged in.
+            // Maybe fetch user details or just assume 'Guest' in store until updated?
+            // Actually, JamViewProps *could* pass the user Name too.
+            // For now, prevent redirect is the key.
+            console.log('Session active, skipping redirect');
+        } else {
+            const storedName = localStorage.getItem('toca_tocar_user_name');
+            if (storedName && !currentUser) {
+                setUser(storedName);
+            } else if (!storedName && !currentUserId) {
+                // Only redirect if NO session AND NO local storage
+                router.push(`/?code=${initialJam.code}`);
+            }
         }
     }, [initialJam, initialThemes, initialParticipations, setJamState, currentUser, setUser, router]);
 
