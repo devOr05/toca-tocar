@@ -68,7 +68,7 @@ export default function JamList({ jams, currentUserId }: { jams: Jam[], currentU
                                 <div className="relative z-10 flex justify-between items-center">
                                     <div>
                                         <h3 className="font-bold text-white group-hover:text-jazz-gold transition-colors">{jam.name}</h3>
-                                        <div className="flex items-center gap-3 mt-1">
+                                        <div className="flex items-center gap-3 mt-1 flex-wrap">
                                             <span className="text-xs text-white/40 font-mono bg-black/30 px-1.5 py-0.5 rounded border border-white/5">
                                                 {jam.code}
                                             </span>
@@ -77,27 +77,29 @@ export default function JamList({ jams, currentUserId }: { jams: Jam[], currentU
                                                     📍 {jam.city}
                                                 </span>
                                             )}
+
+                                            {/* Delete Button (Host Only) - Moved here for visibility */}
+                                            {currentUserId === jam.hostId && (
+                                                <button
+                                                    onClick={async (e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        if (confirm('¿Eliminar esta Jam?')) {
+                                                            const { deleteJam } = await import('@/app/actions');
+                                                            await deleteJam(jam.code);
+                                                            window.location.reload();
+                                                        }
+                                                    }}
+                                                    className="flex items-center gap-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-red-500/20 transition-all z-20"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                    Eliminar
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        {currentUserId === jam.hostId && (
-                                            <button
-                                                onClick={async (e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation(); // Prevent Link navigation
-                                                    if (confirm('¿Eliminar esta Jam?')) {
-                                                        const { deleteJam } = await import('@/app/actions');
-                                                        await deleteJam(jam.code);
-                                                        window.location.reload();
-                                                    }
-                                                }}
-                                                className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-all z-20 relative"
-                                                title="Eliminar Jam"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </button>
-                                        )}
                                         <ArrowRight className="text-white/20 group-hover:text-white transition-colors" />
                                     </div>
                                 </div>
