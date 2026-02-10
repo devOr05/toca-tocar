@@ -82,12 +82,85 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
             </header>
 
             <main className="p-4 max-w-lg mx-auto space-y-6">
-                <h2 className="text-white text-center opacity-50">Info Card Disabled for Debugging</h2>
-                {/* JAM INFO CARD COMMENTED OUT
+
+                {/* JAM INFO CARD */}
                 <div className="bg-white/5 border border-white/5 rounded-xl p-4 space-y-3 shadow-lg">
-                   ... content ...
+                    {/* Description */}
+                    {initialJam.description && (
+                        <p className="text-white/90 text-sm whitespace-pre-wrap leading-relaxed">
+                            {initialJam.description}
+                        </p>
+                    )}
+
+                    <div className="flex flex-col gap-2 pt-2 border-t border-white/5">
+                        {/* Date */}
+                        {/* Date */}
+                        {formattedDate && (
+                            <div className="flex items-center gap-2 text-jazz-muted text-xs">
+                                <Calendar className="w-4 h-4 text-jazz-gold shrink-0" />
+                                <span>{formattedDate}</span>
+                            </div>
+                        )}
+
+                        {/* Location */}
+                        {(initialJam.location || initialJam.city) && (
+                            <div className="flex items-center gap-2 text-jazz-muted text-xs">
+                                <MapPin className="w-4 h-4 text-jazz-gold shrink-0" />
+                                <a
+                                    href={initialJam.lat && initialJam.lng
+                                        ? `https://www.google.com/maps/search/?api=1&query=${initialJam.lat},${initialJam.lng}`
+                                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((initialJam.location || '') + ' ' + (initialJam.city || ''))}`
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:text-white underline decoration-jazz-gold/50 transition-colors"
+                                >
+                                    {initialJam.location}{initialJam.city ? `, ${initialJam.city}` : ''}
+                                </a>
+                            </div>
+                        )}
+
+                        {/* Flyer Link or Image */}
+                        {initialJam.flyerUrl && (
+                            <div className="pt-2">
+                                {/* Simple check for image extension */}
+                                {['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].some(ext => initialJam.flyerUrl?.toLowerCase().endsWith(ext)) ? (
+                                    <div className="rounded-xl overflow-hidden border border-white/10 relative">
+                                        <img
+                                            src={initialJam.flyerUrl}
+                                            alt="Flyer del evento"
+                                            className="w-full h-auto max-h-96 object-cover"
+                                            onError={(e) => {
+                                                // Fallback to link if load fails
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                            }}
+                                        />
+                                        {/* Fallback Link (hidden by default unless error) */}
+                                        <a
+                                            href={initialJam.flyerUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="hidden absolute inset-0 flex items-center justify-center bg-black/50 text-white font-bold"
+                                        >
+                                            Ver Flyer Original
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <a
+                                        href={initialJam.flyerUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1.5 text-xs text-jazz-gold hover:text-white transition-colors bg-jazz-gold/10 px-2 py-1.5 rounded-lg border border-jazz-gold/20"
+                                    >
+                                        <ImageIcon className="w-3 h-3" />
+                                        Ver Flyer / Evento
+                                    </a>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
-                */}
 
                 {/* ThemeList COMMENTED OUT */}
                 {/* <ThemeList /> */}
