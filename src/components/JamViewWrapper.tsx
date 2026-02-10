@@ -24,9 +24,8 @@ export default function JamViewWrapper(props: JamViewWrapperProps) {
     }
 
     return (
-        <div suppressHydrationWarning className="min-h-screen flex items-center justify-center text-white">
-            <h1>DEBUG MODE: Si ves esto, el entorno funciona.</h1>
-            {/* <JamView {...props} /> */}
+        <div suppressHydrationWarning>
+            <JamView {...props} />
         </div>
     );
 }

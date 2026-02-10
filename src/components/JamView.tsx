@@ -252,7 +252,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                     </div>
                 </div>
 
-                <ThemeList />
+                {/* <ThemeList /> */}
             </main>
 
             <button
