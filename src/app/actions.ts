@@ -319,6 +319,8 @@ export async function createTheme(
         });
 
         return { success: true };
+    } catch (error) {
+        console.error('Error creating theme:', error);
         return { success: false, error: 'Error al crear el tema' };
     }
 }
