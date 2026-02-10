@@ -3,7 +3,6 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { Music2, Mic2, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -30,11 +29,7 @@ export default function LoginPage() {
       {/* Background Decor */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-jazz-gold/10 rounded-full blur-[100px] pointer-events-none" />
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md space-y-8 z-10"
-      >
+      <div className="w-full max-w-md space-y-8 z-10">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             <div className="p-4 bg-jazz-surface border border-white/5 rounded-full shadow-2xl">
@@ -83,7 +78,7 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
-      </motion.div>
+      </div>
     </main>
   );
 }
