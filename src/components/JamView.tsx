@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useJamStore } from '../store/jamStore';
+import { leaveJam } from '@/app/actions';
 import ThemeList from './ThemeList';
-import { Share2, Users, Music2 } from 'lucide-react';
+import { Share2, Users, Music2, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Jam, Theme, Participation } from '../types';
 
@@ -11,12 +12,14 @@ interface JamViewProps {
     initialJam: Jam;
     initialThemes: Theme[];
     initialParticipations: Participation[];
+    currentUserId?: string;
 }
 
-export default function JamView({ initialJam, initialThemes, initialParticipations }: JamViewProps) {
+export default function JamView({ initialJam, initialThemes, initialParticipations, currentUserId }: JamViewProps) {
     const router = useRouter();
     const { jam, setUser, currentUser, setJamState } = useJamStore();
     const [mounted, setMounted] = useState(false);
+    const [isLeaving, setIsLeaving] = useState(false);
 
     useEffect(() => {
         // Hydrate store with server data
@@ -31,7 +34,17 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         }
     }, [initialJam, initialThemes, initialParticipations, setJamState, currentUser, setUser, router]);
 
+    const handleLeave = async () => {
+        if (!confirm('¿Seguro que quieres abandonar la Jam? Se borrarán tus participaciones.')) return;
+
+        setIsLeaving(true);
+        await leaveJam(initialJam.code);
+        router.push('/dashboard');
+    };
+
     if (!mounted) return null;
+
+    const isHost = currentUserId === initialJam.hostId;
 
     return (
         <div className="min-h-screen bg-background pb-20">
@@ -47,6 +60,18 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* Leave Button (Only for non-hosts) */}
+                    {!isHost && currentUserId && (
+                        <button
+                            onClick={handleLeave}
+                            disabled={isLeaving}
+                            className="p-2 text-red-400/60 hover:text-red-400 transition-colors"
+                            title="Salir de la Jam"
+                        >
+                            <LogOut className="w-5 h-5" />
+                        </button>
+                    )}
+
                     <button
                         onClick={() => {
                             navigator.clipboard.writeText(window.location.href);

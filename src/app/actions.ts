@@ -166,3 +166,39 @@ export async function updateProfile(prevState: any, formData: FormData) {
         return { success: false, error: 'Error al actualizar perfil' };
     }
 }
+
+export async function leaveJam(jamCode: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        const jam = await prisma.jam.findUnique({
+            where: { code: jamCode },
+            include: { themes: { include: { participations: true } } }
+        });
+
+        if (!jam) return { success: false, error: 'Jam no encontrada' };
+
+        // Remove participations in all themes of this jam
+        // Actually, participation is linked to THEME, not JAM directly in schema?
+        // Let's check schema. Participation is strict to Theme? 
+        // Or is there a generic "Joined Jam" state?
+        // Schema: Participation model has themeId.
+        // So "Leaving Jam" means removing ALL participations in that Jam's themes.
+
+        // Find all participations of this user in themes of this jam
+        const themeIds = jam.themes.map(t => t.id);
+
+        await prisma.participation.deleteMany({
+            where: {
+                userId: session.user.id,
+                themeId: { in: themeIds }
+            }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error leaving jam:', error);
+        return { success: false, error: 'Error al salir de la Jam' };
+    }
+}

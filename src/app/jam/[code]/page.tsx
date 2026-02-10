@@ -2,6 +2,7 @@ import { use } from 'react';
 import JamView from '@/components/JamView';
 import { getJam } from '@/app/actions';
 import { notFound } from 'next/navigation';
+import { auth } from '@/auth';
 
 interface PageProps {
     params: Promise<{ code: string }>;
@@ -52,5 +53,12 @@ export default async function JamPage({ params }: PageProps) {
         createdAt: jamData.createdAt
     };
 
-    return <JamView initialJam={jam} initialThemes={themes} initialParticipations={participations} />;
+    const session = await auth();
+
+    return <JamView
+        initialJam={jam}
+        initialThemes={themes}
+        initialParticipations={participations}
+        currentUserId={session?.user?.id}
+    />;
 }
