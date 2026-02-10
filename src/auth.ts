@@ -45,7 +45,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         });
                     }
 
-                    return user;
+                    return user as any;
                 }
                 return null;
             },
