@@ -145,7 +145,13 @@ export async function updateProfile(prevState: any, formData: FormData) {
     const name = formData.get('name') as string;
     const mainInstrument = formData.get('mainInstrument') as string;
     const favoriteTheme = formData.get('favoriteTheme') as string;
-    const externalLink = formData.get('externalLink') as string;
+
+    // New Social Fields
+    const instagram = formData.get('instagram') as string;
+    const youtube = formData.get('youtube') as string;
+    const tiktok = formData.get('tiktok') as string;
+    const externalLink = formData.get('externalLink') as string; // Legacy/Website
+
     // Checkbox returns 'on' if checked, null if not
     const hasRecorded = formData.get('hasRecorded') === 'on';
 
@@ -156,6 +162,9 @@ export async function updateProfile(prevState: any, formData: FormData) {
                 name,
                 mainInstrument,
                 favoriteTheme,
+                instagram,
+                youtube,
+                tiktok,
                 externalLink,
                 hasRecorded
             }
@@ -200,6 +209,47 @@ export async function leaveJam(jamCode: string) {
     } catch (error) {
         console.error('Error leaving jam:', error);
         return { success: false, error: 'Error al salir de la Jam' };
+    }
+}
+
+export async function deleteJam(jamCode: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        const jam = await prisma.jam.findUnique({
+            where: { code: jamCode }
+        });
+
+        if (!jam) return { success: false, error: 'Jam no encontrada' };
+        if (jam.hostId !== session.user.id) return { success: false, error: 'Solo el anfitrión puede eliminar la Jam' };
+
+        // Delete associated themes first (manual cascade if needed, though defined in actions)
+        await prisma.theme.deleteMany({ where: { jamId: jam.id } });
+        await prisma.jam.delete({ where: { id: jam.id } });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting jam:', error);
+        return { success: false, error: 'Error al eliminar la Jam' };
+    }
+}
+
+export async function leaveTheme(themeId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        await prisma.participation.deleteMany({
+            where: {
+                userId: session.user.id,
+                themeId: themeId
+            }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error leaving theme:', error);
+        return { success: false, error: 'Error al salir del tema' };
     }
 }
 

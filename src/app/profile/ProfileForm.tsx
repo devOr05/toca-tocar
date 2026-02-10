@@ -50,28 +50,46 @@ export default function ProfileForm({ user }: { user: any }) {
 
                 {/* Favorite Theme */}
                 <div>
-                    <label className="block text-sm font-medium text-white/60 mb-2">Tema Favorito (Standard)</label>
+                    <label className="block text-sm font-medium text-white/60 mb-2">Temas favoritos o que más tocas</label>
                     <div className="relative group">
                         <Disc className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-jazz-gold transition-colors" />
-                        <input type="text" name="favoriteTheme" defaultValue={user.favoriteTheme || ''} placeholder="Ej: Giant Steps"
+                        <input type="text" name="favoriteTheme" defaultValue={user.favoriteTheme || ''} placeholder="Ej: Giant Steps, So What..."
                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold transition-all" />
                     </div>
                 </div>
 
-                {/* External Link */}
+                {/* Social Links */}
                 <div>
-                    <label className="block text-sm font-medium text-white/60 mb-2">Link (Instagram / YouTube)</label>
-                    <div className="relative group">
-                        <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-jazz-gold transition-colors" />
-                        <input type="url" name="externalLink" defaultValue={user.externalLink || ''} placeholder="https://..."
-                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold transition-all" />
+                    <label className="block text-sm font-medium text-white/60 mb-2">Redes para Promoción</label>
+                    <div className="space-y-3">
+                        {/* Instagram */}
+                        <div className="relative group">
+                            <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-pink-500 transition-colors" />
+                            <input type="url" name="instagram" defaultValue={user.instagram || ''} placeholder="Instagram URL"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all placeholder:text-white/20" />
+                        </div>
+                        {/* YouTube */}
+                        <div className="relative group">
+                            <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-red-500 transition-colors" />
+                            <input type="url" name="youtube" defaultValue={user.youtube || ''} placeholder="YouTube URL"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all placeholder:text-white/20" />
+                        </div>
+                        {/* TikTok */}
+                        <div className="relative group">
+                            <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-cyan-400 transition-colors" />
+                            <input type="url" name="tiktok" defaultValue={user.tiktok || ''} placeholder="TikTok URL"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all placeholder:text-white/20" />
+                        </div>
                     </div>
                 </div>
+
+                {/* Legacy External Link (Hidden or repurposed?) */}
+                <input type="hidden" name="externalLink" value={user.externalLink || ''} />
 
                 {/* Has Recorded */}
                 <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/20 transition-colors">
                     <input type="checkbox" name="hasRecorded" defaultChecked={user.hasRecorded} className="w-5 h-5 accent-jazz-gold cursor-pointer" />
-                    <label className="text-white cursor-pointer select-none">¿Has grabado algún disco? 💿</label>
+                    <label className="text-white cursor-pointer select-none">¿Has participado en algún disco o tema? 💿</label>
                 </div>
 
                 <button type="submit" disabled={isPending} className="w-full bg-jazz-gold text-black font-bold p-4 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-jazz-gold/20 disabled:opacity-50 disabled:cursor-not-allowed">

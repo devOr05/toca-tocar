@@ -30,22 +30,15 @@ export const useJamStore = create<JamState>((set, get) => ({
         set({ jam, themes, participations });
     },
 
-    joinTheme: (themeId: string, instrument: string) => {
+    joinTheme: async (themeId: string, instrument: string) => {
         const { currentUser, participations } = get();
         if (!currentUser) return;
 
         // Optimistic Update
-        // In a real app with DB, we would call a Server Action here too.
-        // For this MVP step, we update local state.
-        // NEXT STEP: Call joinThemeAction(themeId, instrument)
-
-        const existing = participations.find((p) => p.userId === currentUser.id && p.themeId === themeId);
-        if (existing) return;
-
         const newParticipation: Participation = {
-            id: `p-${Date.now()}`,
+            id: `temp-${Date.now()}`,
             userId: currentUser.id,
-            userName: currentUser.name,
+            userName: currentUser.name || 'Yo',
             themeId,
             instrument,
             status: 'WAITING',
@@ -53,16 +46,50 @@ export const useJamStore = create<JamState>((set, get) => ({
         };
 
         set({ participations: [...participations, newParticipation] });
+
+        // Server Action
+        // We need to import the action. But we can't import server action directly in client store file usually?
+        // Yes we can if we use 'use server' in actions file and import it here.
+        // Dynamic import or passed as dependency?
+        // Next.js allows importing server actions in client files.
+
+        try {
+            const { joinThemeAction } = await import('@/app/actions');
+            const result = await joinThemeAction(themeId, instrument);
+            if (!result.success) {
+                // Revert if failed
+                set({ participations: get().participations.filter(p => p.id !== newParticipation.id) });
+                alert(result.error);
+            }
+        } catch (err) {
+            console.error(err);
+            set({ participations: get().participations.filter(p => p.id !== newParticipation.id) });
+        }
+
         get().checkEnsembles();
     },
 
-    leaveTheme: (themeId: string) => {
+    leaveTheme: async (themeId: string) => {
         const { currentUser, participations } = get();
         if (!currentUser) return;
+
+        const previousParticipations = [...participations];
 
         set({
             participations: participations.filter((p) => !(p.userId === currentUser.id && p.themeId === themeId)),
         });
+
+        try {
+            const { leaveTheme } = await import('@/app/actions');
+            const result = await leaveTheme(themeId);
+            if (!result.success) {
+                set({ participations: previousParticipations });
+                alert(result.error);
+            }
+        } catch (err) {
+            console.error(err);
+            set({ participations: previousParticipations });
+        }
     },
 
     checkEnsembles: () => {

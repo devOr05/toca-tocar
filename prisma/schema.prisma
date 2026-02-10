@@ -32,7 +32,14 @@ model User {
   mainInstrument String?
   favoriteTheme  String?
   hasRecorded    Boolean         @default(false)
-  externalLink   String?
+  
+  // Social Links
+  instagram    String?
+  youtube      String?
+  tiktok       String?
+  website      String?
+  
+  externalLink   String? // Keeping for backward compatibility or general link
   isVerifiedOrganizer Boolean    @default(false)
 
   sentMessages     DirectMessage[] @relation("SentMessages")

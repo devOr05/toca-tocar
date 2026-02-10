@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useJamStore } from '../store/jamStore';
 import { leaveJam } from '@/app/actions';
 import ThemeList from './ThemeList';
-import { Share2, Users, Music2, LogOut } from 'lucide-react';
+import { Share2, Users, Music2, LogOut, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Jam, Theme, Participation } from '../types';
 
@@ -57,6 +57,21 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         <h1 className="font-bold text-white text-sm leading-tight">{initialJam.name}</h1>
                         <p className="text-[10px] text-jazz-muted font-mono tracking-widest">CODE: <span className="text-jazz-accent">{initialJam.code}</span></p>
                     </div>
+                    {isHost && (
+                        <button
+                            onClick={async () => {
+                                if (confirm('¿ELIMINAR JAM? Esta acción no se puede deshacer.')) {
+                                    const { deleteJam } = await import('@/app/actions');
+                                    await deleteJam(initialJam.code);
+                                    router.push('/dashboard');
+                                }
+                            }}
+                            className="ml-2 text-red-500/50 hover:text-red-500 transition-colors"
+                            title="Eliminar Evento"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -73,9 +88,23 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                     )}
 
                     <button
-                        onClick={() => {
-                            navigator.clipboard.writeText(window.location.href);
-                            alert('Enlace copiado!');
+                        onClick={async () => {
+                            const shareData = {
+                                title: `Jam: ${initialJam.name}`,
+                                text: `¡Únete a la Jam "${initialJam.name}" en Toca Tocar!`,
+                                url: window.location.href
+                            };
+
+                            if (navigator.share) {
+                                try {
+                                    await navigator.share(shareData);
+                                } catch (err) {
+                                    console.log('Error sharing:', err);
+                                }
+                            } else {
+                                navigator.clipboard.writeText(window.location.href);
+                                alert('Enlace copiado al portapapeles! 📋');
+                            }
                         }}
                         className="p-2 text-white/40 hover:text-white transition-colors"
                     >
