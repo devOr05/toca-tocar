@@ -256,3 +256,26 @@ export async function leaveTheme(themeId: string) {
 export async function logoutAction() {
     await signOut({ redirectTo: '/' });
 }
+
+export async function joinThemeAction(themeId: string, instrument: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        await prisma.participation.create({
+            data: {
+                userId: session.user.id,
+                themeId: themeId,
+                instrument: instrument,
+                status: 'WAITING'
+            }
+        });
+        return { success: true };
+    } catch (error) {
+        if ((error as any).code === 'P2002') {
+            return { success: false, error: 'Ya estás apuntado' };
+        }
+        console.error('Error joining theme:', error);
+        return { success: false, error: 'Error al unirse al tema' };
+    }
+}
