@@ -226,18 +226,43 @@ return (
                         </div>
                     )}
 
-                    {/* Flyer Link */}
+                    {/* Flyer Link or Image */}
                     {initialJam.flyerUrl && (
-                        <div className="pt-1">
-                            <a
-                                href={initialJam.flyerUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-xs text-jazz-gold hover:text-white transition-colors bg-jazz-gold/10 px-2 py-1.5 rounded-lg border border-jazz-gold/20"
-                            >
-                                <ImageIcon className="w-3 h-3" />
-                                Ver Flyer / Evento
-                            </a>
+                        <div className="pt-2">
+                            {/* Simple check for image extension */}
+                            {['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].some(ext => initialJam.flyerUrl?.toLowerCase().endsWith(ext)) ? (
+                                <div className="rounded-xl overflow-hidden border border-white/10 relative">
+                                    <img
+                                        src={initialJam.flyerUrl}
+                                        alt="Flyer del evento"
+                                        className="w-full h-auto max-h-96 object-cover"
+                                        onError={(e) => {
+                                            // Fallback to link if load fails
+                                            e.currentTarget.style.display = 'none';
+                                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                        }}
+                                    />
+                                    {/* Fallback Link (hidden by default unless error) */}
+                                    <a
+                                        href={initialJam.flyerUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="hidden absolute inset-0 flex items-center justify-center bg-black/50 text-white font-bold"
+                                    >
+                                        Ver Flyer Original
+                                    </a>
+                                </div>
+                            ) : (
+                                <a
+                                    href={initialJam.flyerUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 text-xs text-jazz-gold hover:text-white transition-colors bg-jazz-gold/10 px-2 py-1.5 rounded-lg border border-jazz-gold/20"
+                                >
+                                    <ImageIcon className="w-3 h-3" />
+                                    Ver Flyer / Evento
+                                </a>
+                            )}
                         </div>
                     )}
                 </div>
