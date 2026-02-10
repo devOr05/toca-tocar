@@ -41,6 +41,9 @@ export async function createJam(prevState: any, formData: FormData) {
     const description = formData.get('description') as string;
     const startTimeStr = formData.get('startTime') as string;
     const isPrivate = formData.get('isPrivate') === 'on'; // Checkbox
+    const flyerUrl = formData.get('flyerUrl') as string;
+    const lat = parseFloat(formData.get('lat') as string) || null;
+    const lng = parseFloat(formData.get('lng') as string) || null;
 
     // Simple validation
     if (!name || !location || !city || !startTimeStr) {
@@ -62,6 +65,9 @@ export async function createJam(prevState: any, formData: FormData) {
                 hostId: userId,
                 status: 'SCHEDULED',
                 isPrivate: isPrivate,
+                flyerUrl: flyerUrl,
+                lat: lat,
+                lng: lng,
             },
         });
 
