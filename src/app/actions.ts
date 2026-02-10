@@ -31,7 +31,7 @@ export async function createJam(prevState: any, formData: FormData) {
         userName = session.user.name || 'Anfitrión';
     } else {
         // Fallback or Error if auth required
-        return { error: 'Debes iniciar sesión para ser anfitrión' };
+        return { success: false, error: 'Debes iniciar sesión para ser anfitrión' };
     }
 
     // Parse new fields
@@ -43,7 +43,7 @@ export async function createJam(prevState: any, formData: FormData) {
 
     // Simple validation
     if (!name || !location || !city || !startTimeStr) {
-        return { error: 'Faltan campos obligatorios' };
+        return { success: false, error: 'Faltan campos obligatorios' };
     }
 
     const startTime = new Date(startTimeStr);
@@ -82,7 +82,7 @@ export async function createJam(prevState: any, formData: FormData) {
         if ((error as any).digest?.startsWith('NEXT_REDIRECT')) {
             throw error;
         }
-        return { error: 'Error al crear la Jam' };
+        return { success: false, error: 'Error al crear la Jam' };
     }
 }
 
@@ -136,9 +136,11 @@ export async function getJam(code: string) {
     }
 }
 
+
+
 export async function updateProfile(prevState: any, formData: FormData) {
     const session = await auth();
-    if (!session?.user?.id) return { error: 'No autorizado' };
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
 
     const name = formData.get('name') as string;
     const mainInstrument = formData.get('mainInstrument') as string;
@@ -158,9 +160,9 @@ export async function updateProfile(prevState: any, formData: FormData) {
                 hasRecorded
             }
         });
-        return { success: true };
+        return { success: true, error: undefined };
     } catch (error) {
         console.error('Error updating profile:', error);
-        return { error: 'Error al actualizar perfil' };
+        return { success: false, error: 'Error al actualizar perfil' };
     }
 }
