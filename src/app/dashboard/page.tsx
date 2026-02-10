@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import JamList from "@/components/JamList";
+import LogoutButton from "@/components/LogoutButton";
 
 export default async function Dashboard() {
     const session = await auth();
@@ -20,13 +21,16 @@ export default async function Dashboard() {
         <div className="min-h-screen bg-background p-6">
             <header className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-white">Hola, <span className="text-jazz-gold">{session.user.name}</span></h1>
-                <Link href="/profile" className="w-10 h-10 rounded-full bg-jazz-surface border border-white/10 flex items-center justify-center hover:border-jazz-gold transition-colors overflow-hidden relative">
-                    {session.user.image ? (
-                        <img src={session.user.image} alt={session.user.name || ''} className="w-full h-full object-cover" />
-                    ) : (
-                        <span className="text-xl">🎷</span>
-                    )}
-                </Link>
+                <div className="flex items-center gap-3">
+                    <LogoutButton />
+                    <Link href="/profile" className="w-10 h-10 rounded-full bg-jazz-surface border border-white/10 flex items-center justify-center hover:border-jazz-gold transition-colors overflow-hidden relative">
+                        {session.user.image ? (
+                            <img src={session.user.image} alt={session.user.name || ''} className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-xl">🎷</span>
+                        )}
+                    </Link>
+                </div>
             </header>
 
             <div className="grid gap-6 max-w-md mx-auto">
