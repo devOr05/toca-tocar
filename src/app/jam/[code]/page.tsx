@@ -48,17 +48,28 @@ export default async function JamPage({ params }: PageProps) {
         name: jamData.name,
         description: jamData.description || undefined,
         location: jamData.location || undefined,
+        city: jamData.city || undefined,
+        flyerUrl: jamData.flyerUrl || undefined,
+        lat: jamData.lat || undefined,
+        lng: jamData.lng || undefined,
+        startTime: jamData.startTime || undefined,
         status: jamData.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED',
         hostId: jamData.hostId,
-        createdAt: jamData.createdAt
+        createdAt: jamData.createdAt,
+        isPrivate: jamData.isPrivate
     };
 
     const session = await auth();
 
+    // Serialize for Client Component (fix for Date objects)
+    const serializedJam = JSON.parse(JSON.stringify(jam));
+    const serializedThemes = JSON.parse(JSON.stringify(themes));
+    const serializedParticipations = JSON.parse(JSON.stringify(participations));
+
     return <JamView
-        initialJam={jam}
-        initialThemes={themes}
-        initialParticipations={participations}
+        initialJam={serializedJam}
+        initialThemes={serializedThemes}
+        initialParticipations={serializedParticipations}
         currentUserId={session?.user?.id}
     />;
 }
