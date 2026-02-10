@@ -5,17 +5,13 @@ import Link from 'next/link';
 import { Search, Music2, ArrowRight, Trash2, Edit2 } from 'lucide-react';
 import EditJamModal from './EditJamModal'; // Ensure this matches file name
 
-interface Jam {
-    id: string;
-    code: string;
-    name: string;
-    city?: string | null;
-    location?: string | null;
-    hostId: string;
+import { Jam } from '@/types';
+
+interface JamWithCount extends Jam {
     _count?: { themes: number };
 }
 
-export default function JamList({ jams, currentUserId }: { jams: Jam[], currentUserId?: string }) {
+export default function JamList({ jams, currentUserId }: { jams: JamWithCount[], currentUserId?: string }) {
     const [query, setQuery] = useState('');
     const [editingJam, setEditingJam] = useState<Jam | null>(null);
 
