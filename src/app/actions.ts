@@ -319,8 +319,42 @@ export async function createTheme(
         });
 
         return { success: true };
-    } catch (error) {
-        console.error('Error creating theme:', error);
         return { success: false, error: 'Error al crear el tema' };
+    }
+}
+
+export async function updateJam(
+    code: string,
+    name: string,
+    description: string,
+    location: string,
+    city: string,
+    startTimeStr: string,
+    flyerUrl: string
+) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        const jam = await prisma.jam.findUnique({ where: { code } });
+        if (!jam) return { success: false, error: 'Jam no encontrada' };
+        if (jam.hostId !== session.user.id) return { success: false, error: 'No autorizado' };
+
+        await prisma.jam.update({
+            where: { code },
+            data: {
+                name,
+                description,
+                location,
+                city,
+                startTime: startTimeStr ? new Date(startTimeStr) : null,
+                flyerUrl
+            }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating jam:', error);
+        return { success: false, error: 'Error al actualizar la Jam' };
     }
 }
