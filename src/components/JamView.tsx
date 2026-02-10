@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import { Jam, Theme, Participation, User } from '../types';
 import CreateThemeModal from './CreateThemeModal';
 import { Plus } from 'lucide-react';
+import JamChat from './JamChat';
+import MusicianList from './MusicianList';
 
 interface JamViewProps {
     initialJam: Jam;
@@ -169,8 +171,68 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </div>
 
                 {/* ThemeList */}
-                <ThemeList />
+                {/* Pass isHost to ThemeList (we need to update ThemeList to accept it) */}
+                {/* For now, let's assume ThemeList handles its own logic or we update it next */}
+                <div className="pb-24">
+                    <ThemeList />
+                </div>
             </main>
+
+            {/* Sidebar / Drawer for Chat & Participants */}
+            {/* Desktop: Fixed Right Sidebar. Mobile: Maybe a toggle? */}
+            {/* User asked for "pantalla al costado". Let's try a slide-over or fixed column on large screens */}
+
+            {currentUser && (
+                <div className="hidden lg:flex fixed top-20 right-4 bottom-4 w-80 flex-col gap-4">
+                    {/* Participants */}
+                    <div className="flex-1 bg-jazz-surface border border-white/10 rounded-xl overflow-hidden shadow-xl">
+                        <MusicianList
+                            users={Array.from(new Set(initialParticipations.map(p => p.userId)))
+                                .map(id => initialParticipations.find(p => p.userId === id)?.user)
+                                .filter(u => u !== undefined) as User[]}
+                            title="Músicos en la Jam"
+                            emptyMessage="Nadie se ha unido aún."
+                        />
+                    </div>
+
+                    {/* Chat */}
+                    <div className="h-[400px] shadow-xl">
+                        <JamChat
+                            jamId={initialJam.id}
+                            currentUser={currentUser}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Mobile Chat / Participants Toggle could go here (e.g. Tabs) */}
+            {/* For MVP let's keep it simple, maybe just below content on mobile? */}
+            {currentUser && (
+                <div className="lg:hidden px-4 mb-24 space-y-6">
+                    <div className="bg-jazz-surface border border-white/10 rounded-xl overflow-hidden p-4">
+                        <h3 className="font-bold text-white mb-2">Músicos en la Jam</h3>
+                        <div className="flex overflow-x-auto gap-2 pb-2">
+                            {Array.from(new Set(initialParticipations.map(p => p.userId)))
+                                .map(id => initialParticipations.find(p => p.userId === id)?.user)
+                                .filter(u => u !== undefined).map(u => (
+                                    <div key={u!.id} className="flex flex-col items-center min-w-[60px]">
+                                        <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden border border-white/10">
+                                            {u!.image ? <img src={u!.image} className="w-full h-full object-cover" /> : <div className="p-2">🎷</div>}
+                                        </div>
+                                        <span className="text-[10px] text-white truncate w-full text-center mt-1">{u!.name}</span>
+                                    </div>
+                                ))}
+                        </div>
+                    </div>
+
+                    <div className="h-[400px]">
+                        <JamChat
+                            jamId={initialJam.id}
+                            currentUser={currentUser}
+                        />
+                    </div>
+                </div>
+            )}
 
             {/* Float Button for Create Theme */}
             <button

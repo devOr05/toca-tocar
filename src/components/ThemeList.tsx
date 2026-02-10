@@ -4,7 +4,7 @@ import ThemeCard from './ThemeCard';
 import { useJamStore } from '../store/jamStore';
 
 export default function ThemeList() {
-    const { themes, participations, currentUser, joinTheme, leaveTheme } = useJamStore();
+    const { themes, participations, currentUser, jam, joinTheme, leaveTheme } = useJamStore();
 
     const playing = themes.filter(t => t.status === 'PLAYING');
     const queued = themes.filter(t => t.status === 'QUEUED');
@@ -12,6 +12,8 @@ export default function ThemeList() {
 
     const getParticipations = (themeId: string) =>
         participations.filter(p => p.themeId === themeId);
+
+    const isHost = Boolean(currentUser && jam && currentUser.id === jam.hostId);
 
     return (
         <div className="space-y-8 pb-20">
@@ -29,6 +31,7 @@ export default function ThemeList() {
                                 theme={theme}
                                 participations={getParticipations(theme.id)}
                                 currentUser={currentUser}
+                                isHost={isHost}
                                 onJoin={(inst) => joinTheme(theme.id, inst)}
                                 onLeave={() => leaveTheme(theme.id)}
                             />
@@ -50,6 +53,7 @@ export default function ThemeList() {
                                 theme={theme}
                                 participations={getParticipations(theme.id)}
                                 currentUser={currentUser}
+                                isHost={isHost}
                                 onJoin={(inst) => joinTheme(theme.id, inst)}
                                 onLeave={() => leaveTheme(theme.id)}
                             />
@@ -70,6 +74,7 @@ export default function ThemeList() {
                             theme={theme}
                             participations={getParticipations(theme.id)}
                             currentUser={currentUser}
+                            isHost={isHost}
                             onJoin={(inst) => joinTheme(theme.id, inst)}
                             onLeave={() => leaveTheme(theme.id)}
                         />

@@ -168,6 +168,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
             where: { id: session.user.id },
             data: {
                 name,
+                city: formData.get('city') as string,
                 mainInstrument,
                 favoriteTheme,
                 instagram,
@@ -358,5 +359,148 @@ export async function updateJam(
     } catch (error) {
         console.error('Error updating jam:', error);
         return { success: false, error: 'Error al actualizar la Jam' };
+    }
+}
+
+export async function updateTheme(
+    themeId: string,
+    data: { name?: string; tonality?: string; description?: string; sheetMusicUrl?: string }
+) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        const theme = await prisma.theme.findUnique({
+            where: { id: themeId },
+            include: { jam: true }
+        });
+
+        if (!theme) return { success: false, error: 'Tema no encontrada' };
+        if (theme.jam.hostId !== session.user.id) return { success: false, error: 'Solo el anfitrión puede editar temas' };
+
+        await prisma.theme.update({
+            where: { id: themeId },
+            data: {
+                name: data.name,
+                tonality: data.tonality,
+                description: data.description,
+                sheetMusicUrl: data.sheetMusicUrl
+            }
+        });
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { success: false, error: 'Error al actualizar tema' };
+    }
+}
+
+export async function createMessage(jamId: string, content: string, themeId?: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        await prisma.message.create({
+            data: {
+                content,
+                userId: session.user.id,
+                jamId,
+                themeId
+            }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error sending message:', error);
+        return { success: false, error: 'Error al enviar mensaje' };
+    }
+}
+
+export async function getMessages(jamId: string, themeId?: string) {
+    try {
+        const where: any = { jamId };
+        if (themeId) {
+            where.themeId = themeId;
+        }
+
+        const messages = await prisma.message.findMany({
+            where,
+            include: { user: true },
+            orderBy: { createdAt: 'asc' },
+            take: 100
+        });
+
+        // Map to plain objects to avoid serialization issues
+        return messages.map(m => ({
+            id: m.id,
+            content: m.content,
+            userId: m.userId,
+            userName: m.user.name || 'Anónimo',
+            jamId: m.jamId,
+            themeId: m.themeId,
+            createdAt: m.createdAt
+        }));
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        return [];
+    }
+}
+
+export async function getMusiciansByCity() {
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                city: { not: null }
+            },
+            select: {
+                id: true,
+                name: true,
+                city: true,
+                mainInstrument: true,
+                image: true
+            },
+            take: 20
+        });
+        return users;
+    } catch (error) {
+        console.error('Error fetching musicians:', error);
+        return [];
+    }
+}
+
+export async function getJamParticipants(jamCode: string) {
+    try {
+        const jam = await prisma.jam.findUnique({
+            where: { code: jamCode },
+            include: {
+                themes: {
+                    include: {
+                        participations: {
+                            include: { user: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!jam) return [];
+
+        const uniqueUsers = new Map();
+        jam.themes.forEach(theme => {
+            theme.participations.forEach(p => {
+                if (!uniqueUsers.has(p.userId)) {
+                    uniqueUsers.set(p.userId, {
+                        id: p.user.id,
+                        name: p.user.name,
+                        image: p.user.image,
+                        instrument: p.instrument
+                    });
+                }
+            });
+        });
+
+        // Convert Map values to array
+        return Array.from(uniqueUsers.values());
+    } catch (error) {
+        console.error('Error fetching jam participants:', error);
+        return [];
     }
 }

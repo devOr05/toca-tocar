@@ -30,6 +30,7 @@ model User {
   
   // Profile Fields
   mainInstrument String?
+  city           String?
   favoriteTheme  String?
   hasRecorded    String?
   
@@ -103,6 +104,7 @@ model Jam {
   host        User     @relation(fields: [hostId], references: [id])
   
   themes      Theme[]
+  messages    Message[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -145,8 +147,10 @@ model Message {
   content   String
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  themeId   String
-  theme     Theme    @relation(fields: [themeId], references: [id])
+  jamId     String
+  jam       Jam      @relation(fields: [jamId], references: [id])
+  themeId   String?
+  theme     Theme?   @relation(fields: [themeId], references: [id])
   
   createdAt DateTime @default(now())
 }

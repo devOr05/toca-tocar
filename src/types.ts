@@ -2,6 +2,11 @@ export interface User {
     id: string;
     name: string;
     role: 'USER' | 'ADMIN';
+    city?: string | null;
+    mainInstrument?: string | null;
+    image?: string | null;
+    bio?: string | null;
+    socialLinks?: { [key: string]: string } | null;
 }
 
 export interface Jam {
@@ -46,6 +51,7 @@ export interface Message {
     content: string;
     userId: string;
     userName: string;
-    themeId: string;
+    jamId: string;
+    themeId?: string | null;
     createdAt: Date;
 }

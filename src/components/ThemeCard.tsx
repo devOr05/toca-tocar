@@ -1,32 +1,21 @@
-'use client';
-
-import { useState } from 'react';
-import { Theme, Participation, User } from '../types';
-import { Mic2, Music, Drum, Guitar, Keyboard, Info } from 'lucide-react';
-import ThemeDetailsModal from './ThemeDetailsModal';
+import EditThemeModal from './EditThemeModal';
+import { Pencil } from 'lucide-react';
 
 interface ThemeCardProps {
     theme: Theme;
     participations: Participation[];
     currentUser: User | null;
+    isHost: boolean;
     onJoin: (instrument: string) => void;
     onLeave: () => void;
 }
 
-const INSTRUMENTS = [
-    { id: 'Sax', icon: Music, label: 'Saxo/Vientos' },
-    { id: 'Trumpet', icon: Music, label: 'Trompeta' }, // Using Music icon as generic for now or find better
-    { id: 'Piano', icon: Keyboard, label: 'Piano' },
-    { id: 'Guitar', icon: Guitar, label: 'Guitarra' },
-    { id: 'Bass', icon: Guitar, label: 'Bajo' }, // Guitar icon is often used for bass too
-    { id: 'Drums', icon: Drum, label: 'Batería' },
-    { id: 'Voice', icon: Mic2, label: 'Voz' },
-    { id: 'Other', icon: Music, label: 'Otro' },
-];
+// ... INSTRUMENTS array ...
 
-export default function ThemeCard({ theme, participations, currentUser, onJoin, onLeave }: ThemeCardProps) {
+export default function ThemeCard({ theme, participations, currentUser, isHost, onJoin, onLeave }: ThemeCardProps) {
     const [showInstruments, setShowInstruments] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
+    const [showEdit, setShowEdit] = useState(false);
 
     const myParticipation = currentUser
         ? participations.find(p => p.userId === currentUser.id)
@@ -34,6 +23,9 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
 
     const isQueued = theme.status === 'QUEUED';
     const isPlaying = theme.status === 'PLAYING';
+
+    // Check if theme has extra info to show
+    const hasInfo = Boolean(theme.description || theme.sheetMusicUrl);
 
     return (
         <div className={`
@@ -45,24 +37,38 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
             {/* Status Badge */}
             <div className="flex justify-between items-start mb-3">
                 {/* ... existing header ... */}
-                <div>
-                    <h3 className="font-bold text-lg text-white leading-tight">{theme.name}</h3>
+                <div className="flex-1 min-w-0 mr-2">
+                    <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-lg text-white leading-tight truncate">{theme.name}</h3>
+                        {hasInfo && (
+                            <button
+                                onClick={() => setShowDetails(true)}
+                                className="text-jazz-gold hover:text-white transition-colors"
+                                title="Ver información del tema"
+                            >
+                                <Info size={16} />
+                            </button>
+                        )}
+                    </div>
                     <span className="text-xs font-mono text-jazz-muted bg-white/5 px-2 py-0.5 rounded mt-1 inline-block">
                         {theme.tonality || 'Key?'}
                     </span>
                 </div>
-                {isPlaying && <span className="animate-pulse text-jazz-accent font-bold text-xs uppercase tracking-widest bg-jazz-accent/10 px-2 py-1 rounded">En Escenario</span>}
-                {isQueued && <span className="text-jazz-gold font-bold text-xs uppercase tracking-widest bg-jazz-gold/10 px-2 py-1 rounded">Siguiente</span>}
 
-                {(theme.description || theme.sheetMusicUrl) && (
-                    <button
-                        onClick={() => setShowDetails(true)}
-                        className="text-jazz-muted hover:text-white transition-colors"
-                        title="Ver detalles"
-                    >
-                        <Info size={18} />
-                    </button>
-                )}
+                <div className="flex items-center gap-2">
+                    {isPlaying && <span className="animate-pulse text-jazz-accent font-bold text-xs uppercase tracking-widest bg-jazz-accent/10 px-2 py-1 rounded">En Escenario</span>}
+                    {isQueued && <span className="text-jazz-gold font-bold text-xs uppercase tracking-widest bg-jazz-gold/10 px-2 py-1 rounded">Siguiente</span>}
+
+                    {isHost && (
+                        <button
+                            onClick={() => setShowEdit(true)}
+                            className="text-white/40 hover:text-white transition-colors p-1"
+                            title="Editar Tema"
+                        >
+                            <Pencil size={16} />
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Participants */}
@@ -135,6 +141,12 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
             <ThemeDetailsModal
                 isOpen={showDetails}
                 onClose={() => setShowDetails(false)}
+                theme={theme}
+            />
+
+            <EditThemeModal
+                isOpen={showEdit}
+                onClose={() => setShowEdit(false)}
                 theme={theme}
             />
         </div>

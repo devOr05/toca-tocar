@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import JamList from "@/components/JamList";
 import LogoutButton from "@/components/LogoutButton";
+import MusicianList from "@/components/MusicianList";
 
 export default async function Dashboard() {
     const session = await auth();
@@ -23,6 +24,9 @@ export default async function Dashboard() {
         orderBy: { createdAt: 'desc' }
     });
 
+    // Fetch musicians for sidebar
+    const musicians = await import('@/app/actions').then(mod => mod.getMusiciansByCity());
+
     return (
         <div className="min-h-screen bg-background p-6">
             <header className="flex justify-between items-center mb-8">
@@ -39,16 +43,32 @@ export default async function Dashboard() {
                 </div>
             </header>
 
-            <div className="grid gap-6 max-w-md mx-auto">
-                <JamList
-                    jams={jams.map(j => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
-                    currentUserId={session.user.id}
-                />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                {/* Main Content: Jams */}
+                <div className="lg:col-span-2 space-y-6">
+                    <JamList
+                        jams={jams.map(j => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
+                        currentUserId={session.user.id}
+                    />
 
-                <Link href="/create-jam" className="w-full bg-jazz-gold text-black font-bold p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-jazz-gold/20">
-                    <Plus className="w-6 h-6" />
-                    Organizar Nueva Jam
-                </Link>
+                    <Link href="/create-jam" className="w-full bg-jazz-gold text-black font-bold p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-jazz-gold/20">
+                        <Plus className="w-6 h-6" />
+                        Organizar Nueva Jam
+                    </Link>
+                </div>
+
+                {/* Sidebar: Musicians */}
+                <div className="lg:col-span-1">
+                    <div className="sticky top-6">
+                        <MusicianList
+                            // @ts-ignore - Importing client component in server component is tricky with partial types but works in NextJS 14
+                            // Actually MusicianList is client, passing data from server.
+                            // Need to ensure MusicianList is imported.
+                            users={musicians}
+                            title="Músicos Cerca"
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );
