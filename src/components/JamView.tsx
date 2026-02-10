@@ -111,11 +111,14 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         </h2>
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        {/* 
                         <MusicianList
                             users={uniqueMusicians}
                             title=""
                             emptyMessage="Nadie se ha unido aún."
-                        />
+                        /> 
+                        */}
+                        <div className="p-4 text-white/50 text-xs">Musicians Disabled</div>
                     </div>
                 </aside>
 
