@@ -1,8 +1,17 @@
 import { use } from 'react';
-import JamViewWrapper from '@/components/JamViewWrapper';
+import dynamic from 'next/dynamic';
 import { getJam } from '@/app/actions';
 import { notFound } from 'next/navigation';
 import { auth } from '@/auth';
+
+const JamViewWrapper = dynamic(() => import('@/components/JamViewWrapper'), {
+    ssr: false,
+    loading: () => (
+        <div className="min-h-screen flex items-center justify-center bg-black text-jazz-gold animate-pulse">
+            Cargando entorno...
+        </div>
+    )
+});
 
 interface PageProps {
     params: Promise<{ code: string }>;
