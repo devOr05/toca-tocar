@@ -12,7 +12,13 @@ export default async function Dashboard() {
 
     // Fetch active jams
     const jams = await prisma.jam.findMany({
-        where: { status: { not: "FINISHED" } },
+        where: {
+            status: { not: "FINISHED" },
+            OR: [
+                { isPrivate: false },
+                { hostId: session.user.id }
+            ]
+        },
         include: { _count: { select: { themes: true } } },
         orderBy: { createdAt: 'desc' }
     });
