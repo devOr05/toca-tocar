@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { Jam, Theme, Participation } from '@/types';
 import JamView from '@/components/JamView';
