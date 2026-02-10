@@ -501,8 +501,7 @@ export async function getMusiciansByCity() {
         const users = await prisma.user.findMany({
             where: {
                 ...cityFilter,
-                // Exclude current user from list? Maybe keep them to verify they have city set
-                // id: { not: session?.user?.id } 
+                // Include current user to ensure they see themselves
             },
             select: {
                 id: true,

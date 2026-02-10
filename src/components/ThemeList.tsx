@@ -3,12 +3,18 @@
 import ThemeCard from './ThemeCard';
 import { useJamStore } from '../store/jamStore';
 
-export default function ThemeList() {
+interface ThemeListProps {
+    type?: 'SONG' | 'TOPIC';
+}
+
+export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
     const { themes, participations, currentUser, jam, joinTheme, leaveTheme } = useJamStore();
 
-    const playing = themes.filter(t => t.status === 'PLAYING');
-    const queued = themes.filter(t => t.status === 'QUEUED');
-    const open = themes.filter(t => t.status === 'OPEN');
+    const filteredThemes = themes.filter(t => (t.type || 'SONG') === type);
+
+    const playing = filteredThemes.filter(t => t.status === 'PLAYING');
+    const queued = filteredThemes.filter(t => t.status === 'QUEUED');
+    const open = filteredThemes.filter(t => t.status === 'OPEN');
 
     const getParticipations = (themeId: string) =>
         participations.filter(p => p.themeId === themeId);

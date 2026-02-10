@@ -54,6 +54,7 @@ export const useJamStore = create<JamState>((set, get) => ({
             instrument,
             status: 'WAITING',
             createdAt: new Date(),
+            user: currentUser // Include full user object for UI
         };
 
         set({ participations: [...participations, newParticipation] });

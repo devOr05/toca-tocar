@@ -26,6 +26,12 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const [formattedDate, setFormattedDate] = useState<string>('');
     const [isCreateThemeOpen, setIsCreateThemeOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'THEMES' | 'FORUM' | 'SUGGESTED'>('THEMES');
+    const [createType, setCreateType] = useState<'SONG' | 'TOPIC'>('SONG');
+
+    const openCreateModal = (type: 'SONG' | 'TOPIC') => {
+        setCreateType(type);
+        setIsCreateThemeOpen(true);
+    };
 
     useEffect(() => {
         setJamState(initialJam, initialThemes, initialParticipations);
@@ -33,7 +39,8 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         if (initialJam.startTime) {
             const date = new Date(initialJam.startTime);
             const dateStr = date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
-            const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+            // FORCE 24H format to avoid "07:00 p.m. hs" weirdness
+            const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
             setFormattedDate(`${dateStr} • ${timeStr} hs`);
         }
 
@@ -53,9 +60,10 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
     if (!mounted) return null;
 
-    // Filter unique users for musician list
-    const uniqueMusicians = Array.from(new Set(initialParticipations.map(p => p.userId)))
-        .map(id => initialParticipations.find(p => p.userId === id)?.user)
+    // Filter unique users for musician list using STORE participations to reflect real-time joins
+    const { participations: storeParticipations } = useJamStore();
+    const uniqueMusicians = Array.from(new Set(storeParticipations.map(p => p.userId)))
+        .map(id => storeParticipations.find(p => p.userId === id)?.user)
         .filter(u => u !== undefined) as User[];
 
     return (
@@ -149,7 +157,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
                         {activeTab === 'THEMES' && (
                             <div className="pb-24">
-                                <ThemeList />
+                                <ThemeList type="SONG" />
                             </div>
                         )}
 
@@ -160,9 +168,17 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         )}
 
                         {activeTab === 'FORUM' && (
-                            <div className="pb-24 text-center py-10">
-                                <h3 className="text-xl font-bold text-white mb-2">Foro de Discusión</h3>
-                                <p className="text-white/40 text-sm">Próximamente: temas de discusión, organización de transporte, etc.</p>
+                            <div className="pb-24">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h3 className="text-xl font-bold text-white">Foro de Discusión</h3>
+                                    <button
+                                        onClick={() => openCreateModal('TOPIC')}
+                                        className="bg-jazz-accent/20 hover:bg-jazz-accent/40 text-jazz-accent px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
+                                    >
+                                        Crear Tópico
+                                    </button>
+                                </div>
+                                <ThemeList type="TOPIC" />
                             </div>
                         )}
                     </div>
@@ -170,7 +186,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                     {/* FAB */}
                     {activeTab === 'THEMES' && (
                         <button
-                            onClick={() => setIsCreateThemeOpen(true)}
+                            onClick={() => openCreateModal('SONG')}
                             className="absolute bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
                         >
                             <Plus className="w-7 h-7" />
@@ -225,7 +241,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </main>
 
                 <button
-                    onClick={() => setIsCreateThemeOpen(true)}
+                    onClick={() => openCreateModal('SONG')}
                     className="fixed bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow z-40 flex items-center justify-center"
                 >
                     <Plus className="w-7 h-7" />
@@ -236,6 +252,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 isOpen={isCreateThemeOpen}
                 onClose={() => setIsCreateThemeOpen(false)}
                 jamCode={jam.code}
+                type={createType}
             />
         </div>
     );
