@@ -161,6 +161,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             )}
                         </div>
 
+                        {/* 
                         {activeTab === 'THEMES' && (
                             <div className="pb-24">
                                 <ThemeList type="SONG" />
@@ -187,6 +188,8 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                 <ThemeList type="TOPIC" />
                             </div>
                         )}
+                        */}
+                        <div className="p-4 text-white/50 text-xs">Content Disabled for Debug</div>
                     </div>
 
                     {/* FAB */}
@@ -203,11 +206,14 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 {/* RIGHT: CHAT */}
                 <aside className="w-80 bg-jazz-surface border-l border-white/5 flex flex-col">
                     <div className="flex-1 flex flex-col min-h-0">
+                        {/* 
                         {currentUser ? (
                             <JamChat jamId={initialJam.id} currentUser={currentUser} />
                         ) : (
                             <div className="flex items-center justify-center h-full text-white/20">Login to Chat</div>
                         )}
+                        */}
+                        <div className="p-4 text-white/50 text-xs">Chat Disabled</div>
                     </div>
                 </aside>
             </div>
@@ -254,12 +260,14 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </button>
             </div>
 
+            {/* 
             <CreateThemeModal
                 isOpen={isCreateThemeOpen}
                 onClose={() => setIsCreateThemeOpen(false)}
                 jamCode={jam.code}
                 type={createType}
             />
+            */}
         </div>
     );
 }
