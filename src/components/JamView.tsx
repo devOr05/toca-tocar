@@ -54,7 +54,10 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         <Music2 className="w-5 h-5 text-jazz-gold" />
                     </div>
                     <div>
-                        <h1 className="font-bold text-white text-sm leading-tight">{initialJam.name}</h1>
+                        <h1 className="font-bold text-white text-sm leading-tight flex items-center gap-2">
+                            {initialJam.name}
+                            {initialJam.isPrivate && <span className="text-[10px] bg-red-500/20 text-red-200 px-1.5 py-0.5 rounded border border-red-500/30">Privada 🔒</span>}
+                        </h1>
                         <p className="text-[10px] text-jazz-muted font-mono tracking-widest">CODE: <span className="text-jazz-accent">{initialJam.code}</span></p>
                     </div>
                     {isHost && (

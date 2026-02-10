@@ -90,6 +90,12 @@ export default function ProfileForm({ user }: { user: any }) {
                         <input type="url" name="bandcamp" defaultValue={user.bandcamp || ''} placeholder="Bandcamp URL"
                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all placeholder:text-white/20" />
                     </div>
+                    {/* SoundCloud */}
+                    <div className="relative group">
+                        <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-orange-500 transition-colors" />
+                        <input type="url" name="soundcloud" defaultValue={user.soundcloud || ''} placeholder="SoundCloud URL"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all placeholder:text-white/20" />
+                    </div>
                     <div className="relative group">
                         <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-gray-400 transition-colors" />
                         <input type="url" name="website" defaultValue={user.website || ''} placeholder="Web Personal / Otros"
