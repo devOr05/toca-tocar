@@ -79,8 +79,8 @@ export default function JamList({ jams, currentUserId }: { jams: Jam[], currentU
                                                 </span>
                                             )}
 
-                                            {/* Delete Button (Host Only) */}
-                                            {currentUserId?.trim() === jam.hostId?.trim() && (
+                                            {/* Delete Button (Host Only or 5J1E override) */}
+                                            {(currentUserId?.trim() === jam.hostId?.trim() || jam.code === '5J1E') && (
                                                 <button
                                                     onClick={async (e) => {
                                                         e.preventDefault();
