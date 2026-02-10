@@ -22,7 +22,7 @@ export default async function JamPage({ params }: PageProps) {
     // For now we pass as is, assuming basic serialization works for Dates.
 
     // We need to flatten the themes/participations structure for the store
-    const themes = jamData.themes.map(t => ({
+    const themes = jamData.themes.map((t: any) => ({
         id: t.id,
         name: t.name,
         tonality: t.tonality || '',
@@ -30,8 +30,8 @@ export default async function JamPage({ params }: PageProps) {
         jamId: t.jamId
     }));
 
-    const participations = jamData.themes.flatMap(t =>
-        t.participations.map(p => ({
+    const participations = jamData.themes.flatMap((t: any) =>
+        t.participations.map((p: any) => ({
             id: p.id,
             userId: p.userId,
             userName: p.user.name || "Invitado",
