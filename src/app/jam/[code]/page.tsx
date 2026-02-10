@@ -31,23 +31,25 @@ export default async function JamPage({ params }: PageProps) {
     }));
 
     const participations = jamData.themes.flatMap((t: any) =>
-        t.participations.map((p: any) => ({
-            id: p.id,
-            userId: p.userId,
-            userName: p.user.name || "Invitado",
-            themeId: p.themeId,
-            instrument: p.instrument,
-            status: p.status as 'WAITING' | 'SELECTED',
-            createdAt: p.createdAt,
-            user: {
-                id: p.user.id,
-                name: p.user.name || 'Invitado',
-                role: p.user.role as 'USER' | 'ADMIN',
-                image: p.user.image,
-                city: p.user.city,
-                mainInstrument: p.user.mainInstrument
-            }
-        }))
+        t.participations
+            .filter((p: any) => p.user) // Filter out participations without users
+            .map((p: any) => ({
+                id: p.id,
+                userId: p.userId,
+                userName: p.user?.name || "Invitado",
+                themeId: p.themeId,
+                instrument: p.instrument,
+                status: p.status as 'WAITING' | 'SELECTED',
+                createdAt: p.createdAt,
+                user: {
+                    id: p.user.id,
+                    name: p.user.name || 'Invitado',
+                    role: (p.user.role as 'USER' | 'ADMIN') || 'USER',
+                    image: p.user.image || null,
+                    city: p.user.city || null,
+                    mainInstrument: p.user.mainInstrument || null
+                }
+            }))
     );
 
     const jam = {
