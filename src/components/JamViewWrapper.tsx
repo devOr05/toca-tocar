@@ -24,11 +24,8 @@ export default function JamViewWrapper(props: JamViewWrapperProps) {
     }
 
     return (
-        <div suppressHydrationWarning className="p-10 text-center text-white">
-            <h1 className="text-4xl font-bold text-jazz-gold mb-4">MODO DEBUG</h1>
-            <p className="mb-4">Si ves esto, el error #310 NO está en el layout ni en el servidor.</p>
-            <p>El problema está dentro de JamView.</p>
-            {/* <JamView {...props} /> */}
+        <div suppressHydrationWarning>
+            <JamView {...props} />
         </div>
     );
 }
