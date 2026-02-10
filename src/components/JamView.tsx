@@ -92,7 +92,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-jazz-accent to-purple-600 flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-black">
-                        {currentUser?.name.slice(0, 2).toUpperCase() || '?'}
+                        {currentUser?.name?.slice(0, 2).toUpperCase() || '?'}
                     </div>
                 </div>
             </header>
