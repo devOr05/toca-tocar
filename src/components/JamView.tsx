@@ -104,15 +104,18 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 <aside className="w-64 bg-jazz-surface border-r border-white/5 flex flex-col">
                     <div className="p-4 border-b border-white/5 bg-black/20">
                         <h2 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
-                            <Users className="w-4 h-4" /> Músicos
+                            <Users className="w-4 h-4" /> Músicos (DEBUG)
                         </h2>
                     </div>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-4 text-white/50">
+                        <p>MusicianList Disabled</p>
+                        {/* 
                         <MusicianList
                             users={uniqueMusicians}
                             title=""
                             emptyMessage="Nadie se ha unido aún."
-                        />
+                        /> 
+                        */}
                     </div>
                 </aside>
 
@@ -156,8 +159,8 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         </div>
 
                         <div className="bg-red-900/20 border border-red-500/20 p-4 rounded text-center">
-                            <h3 className="text-red-400 font-bold">MODO DEBUG ACTIVO</h3>
-                            <p className="text-sm">Listas y Chat desactivados temporalmente.</p>
+                            <h3 className="text-red-400 font-bold">MODO DEBUG EXTREMO</h3>
+                            <p className="text-sm">Todo desactivado excepto layout.</p>
                         </div>
 
                         {activeTab === 'THEMES' && (
@@ -204,70 +207,24 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
                 {/* RIGHT: CHAT */}
                 <aside className="w-80 bg-jazz-surface border-l border-white/5 flex flex-col">
-                    <div className="flex-1 flex flex-col min-h-0">
-                        {currentUser ? (
-                            // <JamChat jamId={initialJam.id} currentUser={currentUser} />
-                            <div className="flex items-center justify-center h-full text-white/20 italic">JamChat disabled</div>
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-white/20">Login to Chat</div>
-                        )}
-                    </div>
+                    <div className="p-4 text-white/50">Chat Disabled</div>
                 </aside>
             </div>
 
 
             {/* MOBILE LAYOUT */}
             <div className="lg:hidden flex-1 overflow-y-auto">
-                <main className="p-4 space-y-6">
-                    {/* Tabs / Toggle for Mobile? For now keeping stacks but using MusicianList */}
-
-                    {/* Info Card */}
-                    <div className="bg-white/5 border border-white/5 rounded-xl p-4 space-y-3">
-                        {initialJam.description && <p className="text-white/90 text-sm">{initialJam.description}</p>}
-                    </div>
-
-                    {/* Musicians Horizontal Scroll */}
-                    <div className="bg-jazz-surface border border-white/10 rounded-xl overflow-hidden p-4">
-                        <h3 className="font-bold text-white mb-2">Músicos</h3>
-                        <div className="flex overflow-x-auto gap-2 pb-2">
-                            {uniqueMusicians.map(u => (
-                                <div key={u.id} className="flex flex-col items-center min-w-[60px]">
-                                    <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden border border-white/10">
-                                        {u.image ? <img src={u.image} className="w-full h-full object-cover" /> : <div className="p-2 text-center text-xs">🎷</div>}
-                                    </div>
-                                    <span className="text-[10px] text-white truncate w-full text-center mt-1">{u.name}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="bg-red-900/20 border border-red-500/20 p-4 rounded text-center my-4">
-                        <p className="text-sm text-red-300">ThemeList disabled</p>
-                    </div>
-
-                    {/* <ThemeList /> */}
-
-                    {/* Chat Fixed at Bottom or inline? Inline for now to avoid complexity */}
-                    <div className="h-[400px] mb-20 flex items-center justify-center border border-white/10 rounded bg-white/5">
-                        {/* {currentUser && <JamChat jamId={initialJam.id} currentUser={currentUser} />} */}
-                        <p className="text-white/30 italic">JamChat disabled</p>
-                    </div>
-                </main>
-
-                <button
-                    onClick={() => openCreateModal('SONG')}
-                    className="fixed bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow z-40 flex items-center justify-center"
-                >
-                    <Plus className="w-7 h-7" />
-                </button>
+                <p className="p-10 text-white">Mobile Debug Mode</p>
             </div>
 
-            {/* <CreateThemeModal
+            {/* 
+            <CreateThemeModal
                 isOpen={isCreateThemeOpen}
                 onClose={() => setIsCreateThemeOpen(false)}
                 jamCode={jam.code}
                 type={createType}
-            /> */}
+            /> 
+            */}
         </div>
     );
 }
