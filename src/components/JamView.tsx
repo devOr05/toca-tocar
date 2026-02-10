@@ -97,28 +97,163 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </div>
             </header>
 
-            {/* DESKTOP LAYOUT (3 Cols) - DISABLED FOR DEBUG */}
-            {/*
+            {/* DESKTOP LAYOUT (3 Cols) */}
             <div className="hidden lg:flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
-                <div className="p-10 text-white">Layout Disabled</div>
-            </div>
-            */}
 
-            {/* MOBILE LAYOUT - DISABLED FOR DEBUG */}
-            {/*
+                {/* LEFT: MUSICIANS */}
+                <aside className="w-64 bg-jazz-surface border-r border-white/5 flex flex-col">
+                    <div className="p-4 border-b border-white/5 bg-black/20">
+                        <h2 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
+                            <Users className="w-4 h-4" /> Músicos
+                        </h2>
+                    </div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        <MusicianList
+                            users={uniqueMusicians}
+                            title=""
+                            emptyMessage="Nadie se ha unido aún."
+                        />
+                    </div>
+                </aside>
+
+                {/* CENTER: CONTENT */}
+                <main className="flex-1 flex flex-col min-w-0 bg-black/50 relative">
+                    {/* Tabs */}
+                    <div className="flex items-center border-b border-white/10 bg-black/40 px-4 shrink-0 overflow-x-auto">
+                        <button
+                            onClick={() => setActiveTab('THEMES')}
+                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'THEMES' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
+                        >
+                            <Music2 size={16} /> Repertorio
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('SUGGESTED')}
+                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'SUGGESTED' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
+                        >
+                            <Plus size={16} /> Sugeridos
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('FORUM')}
+                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'FORUM' ? 'border-jazz-accent text-white' : 'border-transparent text-white/40 hover:text-white'}`}
+                        >
+                            <Share2 size={16} /> Foro / Tópicos
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+                        {/* INFO CARD */}
+                        <div className="bg-jazz-surface border border-white/5 rounded-xl p-4 shadow-lg shrink-0">
+                            {initialJam.description && <p className="text-white/80 text-sm mb-2">{initialJam.description}</p>}
+                            {formattedDate && <p className="text-jazz-muted text-xs flex items-center gap-2"><Calendar size={14} /> {formattedDate}</p>}
+                            {(initialJam.location || initialJam.city) && (
+                                <p className="text-jazz-muted text-xs flex items-center gap-2 mt-1">
+                                    <MapPin size={14} />
+                                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((initialJam.location || '') + ' ' + (initialJam.city || ''))}`} target="_blank" rel="noopener noreferrer" className="hover:text-white underline">
+                                        {initialJam.location}{initialJam.city ? `, ${initialJam.city}` : ''}
+                                    </a>
+                                </p>
+                            )}
+                        </div>
+
+                        {activeTab === 'THEMES' && (
+                            <div className="pb-24">
+                                <ThemeList type="SONG" />
+                            </div>
+                        )}
+
+                        {activeTab === 'SUGGESTED' && (
+                            <div className="pb-24">
+                                <SuggestedThemes jamCode={initialJam.code} />
+                            </div>
+                        )}
+
+                        {activeTab === 'FORUM' && (
+                            <div className="pb-24">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h3 className="text-xl font-bold text-white">Foro de Discusión</h3>
+                                    <button
+                                        onClick={() => openCreateModal('TOPIC')}
+                                        className="bg-jazz-accent/20 hover:bg-jazz-accent/40 text-jazz-accent px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
+                                    >
+                                        Crear Tópico
+                                    </button>
+                                </div>
+                                <ThemeList type="TOPIC" />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* FAB */}
+                    {activeTab === 'THEMES' && (
+                        <button
+                            onClick={() => openCreateModal('SONG')}
+                            className="absolute bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
+                        >
+                            <Plus className="w-7 h-7" />
+                        </button>
+                    )}
+                </main>
+
+                {/* RIGHT: CHAT */}
+                <aside className="w-80 bg-jazz-surface border-l border-white/5 flex flex-col">
+                    <div className="flex-1 flex flex-col min-h-0">
+                        {currentUser ? (
+                            <JamChat jamId={initialJam.id} currentUser={currentUser} />
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-white/20">Login to Chat</div>
+                        )}
+                    </div>
+                </aside>
+            </div>
+
+
+            {/* MOBILE LAYOUT */}
             <div className="lg:hidden flex-1 overflow-y-auto">
-                 <p className="p-10 text-white">Mobile Debug Mode</p>
-            </div>
-            */}
+                <main className="p-4 space-y-6">
+                    {/* Tabs / Toggle for Mobile? For now keeping stacks but using MusicianList */}
 
-            {/* 
+                    {/* Info Card */}
+                    <div className="bg-white/5 border border-white/5 rounded-xl p-4 space-y-3">
+                        {initialJam.description && <p className="text-white/90 text-sm">{initialJam.description}</p>}
+                    </div>
+
+                    {/* Musicians Horizontal Scroll */}
+                    <div className="bg-jazz-surface border border-white/10 rounded-xl overflow-hidden p-4">
+                        <h3 className="font-bold text-white mb-2">Músicos</h3>
+                        <div className="flex overflow-x-auto gap-2 pb-2">
+                            {uniqueMusicians.map(u => (
+                                <div key={u.id} className="flex flex-col items-center min-w-[60px]">
+                                    <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden border border-white/10">
+                                        {u.image ? <img src={u.image} className="w-full h-full object-cover" /> : <div className="p-2 text-center text-xs">🎷</div>}
+                                    </div>
+                                    <span className="text-[10px] text-white truncate w-full text-center mt-1">{u.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <ThemeList />
+
+                    {/* Chat Fixed at Bottom or inline? Inline for now to avoid complexity */}
+                    <div className="h-[400px] mb-20 bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+                        {currentUser && <JamChat jamId={initialJam.id} currentUser={currentUser} />}
+                    </div>
+                </main>
+
+                <button
+                    onClick={() => openCreateModal('SONG')}
+                    className="fixed bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow z-40 flex items-center justify-center"
+                >
+                    <Plus className="w-7 h-7" />
+                </button>
+            </div>
+
             <CreateThemeModal
                 isOpen={isCreateThemeOpen}
                 onClose={() => setIsCreateThemeOpen(false)}
                 jamCode={jam.code}
                 type={createType}
-            /> 
-            */}
+            />
         </div>
     );
 }
