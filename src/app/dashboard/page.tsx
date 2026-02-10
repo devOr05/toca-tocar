@@ -25,7 +25,7 @@ export default async function Dashboard() {
     });
 
     // Fetch musicians for sidebar
-    const musicians = await import('@/app/actions').then(mod => mod.getMusiciansByCity());
+    const { users: musicians, location: musiciansLocation } = await import('@/app/actions').then(mod => mod.getMusiciansByCity());
 
     return (
         <div className="min-h-screen bg-background p-6">
@@ -61,11 +61,10 @@ export default async function Dashboard() {
                 <div className="lg:col-span-1">
                     <div className="sticky top-6">
                         <MusicianList
-                            // @ts-ignore - Importing client component in server component is tricky with partial types but works in NextJS 14
-                            // Actually MusicianList is client, passing data from server.
-                            // Need to ensure MusicianList is imported.
+                            // @ts-ignore
                             users={musicians}
-                            title="Músicos Cerca"
+                            title={`Músicos en ${musiciansLocation}`}
+                            emptyMessage="No hay músicos en tu zona aún."
                         />
                     </div>
                 </div>

@@ -495,7 +495,8 @@ export async function deleteTheme(themeId: string) {
 
 export async function getMusiciansByCity() {
     const session = await auth();
-    let cityFilter = {};
+    let cityFilter: any = {};
+    let location = 'Comunidad Global';
 
     // If user is logged in and has a city, prioritize that city
     if (session?.user?.id) {
@@ -505,19 +506,25 @@ export async function getMusiciansByCity() {
         });
 
         if (currentUser?.city) {
-            cityFilter = { city: currentUser.city };
+            // Case insensitive search? Prisma postgres can use mode: 'insensitive'
+            cityFilter = {
+                city: {
+                    contains: currentUser.city,
+                    mode: 'insensitive'
+                }
+            };
+            location = currentUser.city;
         } else {
-            cityFilter = { city: { not: null } };
+            // Show recent active users if no city
+            cityFilter = {};
         }
-    } else {
-        cityFilter = { city: { not: null } };
     }
 
     try {
         const users = await prisma.user.findMany({
             where: {
                 ...cityFilter,
-                // Include current user to ensure they see themselves
+                // Exclude current user? No, include them so they see themselves
             },
             select: {
                 id: true,
@@ -526,12 +533,14 @@ export async function getMusiciansByCity() {
                 mainInstrument: true,
                 image: true
             },
-            take: 50 // Increased limit
+            orderBy: { updatedAt: 'desc' },
+            take: 20
         });
-        return users;
+
+        return { users, location };
     } catch (error) {
         console.error('Error fetching musicians:', error);
-        return [];
+        return { users: [], location: 'Error' };
     }
 }
 
