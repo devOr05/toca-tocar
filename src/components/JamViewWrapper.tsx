@@ -1,7 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Jam, Theme, Participation, User } from '@/types';
-import JamView from '@/components/JamView';
+import dynamic from 'next/dynamic';
+const JamView = dynamic(() => import('@/components/JamView'), { ssr: false });
 
 interface JamViewWrapperProps {
     initialJam: Jam;
@@ -11,5 +13,19 @@ interface JamViewWrapperProps {
 }
 
 export default function JamViewWrapper(props: JamViewWrapperProps) {
-    return <JamView {...props} />;
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return <div className="min-h-screen bg-black" suppressHydrationWarning />;
+    }
+
+    return (
+        <div suppressHydrationWarning>
+            <JamView {...props} />
+        </div>
+    );
 }

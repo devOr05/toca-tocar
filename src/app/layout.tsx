@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
-import GlobalClientWrapper from "@/components/GlobalClientWrapper";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,9 +39,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>
-          <GlobalClientWrapper>
-            {children}
-          </GlobalClientWrapper>
+          {children}
         </Providers>
       </body>
     </html>

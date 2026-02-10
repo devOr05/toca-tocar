@@ -16,7 +16,7 @@ export default function Error({
     return (
         <div className="min-h-screen flex items-center justify-center bg-black text-white p-4">
             <div className="text-center space-y-6 max-w-md bg-white/5 p-8 rounded-2xl border border-white/10">
-                <h2 className="text-xl font-bold text-red-500">Error de Entorno Detectado</h2>
+                <h2 className="text-xl font-bold text-red-500">Error de Aplicación</h2>
                 <div className="text-sm text-gray-300 space-y-2">
                     <p>Tu navegador o una extensión está bloqueando la aplicación.</p>
                     <p className="font-mono text-xs bg-black/30 p-2 rounded text-red-300 break-all">{error.message}</p>
