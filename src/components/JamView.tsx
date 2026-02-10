@@ -56,14 +56,35 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     if (!mounted) return null;
 
     const isHost = currentUserId === initialJam.hostId;
+    const [showAddThemeModal, setShowAddThemeModal] = useState(false);
+    const [newThemeName, setNewThemeName] = useState('');
+    const [newThemeTonality, setNewThemeTonality] = useState('');
+
+    const handleCreateTheme = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newThemeName) return;
+
+        const { createTheme } = await import('@/app/actions');
+        await createTheme(initialJam.code, newThemeName, newThemeTonality);
+        setShowAddThemeModal(false);
+        setNewThemeName('');
+        setNewThemeTonality('');
+        router.refresh();
+    };
 
     return (
         <div className="min-h-screen bg-background pb-20">
             <header className="sticky top-0 z-50 bg-jazz-surface/90 backdrop-blur-md border-b border-white/5 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="bg-jazz-gold/10 p-2 rounded-lg">
-                        <Music2 className="w-5 h-5 text-jazz-gold" />
-                    </div>
+                    <button
+                        onClick={() => router.push('/dashboard')}
+                        className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                    >
+                        <div className="bg-jazz-gold/10 p-2 rounded-lg">
+                            <Music2 className="w-5 h-5 text-jazz-gold" />
+                        </div>
+                    </button>
+
                     <div>
                         <h1 className="font-bold text-white text-sm leading-tight flex items-center gap-2">
                             {initialJam.name}
@@ -89,13 +110,22 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* Leave Button (Only for non-hosts) */}
+                    {/* Back/Exit Button */}
+                    <button
+                        onClick={() => router.push('/dashboard')}
+                        className="p-2 text-white/40 hover:text-white transition-colors"
+                        title="Volver al Dashboard"
+                    >
+                        <LogOut className="w-5 h-5 rotate-180" /> {/* Reusing LogOut icon as Exit/Back */}
+                    </button>
+
+                    {/* Leave Button (Only for non-hosts) - KEPT but maybe less prominent if they just want to exit view */}
                     {!isHost && currentUserId && (
                         <button
                             onClick={handleLeave}
                             disabled={isLeaving}
                             className="p-2 text-red-400/60 hover:text-red-400 transition-colors"
-                            title="Salir de la Jam"
+                            title="Abandonar Jam (Borrar participaciones)"
                         >
                             <LogOut className="w-5 h-5" />
                         </button>
@@ -135,9 +165,60 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 <ThemeList />
             </main>
 
-            <button className="fixed bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-lg shadow-jazz-gold/20 flex items-center justify-center hover:scale-110 transition-transform active:scale-95">
+            <button
+                onClick={() => setShowAddThemeModal(true)}
+                className="fixed bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-lg shadow-jazz-gold/20 flex items-center justify-center hover:scale-110 transition-transform active:scale-95 z-40"
+            >
                 <span className="text-3xl font-light mb-1">+</span>
             </button>
+
+            {/* Add Theme Modal */}
+            {showAddThemeModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-jazz-surface border border-white/10 p-6 rounded-2xl w-full max-w-sm shadow-2xl relative">
+                        <h2 className="text-xl font-bold text-white mb-4">Proponer Nuevo Tema</h2>
+                        <form onSubmit={handleCreateTheme} className="space-y-4">
+                            <div>
+                                <label className="block text-sm text-white/60 mb-1">Nombre del Tema</label>
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-jazz-gold outline-none"
+                                    placeholder="Ej: Giant Steps"
+                                    value={newThemeName}
+                                    onChange={e => setNewThemeName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm text-white/60 mb-1">Tonalidad (Opcional)</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-jazz-gold outline-none"
+                                    placeholder="Ej: Eb"
+                                    value={newThemeTonality}
+                                    onChange={e => setNewThemeTonality(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddThemeModal(false)}
+                                    className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 py-3 rounded-xl bg-jazz-gold text-black font-bold hover:brightness-110 transition-all shadow-lg shadow-jazz-gold/10"
+                                >
+                                    Agregar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

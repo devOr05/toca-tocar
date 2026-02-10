@@ -289,3 +289,30 @@ export async function joinThemeAction(themeId: string, instrument: string) {
         return { success: false, error: 'Error al unirse al tema' };
     }
 }
+
+export async function createTheme(jamCode: string, name: string, tonality: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+
+    try {
+        const jam = await prisma.jam.findUnique({
+            where: { code: jamCode }
+        });
+
+        if (!jam) return { success: false, error: 'Jam no encontrada' };
+
+        await prisma.theme.create({
+            data: {
+                name,
+                tonality,
+                jamId: jam.id,
+                status: 'OPEN',
+            }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error creating theme:', error);
+        return { success: false, error: 'Error al crear el tema' };
+    }
+}
