@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Jam, Theme, Participation } from '@/types';
+import { Jam, Theme, Participation, User } from '@/types';
 import JamView from '@/components/JamView';
 import { Music2 } from 'lucide-react';
 
@@ -9,7 +9,7 @@ interface JamViewWrapperProps {
     initialJam: Jam;
     initialThemes: Theme[];
     initialParticipations: Participation[];
-    currentUserId?: string;
+    currentUser?: User;
 }
 
 export default function JamViewWrapper(props: JamViewWrapperProps) {

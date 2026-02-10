@@ -6,18 +6,18 @@ import { leaveJam } from '@/app/actions';
 import ThemeList from './ThemeList';
 import { Share2, Users, Music2, LogOut, Trash2, Calendar, MapPin, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Jam, Theme, Participation } from '../types';
+import { Jam, Theme, Participation, User } from '../types';
 
 interface JamViewProps {
     initialJam: Jam;
     initialThemes: Theme[];
     initialParticipations: Participation[];
-    currentUserId?: string;
+    currentUser?: User; // Changed from currentUserId string
 }
 
-export default function JamView({ initialJam, initialThemes, initialParticipations, currentUserId }: JamViewProps) {
+export default function JamView({ initialJam, initialThemes, initialParticipations, currentUser: initialUser }: JamViewProps) {
     const router = useRouter();
-    const { jam, setUser, currentUser, setJamState } = useJamStore();
+    const { jam, setUser, setAuthenticatedUser, currentUser, setJamState } = useJamStore();
     const [mounted, setMounted] = useState(false);
     const [formattedDate, setFormattedDate] = useState<string>('');
 
@@ -35,20 +35,22 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         setMounted(true);
         // ... rest of existing useEffect logic
 
-        // Don't redirect based on localStorage.
-        if (currentUserId && !currentUser) {
-            // we know we are logged in.
-            console.log('Session active, skipping redirect');
-        } else {
+        // Initialize User
+        if (initialUser) {
+            // Authenticated User
+            console.log('Syncing Authenticated User:', initialUser);
+            setAuthenticatedUser(initialUser);
+        } else if (!currentUser) {
+            // Guest User Check
             const storedName = localStorage.getItem('toca_tocar_user_name');
-            if (storedName && !currentUser) {
+            if (storedName) {
                 setUser(storedName);
-            } else if (!storedName && !currentUserId) {
+            } else {
                 // Only redirect if NO session AND NO local storage
                 router.push(`/?code=${initialJam.code}`);
             }
         }
-    }, [initialJam, initialThemes, initialParticipations, setJamState, currentUser, setUser, router]);
+    }, [initialJam, initialThemes, initialParticipations, setJamState, initialUser, currentUser, setUser, setAuthenticatedUser, router]);
 
     if (!mounted) return null;
 

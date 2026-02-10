@@ -9,6 +9,7 @@ interface JamState {
     currentUser: User | null;
 
     setUser: (name: string) => void;
+    setAuthenticatedUser: (user: User) => void;
     setJamState: (jam: Jam, themes: Theme[], participations: Participation[]) => void;
     joinTheme: (themeId: string, instrument: string) => void;
     leaveTheme: (themeId: string) => void;
@@ -23,7 +24,11 @@ export const useJamStore = create<JamState>((set, get) => ({
     currentUser: null,
 
     setUser: (name: string) => {
-        set({ currentUser: { id: `user-${Date.now()}`, name, role: 'USER' } });
+        set({ currentUser: { id: `user - ${Date.now()} `, name, role: 'USER' } });
+    },
+
+    setAuthenticatedUser: (user: User) => {
+        set({ currentUser: user });
     },
 
     setJamState: (jam, themes, participations) => {
@@ -42,7 +47,7 @@ export const useJamStore = create<JamState>((set, get) => ({
 
         // Optimistic Update
         const newParticipation: Participation = {
-            id: `temp-${Date.now()}`,
+            id: `temp - ${Date.now()} `,
             userId: currentUser.id,
             userName: currentUser.name || 'Yo',
             themeId,

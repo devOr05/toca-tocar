@@ -66,10 +66,16 @@ export default async function JamPage({ params }: PageProps) {
     const serializedThemes = JSON.parse(JSON.stringify(themes));
     const serializedParticipations = JSON.parse(JSON.stringify(participations));
 
+    const currentUser = session?.user ? {
+        id: session.user.id,
+        name: session.user.name || 'Usuario',
+        role: (session.user.role as 'USER' | 'ADMIN') || 'USER',
+    } : undefined;
+
     return <JamViewWrapper
         initialJam={serializedJam}
         initialThemes={serializedThemes}
         initialParticipations={serializedParticipations}
-        currentUserId={session?.user?.id}
+        currentUser={currentUser}
     />;
 }
