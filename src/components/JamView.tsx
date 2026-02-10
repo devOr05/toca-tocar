@@ -71,6 +71,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
             {/* HEADER */}
             <header className="sticky top-0 z-50 bg-jazz-surface/90 backdrop-blur-md border-b border-white/5 px-4 py-3 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
+                    {/* 
                     <button
                         onClick={() => router.push('/dashboard')}
                         className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-white/10 transition-colors group"
@@ -79,7 +80,9 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             <LogOut className="w-4 h-4 text-jazz-gold group-hover:text-black rotate-180" />
                         </span>
                         <span className="hidden sm:inline text-xs font-bold text-jazz-gold uppercase tracking-wider">Salir</span>
-                    </button>
+                    </button> 
+                    */}
+                    <div className="text-white text-xs">Menu Disabled</div>
 
                     <div>
                         <h1 className="font-bold text-white text-sm leading-tight flex items-center gap-2">
