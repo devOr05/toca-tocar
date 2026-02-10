@@ -34,14 +34,16 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
     const isPlaying = theme.status === 'PLAYING';
 
     return (
+    return (
         <div className={`
-      relative overflow-hidden rounded-xl border p-4 transition-all
+      relative rounded-xl border p-4 transition-all
       ${isPlaying ? 'bg-jazz-accent/20 border-jazz-accent shadow-[0_0_20px_rgba(99,102,241,0.3)]' :
                 isQueued ? 'bg-jazz-gold/10 border-jazz-gold/50' :
                     'bg-jazz-surface border-white/5'}
     `}>
             {/* Status Badge */}
             <div className="flex justify-between items-start mb-3">
+                {/* ... existing header ... */}
                 <div>
                     <h3 className="font-bold text-lg text-white leading-tight">{theme.name}</h3>
                     <span className="text-xs font-mono text-jazz-muted bg-white/5 px-2 py-0.5 rounded mt-1 inline-block">
@@ -79,19 +81,22 @@ export default function ThemeCard({ theme, participations, currentUser, onJoin, 
                         </button>
                     ) : showInstruments ? (
                         <div className="grid grid-cols-4 gap-1">
-                            {INSTRUMENTS.map((inst) => (
-                                <button
-                                    key={inst.id}
-                                    onClick={() => {
-                                        onJoin(inst.id);
-                                        setShowInstruments(false);
-                                    }}
-                                    className="flex flex-col items-center justify-center bg-white/5 hover:bg-jazz-gold/20 hover:text-jazz-gold border border-white/5 rounded-lg p-2 transition-all"
-                                >
-                                    <inst.icon className="w-4 h-4 mb-1" />
-                                    <span className="text-[8px] uppercase">{inst.label}</span>
-                                </button>
-                            ))}
+                            {INSTRUMENTS.map((inst) => {
+                                const Icon = inst.icon;
+                                return (
+                                    <button
+                                        key={inst.id}
+                                        onClick={() => {
+                                            onJoin(inst.id);
+                                            setShowInstruments(false);
+                                        }}
+                                        className="flex flex-col items-center justify-center bg-white/5 hover:bg-jazz-gold/20 hover:text-jazz-gold border border-white/5 rounded-lg p-2 transition-all"
+                                    >
+                                        <Icon className="w-4 h-4 mb-1" />
+                                        <span className="text-[8px] uppercase">{inst.label}</span>
+                                    </button>
+                                );
+                            })}
                             <button
                                 onClick={() => setShowInstruments(false)}
                                 className="col-span-4 text-xs text-white/40 mt-1 hover:text-white"
