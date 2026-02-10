@@ -31,12 +31,14 @@ model User {
   // Profile Fields
   mainInstrument String?
   favoriteTheme  String?
-  hasRecorded    Boolean         @default(false)
+  hasRecorded    String?
   
   // Social Links
   instagram    String?
   youtube      String?
   tiktok       String?
+  bandcamp     String?
+  soundcloud   String?
   website      String?
   
   externalLink   String? // Keeping for backward compatibility or general link
@@ -96,6 +98,7 @@ model Jam {
   flyerUrl    String?
   
   status      String   @default("SCHEDULED") // SCHEDULED, ACTIVE, FINISHED
+  isPrivate   Boolean  @default(false)
   hostId      String
   host        User     @relation(fields: [hostId], references: [id])
   
