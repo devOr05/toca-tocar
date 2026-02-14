@@ -47,6 +47,7 @@ model User {
 
   sentMessages     DirectMessage[] @relation("SentMessages")
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
+  uploadedMedia    Media[]         @relation("UploadedMedia")
 }
 
 model Account {
@@ -103,8 +104,13 @@ model Jam {
   hostId    String
   host      User    @relation(fields: [hostId], references: [id])
 
+  // Venue relation (optional, fallback to location string)
+  venue     Venue?  @relation("VenueJams", fields: [venueId], references: [id])
+  venueId   String?
+
   themes    Theme[]
   messages  Message[]
+  media     Media[] @relation("JamMedia")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -166,4 +172,35 @@ model DirectMessage {
 
   createdAt DateTime @default(now())
   read      Boolean  @default(false)
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  address     String?
+  city        String?
+  lat         Float?
+  lng         Float?
+  usageCount  Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  jams        Jam[]    @relation("VenueJams")
+}
+
+model Media {
+  id           String    @id @default(cuid())
+  type         MediaType
+  url          String
+  thumbnailUrl String?
+  caption      String?
+  uploadedBy   User      @relation("UploadedMedia", fields: [userId], references: [id])
+  userId       String
+  jam          Jam       @relation("JamMedia", fields: [jamId], references: [id])
+  jamId        String
+  createdAt    DateTime  @default(now())
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
 }

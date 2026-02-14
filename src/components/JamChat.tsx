@@ -3,16 +3,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, User as UserIcon, MessageSquare } from 'lucide-react';
 import { Message } from '@/types';
-import { createMessage, getMessages } from '@/app/actions';
+import { sendMessage, getMessages } from '@/app/actions';
 
 interface JamChatProps {
     jamId: string;
     currentUser: { id: string; name: string };
     themeId?: string; // Optional: specific theme chat
     title?: string;
+    hostId?: string; // ID of the jam host
 }
 
-export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de la Jam' }: JamChatProps) {
+export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de la Jam', hostId }: JamChatProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +54,7 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
         setMessages(prev => [...prev, tempMessage]);
         setNewMessage('');
 
-        await createMessage(jamId, tempMessage.content, themeId);
+        await sendMessage(jamId, tempMessage.content, themeId);
         // The polling will reconcile the ID later
     };
 
@@ -71,17 +72,24 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                     </p>
                 )}
 
+
                 {messages.map((msg) => {
                     const isMe = msg.userId === currentUser.id;
+                    const isHost = msg.userId === hostId;
                     return (
                         <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[85%] rounded-lg p-3 ${isMe
-                                    ? 'bg-jazz-gold/10 border border-jazz-gold/20 text-white rounded-tr-none'
-                                    : 'bg-white/10 border border-white/5 text-gray-200 rounded-tl-none'
+                                ? 'bg-jazz-gold/10 border border-jazz-gold/20 text-white rounded-tr-none'
+                                : 'bg-white/10 border border-white/5 text-gray-200 rounded-tl-none'
                                 }`}>
                                 {!isMe && (
-                                    <div className="flex items-center gap-1 mb-1">
+                                    <div className="flex items-center gap-1.5 mb-1">
                                         <span className="text-[10px] font-bold text-jazz-muted uppercase">{msg.userName}</span>
+                                        {isHost && (
+                                            <span className="text-[8px] bg-jazz-gold/20 text-jazz-gold px-1.5 py-0.5 rounded-full border border-jazz-gold/30 font-bold uppercase">
+                                                Host
+                                            </span>
+                                        )}
                                     </div>
                                 )}
                                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>

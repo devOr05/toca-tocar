@@ -67,6 +67,9 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
     if (!mounted) return null;
 
+    // Check if current user is the host
+    const isHost = currentUser?.id === initialJam.hostId;
+
     return (
         <div className="min-h-screen bg-black pb-20 lg:pb-0 font-sans flex flex-col">
             {/* HEADER */}
@@ -92,6 +95,11 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {isHost && (
+                        <span className="text-[10px] bg-jazz-gold/20 text-jazz-gold px-2 py-1 rounded-full border border-jazz-gold/30 font-bold uppercase tracking-wider">
+                            Anfitrión
+                        </span>
+                    )}
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-jazz-accent to-purple-600 flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-black">
                         {currentUser?.name?.slice(0, 2).toUpperCase() || '?'}
                     </div>
@@ -199,7 +207,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 <aside className="w-80 bg-jazz-surface border-l border-white/5 flex flex-col">
                     <div className="flex-1 flex flex-col min-h-0">
                         {currentUser ? (
-                            <JamChat jamId={initialJam.id} currentUser={currentUser} />
+                            <JamChat jamId={initialJam.id} currentUser={currentUser} hostId={initialJam.hostId} />
                         ) : (
                             <div className="flex items-center justify-center h-full text-white/20">Login to Chat</div>
                         )}
@@ -237,7 +245,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
                     {/* Chat Fixed at Bottom or inline? Inline for now to avoid complexity */}
                     <div className="h-[400px] mb-20 bg-black/20 rounded-xl border border-white/5 overflow-hidden">
-                        {currentUser && <JamChat jamId={initialJam.id} currentUser={currentUser} />}
+                        {currentUser && <JamChat jamId={initialJam.id} currentUser={currentUser} hostId={initialJam.hostId} />}
                     </div>
                 </main>
 

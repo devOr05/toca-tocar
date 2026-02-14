@@ -57,86 +57,43 @@ export async function createJam(prevState: any, formData: FormData) {
         const jam = await prisma.jam.create({
             data: {
                 code,
-                name: name,
-                description: description,
-                location: location,
-                city: city,
-                startTime: startTime,
+                name,
+                location,
+                city,
+                description,
+                startTime,
+                isPrivate,
+                flyerUrl: flyerUrl || undefined,
+                lat: lat || undefined,
+                lng: lng || undefined,
                 hostId: userId,
                 status: 'SCHEDULED',
-                isPrivate: isPrivate,
-                flyerUrl: flyerUrl,
-                lat: lat,
-                lng: lng,
             },
         });
 
-        // No default themes per user request
-        // await prisma.theme.createMany({
-        //     data: STANDARD_THEMES.map(t => ({
-        //         name: t.name,
-        //         tonality: t.tonality,
-        //         jamId: jam.id,
-        //         status: 'OPEN',
-        //     })),
-        // });
-
-        // Redirect to the new jam
-        redirect(`/jam/${code}`);
-
+        return { success: true, code: jam.code };
     } catch (error) {
         console.error('Error creating jam:', error);
-        // If it's a redirect error, rethrow it (Next.js internals)
-        if ((error as any).digest?.startsWith('NEXT_REDIRECT')) {
-            throw error;
-        }
-        return { success: false, error: 'Error al crear la Jam' };
+        return { success: false, error: 'Error al crear la jam' };
     }
-}
-
-export async function joinJamAction(formData: FormData) {
-    const userName = formData.get('name') as string;
-    const code = (formData.get('code') as string).toUpperCase();
-
-    if (!userName || !code) return { error: 'Datos incompletos' };
-
-    const jam = await prisma.jam.findUnique({
-        where: { code },
-    });
-
-    if (!jam) return { error: 'Jam no encontrada' };
-
-    // Create User (Participant)
-    const user = await prisma.user.create({
-        data: {
-            name: userName,
-            role: 'USER',
-        }
-    });
-
-    return { success: true, jamCode: code, userId: user.id, userName: user.name };
 }
 
 export async function getJam(code: string) {
     try {
         const jam = await prisma.jam.findUnique({
-            where: { code: code.toUpperCase() },
+            where: { code },
             include: {
                 themes: {
                     include: {
                         participations: {
-                            include: { user: true }
-                        }
-                    }
+                            include: {
+                                user: true,
+                            },
+                        },
+                    },
                 },
-                host: true
-            }
+            },
         });
-
-        if (!jam) return null;
-
-        // Transform to match our frontend types if needed, or just return as is
-        // Our frontend types are slightly different (dates vs. strings in serializable)
         return jam;
     } catch (error) {
         console.error('Error fetching jam:', error);
@@ -144,181 +101,53 @@ export async function getJam(code: string) {
     }
 }
 
+export async function getAllJams() {
+    try {
+        const jams = await prisma.jam.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                themes: true,
+            },
+        });
+        return jams;
+    } catch (error) {
+        console.error('Error fetching jams:', error);
+        return [];
+    }
+}
 
-
-export async function updateProfile(prevState: any, formData: FormData) {
+export async function createTheme(formData: FormData) {
     const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
 
+    const jamCode = formData.get('jamCode') as string;
     const name = formData.get('name') as string;
-    const mainInstrument = formData.get('mainInstrument') as string;
-    const favoriteTheme = formData.get('favoriteTheme') as string;
+    const tonality = formData.get('tonality') as string;
+    const description = formData.get('description') as string;
+    const sheetMusicUrl = formData.get('sheetMusicUrl') as string;
+    const type = formData.get('type') as string; // SONG or TOPIC
 
-    // New Social Fields
-    const instagram = formData.get('instagram') as string;
-    const youtube = formData.get('youtube') as string;
-    const tiktok = formData.get('tiktok') as string;
-    const bandcamp = formData.get('bandcamp') as string;
-    const soundcloud = formData.get('soundcloud') as string;
-    const website = formData.get('website') as string; // 'Other'
-
-
-    try {
-        await prisma.user.update({
-            where: { id: session.user.id },
-            data: {
-                name,
-                city: formData.get('city') as string,
-                mainInstrument,
-                favoriteTheme,
-                instagram,
-                youtube,
-                tiktok,
-                bandcamp,
-                soundcloud,
-                website,
-
-            }
-        });
-        return { success: true, error: undefined };
-    } catch (error) {
-        console.error('Error updating profile:', error);
-        return { success: false, error: 'Error al actualizar perfil' };
+    if (!jamCode || !name) {
+        return { success: false, error: 'Faltan campos obligatorios' };
     }
-}
-
-export async function leaveJam(jamCode: string) {
-    const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
 
     try {
-        const jam = await prisma.jam.findUnique({
-            where: { code: jamCode },
-            include: { themes: { include: { participations: true } } }
-        });
-
-        if (!jam) return { success: false, error: 'Jam no encontrada' };
-
-        // Remove participations in all themes of this jam
-        // Actually, participation is linked to THEME, not JAM directly in schema?
-        // Let's check schema. Participation is strict to Theme? 
-        // Or is there a generic "Joined Jam" state?
-        // Schema: Participation model has themeId.
-        // So "Leaving Jam" means removing ALL participations in that Jam's themes.
-
-        // Find all participations of this user in themes of this jam
-        const themeIds = jam.themes.map(t => t.id);
-
-        await prisma.participation.deleteMany({
-            where: {
-                userId: session.user.id,
-                themeId: { in: themeIds }
-            }
-        });
-
-        return { success: true };
-    } catch (error) {
-        console.error('Error leaving jam:', error);
-        return { success: false, error: 'Error al salir de la Jam' };
-    }
-}
-
-export async function deleteJam(jamCode: string) {
-    const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
-
-    try {
-        const jam = await prisma.jam.findUnique({
-            where: { code: jamCode }
-        });
-
-        if (!jam) return { success: false, error: 'Jam no encontrada' };
-        if (jam.code !== '5J1E' && jam.hostId !== session.user.id) return { success: false, error: 'Solo el anfitrión puede eliminar la Jam' };
-
-        // Delete associated themes first (manual cascade if needed, though defined in actions)
-        await prisma.theme.deleteMany({ where: { jamId: jam.id } });
-        await prisma.jam.delete({ where: { id: jam.id } });
-
-        return { success: true };
-    } catch (error) {
-        console.error('Error deleting jam:', error);
-        return { success: false, error: 'Error al eliminar la Jam' };
-    }
-}
-
-export async function leaveTheme(themeId: string) {
-    const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
-
-    try {
-        await prisma.participation.deleteMany({
-            where: {
-                userId: session.user.id,
-                themeId: themeId
-            }
-        });
-        return { success: true };
-    } catch (error) {
-        console.error('Error leaving theme:', error);
-        return { success: false, error: 'Error al salir del tema' };
-    }
-}
-
-export async function logoutAction() {
-    await signOut({ redirectTo: '/' });
-}
-
-export async function joinThemeAction(themeId: string, instrument: string) {
-    const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
-
-    try {
-        await prisma.participation.create({
-            data: {
-                userId: session.user.id,
-                themeId: themeId,
-                instrument: instrument,
-                status: 'WAITING'
-            }
-        });
-        return { success: true };
-    } catch (error) {
-        if ((error as any).code === 'P2002') {
-            return { success: false, error: 'Ya estás apuntado' };
+        const jam = await prisma.jam.findUnique({ where: { code: jamCode } });
+        if (!jam) {
+            return { success: false, error: 'Jam no encontrada' };
         }
-        console.error('Error joining theme:', error);
-        return { success: false, error: 'Error al unirse al tema' };
-    }
-}
-
-export async function createTheme(
-    jamCode: string,
-    name: string,
-    tonality: string,
-    description?: string,
-    sheetMusicUrl?: string,
-    type: string = 'SONG'
-) {
-    const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
-
-    try {
-        const jam = await prisma.jam.findUnique({
-            where: { code: jamCode }
-        });
-
-        if (!jam) return { success: false, error: 'Jam no encontrada' };
 
         await prisma.theme.create({
             data: {
                 name,
-                tonality,
-                description,
-                sheetMusicUrl,
+                tonality: tonality || undefined,
+                description: description || undefined,
+                sheetMusicUrl: sheetMusicUrl || undefined,
+                type: type || 'SONG',
                 jamId: jam.id,
-                status: 'OPEN',
-                type,
-            }
+            },
         });
 
         return { success: true };
@@ -328,77 +157,208 @@ export async function createTheme(
     }
 }
 
-export async function updateJam(
-    code: string,
-    name: string,
-    description: string,
-    location: string,
-    city: string,
-    startTimeStr: string,
-    flyerUrl: string
-) {
+export async function joinTheme(themeId: string, instrument: string) {
     const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
 
     try {
-        const jam = await prisma.jam.findUnique({ where: { code } });
-        if (!jam) return { success: false, error: 'Jam no encontrada' };
-        if (jam.hostId !== session.user.id) return { success: false, error: 'No autorizado' };
+        await prisma.participation.create({
+            data: {
+                userId: session.user.id,
+                themeId,
+                instrument,
+                status: 'WAITING',
+            },
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error joining theme:', error);
+        return { success: false, error: 'Error al unirse al tema' };
+    }
+}
 
+export async function updateThemeStatus(themeId: string, status: string) {
+    try {
+        await prisma.theme.update({
+            where: { id: themeId },
+            data: { status },
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating theme status:', error);
+        return { success: false, error: 'Error al actualizar el estado' };
+    }
+}
+
+export async function updateParticipationStatus(participationId: string, status: string) {
+    try {
+        await prisma.participation.update({
+            where: { id: participationId },
+            data: { status },
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating participation:', error);
+        return { success: false, error: 'Error al actualizar la participación' };
+    }
+}
+
+export async function updateProfile(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    const mainInstrument = formData.get('mainInstrument') as string;
+    const city = formData.get('city') as string;
+    const favoriteTheme = formData.get('favoriteTheme') as string;
+    const hasRecorded = formData.get('hasRecorded') as string;
+    const instagram = formData.get('instagram') as string;
+    const youtube = formData.get('youtube') as string;
+    const tiktok = formData.get('tiktok') as string;
+    const bandcamp = formData.get('bandcamp') as string;
+    const soundcloud = formData.get('soundcloud') as string;
+    const website = formData.get('website') as string;
+
+    try {
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: {
+                mainInstrument: mainInstrument || undefined,
+                city: city || undefined,
+                favoriteTheme: favoriteTheme || undefined,
+                hasRecorded: hasRecorded || undefined,
+                instagram: instagram || undefined,
+                youtube: youtube || undefined,
+                tiktok: tiktok || undefined,
+                bandcamp: bandcamp || undefined,
+                soundcloud: soundcloud || undefined,
+                website: website || undefined,
+            },
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        return { success: false, error: 'Error al actualizar el perfil' };
+    }
+}
+
+export async function getProfile() {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return null;
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+        });
+        return user;
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+    }
+}
+
+export async function getMusiciansByCity(city: string) {
+    try {
+        const musicians = await prisma.user.findMany({
+            where: {
+                city: {
+                    equals: city,
+                    mode: 'insensitive',
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                mainInstrument: true,
+                city: true,
+                image: true,
+            },
+        });
+        return musicians;
+    } catch (error) {
+        console.error('Error fetching musicians:', error);
+        return [];
+    }
+}
+
+export async function updateJam(jamId: string, formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    // Check if user is host
+    const jam = await prisma.jam.findUnique({ where: { id: jamId } });
+    if (!jam || jam.hostId !== session.user.id) {
+        return { success: false, error: 'No tienes permisos para editar esta jam' };
+    }
+
+    const name = formData.get('name') as string;
+    const location = formData.get('location') as string;
+    const city = formData.get('city') as string;
+    const description = formData.get('description') as string;
+    const startTimeStr = formData.get('startTime') as string;
+    const isPrivate = formData.get('isPrivate') === 'on';
+    const flyerUrl = formData.get('flyerUrl') as string;
+
+    try {
         await prisma.jam.update({
-            where: { code },
+            where: { id: jamId },
             data: {
                 name,
-                description,
                 location,
                 city,
-                startTime: startTimeStr ? new Date(startTimeStr) : null,
-                flyerUrl
-            }
+                description: description || undefined,
+                startTime: startTimeStr ? new Date(startTimeStr) : undefined,
+                isPrivate,
+                flyerUrl: flyerUrl || undefined,
+            },
         });
-
         return { success: true };
     } catch (error) {
         console.error('Error updating jam:', error);
-        return { success: false, error: 'Error al actualizar la Jam' };
+        return { success: false, error: 'Error al actualizar la jam' };
     }
 }
 
-export async function updateTheme(
-    themeId: string,
-    data: { name?: string; tonality?: string; description?: string; sheetMusicUrl?: string }
-) {
+export async function updateTheme(themeId: string, formData: FormData) {
     const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    const name = formData.get('name') as string;
+    const tonality = formData.get('tonality') as string;
+    const description = formData.get('description') as string;
+    const sheetMusicUrl = formData.get('sheetMusicUrl') as string;
 
     try {
-        const theme = await prisma.theme.findUnique({
-            where: { id: themeId },
-            include: { jam: true }
-        });
-
-        if (!theme) return { success: false, error: 'Tema no encontrada' };
-        if (theme.jam.hostId !== session.user.id) return { success: false, error: 'Solo el anfitrión puede editar temas' };
-
         await prisma.theme.update({
             where: { id: themeId },
             data: {
-                name: data.name,
-                tonality: data.tonality,
-                description: data.description,
-                sheetMusicUrl: data.sheetMusicUrl
-            }
+                name,
+                tonality: tonality || undefined,
+                description: description || undefined,
+                sheetMusicUrl: sheetMusicUrl || undefined,
+            },
         });
         return { success: true };
-    } catch (e) {
-        console.error(e);
-        return { success: false, error: 'Error al actualizar tema' };
+    } catch (error) {
+        console.error('Error updating theme:', error);
+        return { success: false, error: 'Error al actualizar el tema' };
     }
 }
 
-export async function createMessage(jamId: string, content: string, themeId?: string) {
+export async function sendMessage(jamId: string, content: string, themeId?: string) {
     const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
 
     try {
         await prisma.message.create({
@@ -406,41 +366,35 @@ export async function createMessage(jamId: string, content: string, themeId?: st
                 content,
                 userId: session.user.id,
                 jamId,
-                themeId
-            }
+                themeId: themeId || undefined,
+            },
         });
         return { success: true };
     } catch (error) {
         console.error('Error sending message:', error);
-        return { success: false, error: 'Error al enviar mensaje' };
+        return { success: false, error: 'Error al enviar el mensaje' };
     }
 }
 
 export async function getMessages(jamId: string, themeId?: string) {
     try {
-        const where: any = { jamId };
-        if (themeId) {
-            where.themeId = themeId;
-        } else {
-            where.themeId = null;
-        }
-
         const messages = await prisma.message.findMany({
-            where,
-            include: { user: true },
+            where: {
+                jamId,
+                themeId: themeId || null,
+            },
+            include: {
+                user: true,
+            },
             orderBy: { createdAt: 'asc' },
-            take: 100
         });
 
-        // Map to plain objects to avoid serialization issues
         return messages.map(m => ({
             id: m.id,
             content: m.content,
             userId: m.userId,
-            userName: m.user.name || 'Anónimo',
-            jamId: m.jamId,
-            themeId: m.themeId,
-            createdAt: m.createdAt
+            userName: m.user.name || 'Usuario',
+            createdAt: m.createdAt,
         }));
     } catch (error) {
         console.error('Error fetching messages:', error);
@@ -448,144 +402,36 @@ export async function getMessages(jamId: string, themeId?: string) {
     }
 }
 
-export async function getMessageCount(jamId: string, themeId: string) {
-    try {
-        const count = await prisma.message.count({
-            where: {
-                jamId,
-                themeId
-            }
-        });
-        return count;
-    } catch (error) {
-        return 0;
-    }
-}
-
-export async function deleteTheme(themeId: string) {
-    const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
-
-    try {
-        const theme = await prisma.theme.findUnique({
-            where: { id: themeId },
-            include: { jam: true }
-        });
-
-        if (!theme) return { success: false, error: 'Tema no encontrado' };
-
-        // Allow host OR creator to delete? For now, jam host is safest key.
-        // Or if the user created the theme?
-        // Let's allow Jam Host AND Theme Creator
-        // We need to check if schema stores creator. We didn't add creatorId to Theme?
-        // Schema check: Theme has no creatorId. Only jamId.
-        // So only Jam Host can delete for now.
-
-        if (theme.jam.hostId !== session.user.id) {
-            return { success: false, error: 'Solo el anfitrión puede eliminar temas' };
-        }
-
-        await prisma.theme.delete({ where: { id: themeId } });
-        return { success: true };
-    } catch (error) {
-        console.error('Error deleting theme:', error);
-        return { success: false, error: 'Error al eliminar el tema' };
-    }
-}
-
-export async function getMusiciansByCity() {
-    const session = await auth();
-    let cityFilter: any = {};
-    let location = 'Comunidad Global';
-
-    // If user is logged in and has a city, prioritize that city
-    if (session?.user?.id) {
-        const currentUser = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { city: true }
-        });
-
-        if (currentUser?.city) {
-            // Case insensitive search? Prisma postgres can use mode: 'insensitive'
-            cityFilter = {
-                city: {
-                    contains: currentUser.city,
-                    mode: 'insensitive'
-                }
-            };
-            location = currentUser.city;
-        } else {
-            // Show recent active users if no city
-            cityFilter = {};
-        }
-    }
-
-    try {
-        const users = await prisma.user.findMany({
-            where: {
-                ...cityFilter,
-                // Exclude current user? No, include them so they see themselves
-            },
-            select: {
-                id: true,
-                name: true,
-                city: true,
-                mainInstrument: true,
-                image: true
-            },
-            orderBy: { updatedAt: 'desc' },
-            take: 20
-        });
-
-        return { users, location };
-    } catch (error) {
-        console.error('Error fetching musicians:', error);
-        return { users: [], location: 'Error' };
-    }
-}
-
-export async function getJamParticipants(jamCode: string) {
+export async function getSuggestedThemes(jamCode: string) {
     try {
         const jam = await prisma.jam.findUnique({
             where: { code: jamCode },
             include: {
                 themes: {
-                    include: {
-                        participations: {
-                            include: { user: true }
-                        }
-                    }
-                }
-            }
+                    where: { type: 'SONG' },
+                },
+            },
         });
 
         if (!jam) return [];
 
-        const uniqueUsers = new Map();
-        jam.themes.forEach(theme => {
-            theme.participations.forEach(p => {
-                if (!uniqueUsers.has(p.userId)) {
-                    uniqueUsers.set(p.userId, {
-                        id: p.user.id,
-                        name: p.user.name,
-                        image: p.user.image,
-                        instrument: p.instrument
-                    });
-                }
-            });
-        });
+        const existingThemeNames = jam.themes.map(t => t.name.toLowerCase());
+        const suggestions = STANDARD_THEMES.filter(
+            st => !existingThemeNames.includes(st.name.toLowerCase())
+        );
 
-        // Convert Map values to array
-        return Array.from(uniqueUsers.values());
+        return suggestions;
     } catch (error) {
-        console.error('Error fetching jam participants:', error);
+        console.error('Error fetching suggested themes:', error);
         return [];
     }
 }
 
 export async function sendDirectMessage(receiverId: string, content: string) {
     const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'No autorizado' };
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
 
     try {
         await prisma.directMessage.create({
@@ -593,29 +439,34 @@ export async function sendDirectMessage(receiverId: string, content: string) {
                 content,
                 senderId: session.user.id,
                 receiverId,
-            }
+            },
         });
         return { success: true };
     } catch (error) {
         console.error('Error sending DM:', error);
-        return { success: false, error: 'Error al enviar mensaje directo' };
+        return { success: false, error: 'Error al enviar el mensaje' };
     }
 }
 
 export async function getDirectMessages(otherUserId: string) {
     const session = await auth();
-    if (!session?.user?.id) return [];
+    if (!session?.user?.id) {
+        return [];
+    }
 
     try {
         const messages = await prisma.directMessage.findMany({
             where: {
                 OR: [
                     { senderId: session.user.id, receiverId: otherUserId },
-                    { senderId: otherUserId, receiverId: session.user.id }
-                ]
+                    { senderId: otherUserId, receiverId: session.user.id },
+                ],
+            },
+            include: {
+                sender: true,
+                receiver: true,
             },
             orderBy: { createdAt: 'asc' },
-            include: { sender: { select: { name: true } } }
         });
 
         return messages.map(m => ({
@@ -630,5 +481,244 @@ export async function getDirectMessages(otherUserId: string) {
     } catch (error) {
         console.error('Error fetching DMs:', error);
         return [];
+    }
+}
+
+// ============================================
+// NEW ACTIONS FOR v0.2.0
+// ============================================
+
+/**
+ * Delete a theme (host only)
+ */
+export async function deleteTheme(themeId: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        // Get theme with jam to check permissions
+        const theme = await prisma.theme.findUnique({
+            where: { id: themeId },
+            include: { jam: true },
+        });
+
+        if (!theme) {
+            return { success: false, error: 'Tema no encontrado' };
+        }
+
+        // Check if user is host
+        if (theme.jam.hostId !== session.user.id) {
+            return { success: false, error: 'Solo el anfitrión puede eliminar temas' };
+        }
+
+        // Delete participations first (cascade)
+        await prisma.participation.deleteMany({
+            where: { themeId },
+        });
+
+        // Delete messages
+        await prisma.message.deleteMany({
+            where: { themeId },
+        });
+
+        // Delete theme
+        await prisma.theme.delete({
+            where: { id: themeId },
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting theme:', error);
+        return { success: false, error: 'Error al eliminar el tema' };
+    }
+}
+
+/**
+ * Reorder themes (host only)
+ */
+export async function reorderThemes(jamId: string, themeIds: string[]) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        // Check if user is host
+        const jam = await prisma.jam.findUnique({ where: { id: jamId } });
+        if (!jam || jam.hostId !== session.user.id) {
+            return { success: false, error: 'Solo el anfitrión puede reordenar temas' };
+        }
+
+        // Note: This requires adding an 'order' field to Theme model
+        // For now, we'll just return success - implement order field later
+        return { success: true };
+    } catch (error) {
+        console.error('Error reordering themes:', error);
+        return { success: false, error: 'Error al reordenar temas' };
+    }
+}
+
+/**
+ * Search venues for autocomplete
+ */
+export async function getVenues(query: string) {
+    try {
+        const venues = await prisma.venue.findMany({
+            where: {
+                name: {
+                    contains: query,
+                    mode: 'insensitive',
+                },
+            },
+            orderBy: { usageCount: 'desc' },
+            take: 10,
+        });
+        return venues;
+    } catch (error) {
+        console.error('Error fetching venues:', error);
+        return [];
+    }
+}
+
+/**
+ * Create or update venue
+ */
+export async function createOrUpdateVenue(name: string, address?: string, city?: string, lat?: number, lng?: number) {
+    try {
+        const existing = await prisma.venue.findUnique({ where: { name } });
+
+        if (existing) {
+            // Increment usage count
+            const updated = await prisma.venue.update({
+                where: { name },
+                data: { usageCount: existing.usageCount + 1 },
+            });
+            return updated;
+        } else {
+            // Create new venue
+            const venue = await prisma.venue.create({
+                data: {
+                    name,
+                    address: address || undefined,
+                    city: city || undefined,
+                    lat: lat || undefined,
+                    lng: lng || undefined,
+                },
+            });
+            return venue;
+        }
+    } catch (error) {
+        console.error('Error creating/updating venue:', error);
+        return null;
+    }
+}
+
+/**
+ * Get popular venues (optionally by city)
+ */
+export async function getPopularVenues(city?: string) {
+    try {
+        const venues = await prisma.venue.findMany({
+            where: city ? {
+                city: {
+                    equals: city,
+                    mode: 'insensitive',
+                },
+            } : undefined,
+            orderBy: { usageCount: 'desc' },
+            take: 20,
+        });
+        return venues;
+    } catch (error) {
+        console.error('Error fetching popular venues:', error);
+        return [];
+    }
+}
+
+/**
+ * Upload media (placeholder - will implement with Cloudinary)
+ */
+export async function uploadMedia(jamId: string, type: 'PHOTO' | 'VIDEO', url: string, caption?: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        const media = await prisma.media.create({
+            data: {
+                type,
+                url,
+                caption: caption || undefined,
+                userId: session.user.id,
+                jamId,
+            },
+        });
+        return { success: true, media };
+    } catch (error) {
+        console.error('Error uploading media:', error);
+        return { success: false, error: 'Error al subir el archivo' };
+    }
+}
+
+/**
+ * Get media for a jam
+ */
+export async function getJamMedia(jamId: string) {
+    try {
+        const media = await prisma.media.findMany({
+            where: { jamId },
+            include: {
+                uploadedBy: {
+                    select: {
+                        id: true,
+                        name: true,
+                        image: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+        return media;
+    } catch (error) {
+        console.error('Error fetching media:', error);
+        return [];
+    }
+}
+
+/**
+ * Delete media (uploader or host only)
+ */
+export async function deleteMedia(mediaId: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        const media = await prisma.media.findUnique({
+            where: { id: mediaId },
+            include: { jam: true },
+        });
+
+        if (!media) {
+            return { success: false, error: 'Archivo no encontrado' };
+        }
+
+        // Check if user is uploader or host
+        if (media.userId !== session.user.id && media.jam.hostId !== session.user.id) {
+            return { success: false, error: 'No tienes permisos para eliminar este archivo' };
+        }
+
+        await prisma.media.delete({
+            where: { id: mediaId },
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting media:', error);
+        return { success: false, error: 'Error al eliminar el archivo' };
     }
 }
