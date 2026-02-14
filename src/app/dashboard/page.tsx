@@ -25,7 +25,7 @@ export default async function Dashboard() {
     });
 
     // Fetch musicians for sidebar
-    const { users: musicians, location: musiciansLocation } = await import('@/app/actions').then(mod => mod.getMusiciansByCity());
+    const musicians = await import('@/app/actions').then(mod => mod.getMusiciansByCity(session.user.city || ''));
 
     return (
         <div className="min-h-screen bg-background p-6">
