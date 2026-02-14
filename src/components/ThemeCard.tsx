@@ -144,30 +144,45 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
             {/* Participation Section */}
             {theme.type !== 'TOPIC' && (
                 <div className="space-y-4 pt-2">
-                    <div className="flex flex-wrap gap-2">
-                        {Object.keys(INSTRUMENT_MAP).map((instId) => (
-                            <InstrumentIcon
-                                key={instId}
-                                instrumentId={instId}
-                                count={instrumentCounts[instId]?.count || 0}
-                                isActive={myParticipation?.instrument === instId}
-                                participants={instrumentCounts[instId]?.names}
-                                onClick={() => handleInstrumentClick(instId)}
-                            />
-                        ))}
-                    </div>
-
-                    {!myParticipation && (
-                        <button
-                            onClick={() => setShowInstruments(!showInstruments)}
-                            className="w-full py-2.5 bg-jazz-gold text-black font-bold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
-                        >
-                            <Music size={16} className="group-hover:rotate-12 transition-transform" />
-                            Quiero Tocar
-                        </button>
+                    {/* Instrument Icons - Show if requested or if there are participants */}
+                    {(showInstruments || participations.length > 0) && (
+                        <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                            {Object.keys(INSTRUMENT_MAP).map((instId) => (
+                                <InstrumentIcon
+                                    key={instId}
+                                    instrumentId={instId}
+                                    count={instrumentCounts[instId]?.count || 0}
+                                    isActive={myParticipation?.instrument === instId}
+                                    participants={instrumentCounts[instId]?.names}
+                                    onClick={() => handleInstrumentClick(instId)}
+                                />
+                            ))}
+                        </div>
                     )}
 
-                    {participations.length === 0 && !myParticipation && (
+                    <div className="flex gap-2">
+                        {!myParticipation && (
+                            <button
+                                onClick={() => setShowInstruments(!showInstruments)}
+                                className={`flex-1 py-2.5 ${showInstruments ? 'bg-white/10 text-white' : 'bg-jazz-gold text-black'} font-bold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group`}
+                            >
+                                <Music size={16} className={showInstruments ? '' : 'group-hover:rotate-12 transition-transform'} />
+                                {showInstruments ? 'Cerrar' : 'Quiero Tocar'}
+                            </button>
+                        )}
+
+                        {/* Direct Chat Button for Songs */}
+                        <button
+                            onClick={() => setShowDetails(true)}
+                            className={`py-2.5 px-4 bg-jazz-accent/10 hover:bg-jazz-accent/20 text-jazz-accent rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2 ${myParticipation ? 'w-full' : ''}`}
+                            title="Abrir Chat"
+                        >
+                            <MessageSquare size={16} />
+                            {myParticipation && <span className="text-xs font-bold uppercase tracking-wider">Chat del Tema</span>}
+                        </button>
+                    </div>
+
+                    {participations.length === 0 && !myParticipation && !showInstruments && (
                         <p className="text-white/10 text-[10px] italic text-center">Sé el primero en anotarte en este tema</p>
                     )}
                 </div>

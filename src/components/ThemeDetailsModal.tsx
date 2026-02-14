@@ -22,9 +22,11 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser 
                         <div>
                             <h2 className="text-2xl font-bold text-white leading-tight">{theme.name}</h2>
                             <div className="flex gap-2 mt-1">
-                                <span className="text-jazz-gold font-mono text-sm bg-jazz-gold/10 px-2 py-0.5 rounded">
-                                    {theme.tonality || 'Sin tonalidad'}
-                                </span>
+                                {theme.type !== 'TOPIC' && (
+                                    <span className="text-jazz-gold font-mono text-sm bg-jazz-gold/10 px-2 py-0.5 rounded">
+                                        {theme.tonality || 'Sin tonalidad'}
+                                    </span>
+                                )}
                                 {theme.type === 'TOPIC' && (
                                     <span className="text-jazz-accent font-bold text-xs bg-jazz-accent/10 px-2 py-0.5 rounded uppercase tracking-wider">
                                         Tópico

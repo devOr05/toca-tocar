@@ -94,6 +94,7 @@ export default function CreateJamForm({ user }: { user: any }) {
                 <div className="relative">
                     <input
                         type="text"
+                        id="jam-name"
                         name="name"
                         value={jamName}
                         onChange={(e) => setJamName(e.target.value)}
@@ -138,7 +139,7 @@ export default function CreateJamForm({ user }: { user: any }) {
                 <label className="block text-sm font-medium text-white/60 mb-2">Fecha y Hora de Inicio</label>
                 <div className="relative">
                     <Calendar className="absolute left-3 top-3.5 w-5 h-5 text-white/40" />
-                    <input type="datetime-local" name="startTime" required
+                    <input type="datetime-local" id="startTime" name="startTime" required
                         className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold transition-all [color-scheme:dark]" />
                 </div>
             </div>
@@ -165,7 +166,7 @@ export default function CreateJamForm({ user }: { user: any }) {
                 {/* City */}
                 <div className="col-span-2">
                     <label className="block text-sm font-medium text-white/60 mb-2">Ciudad</label>
-                    <input type="text" name="city" list="cities" placeholder="Ej: Buenos Aires" required
+                    <input type="text" id="city" name="city" list="cities" placeholder="Ej: Buenos Aires" required
                         className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
                     <datalist id="cities">
                         <option value="Buenos Aires" />
@@ -192,7 +193,7 @@ export default function CreateJamForm({ user }: { user: any }) {
                 <label className="block text-sm font-medium text-white/60 mb-2">Flyer / Evento (Link)</label>
                 <div className="relative">
                     <Info className="absolute left-3 top-3.5 w-5 h-5 text-white/40" />
-                    <input type="url" name="flyerUrl" placeholder="https://instagram.com/p/..."
+                    <input type="url" id="flyerUrl" name="flyerUrl" placeholder="https://instagram.com/p/..."
                         className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold transition-all" />
                 </div>
                 <p className="text-[10px] text-white/40 mt-1 pl-1">Pega el link de tu post de Instagram, evento de Facebook o imagen.</p>
@@ -201,7 +202,7 @@ export default function CreateJamForm({ user }: { user: any }) {
             {/* Description */}
             <div>
                 <label className="block text-sm font-medium text-white/60 mb-2">Descripción / Detalles</label>
-                <textarea name="description" rows={2} placeholder="¿Qué vamos a tocar? ¿Hay backline?"
+                <textarea id="description" name="description" rows={2} placeholder="¿Qué vamos a tocar? ¿Hay backline?"
                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
             </div>
 
@@ -214,19 +215,19 @@ export default function CreateJamForm({ user }: { user: any }) {
                 <div className="space-y-4">
                     <div>
                         <label className="block text-xs font-bold text-white/40 mb-1 uppercase tracking-widest">¿Quién hace la apertura?</label>
-                        <input type="text" name="openingBand" placeholder="Ej: Mario Oro Trio"
+                        <input type="text" id="openingBand" name="openingBand" placeholder="Ej: Mario Oro Trio"
                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
                     </div>
 
                     <div>
                         <label className="block text-xs font-bold text-white/40 mb-1 uppercase tracking-widest">Información del Grupo / Redes</label>
-                        <textarea name="openingInfo" rows={2} placeholder="Redes sociales, bio corta..."
+                        <textarea id="openingInfo" name="openingInfo" rows={2} placeholder="Redes sociales, bio corta..."
                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
                     </div>
 
                     <div>
                         <label className="block text-xs font-bold text-white/40 mb-1 uppercase tracking-widest">Temas que tocarán</label>
-                        <textarea name="openingThemes" rows={2} placeholder="Listado de temas (estos se crearán como cerrados)..."
+                        <textarea id="openingThemes" name="openingThemes" rows={2} placeholder="Listado de temas (estos se crearán como cerrados)..."
                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
                         <p className="text-[10px] text-white/30 mt-1">Estos temas aparecerán en la Jam pero no permitirán anotarse a otros músicos.</p>
                     </div>

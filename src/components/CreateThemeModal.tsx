@@ -74,13 +74,13 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
             const pdfFile = (window as any)._tempPdfFile;
             if (pdfFile) {
                 const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dwzz1kyxef';
-                if (!cloudName) {
-                    throw new Error('Cloudinary not configured (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)');
-                }
+                const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'toca-tocar';
+
+                console.log('Cloudinary Upload Debug (PDF):', { cloudName, uploadPreset });
 
                 const uploadData = new FormData();
                 uploadData.append('file', pdfFile);
-                uploadData.append('upload_preset', 'toca-tocar');
+                uploadData.append('upload_preset', uploadPreset);
 
                 const response = await fetch(
                     `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
@@ -90,10 +90,11 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                 if (response.ok) {
                     const data = await response.json();
                     sheetMusicUrl = data.secure_url;
+                    console.log('PDF Upload Success:', data.secure_url);
                 } else {
                     const errorDetails = await response.json();
-                    console.error('PDF Upload failed:', errorDetails);
-                    throw new Error('Fallo al subir el archivo PDF');
+                    console.error('PDF Upload failed (Cloudinary):', errorDetails);
+                    throw new Error(`Cloudinary Error: ${errorDetails.error?.message || 'Fallo al subir el archivo PDF'}`);
                 }
                 (window as any)._tempPdfFile = null;
             }
@@ -144,6 +145,8 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                             </label>
                             <input
                                 type="text"
+                                id="theme-name"
+                                name="name"
                                 required
                                 value={formData.name}
                                 onChange={handleNameChange}
@@ -181,6 +184,8 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                                 </label>
                                 <input
                                     type="text"
+                                    id="tonality"
+                                    name="tonality"
                                     value={formData.tonality}
                                     onChange={(e) => setFormData({ ...formData, tonality: e.target.value })}
                                     placeholder="Ej. Gm"
@@ -194,6 +199,8 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                                 <FileText size={12} /> {isSong ? 'Descripción / Notas' : 'Contenido'}
                             </label>
                             <textarea
+                                id="description"
+                                name="description"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 placeholder={isSong ? "Ej. Versión bossa, intro de 8 compases..." : "Escribe aquí los detalles..."}
@@ -209,6 +216,8 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                                 </label>
                                 <input
                                     type="url"
+                                    id="sheetMusicUrl"
+                                    name="sheetMusicUrl"
                                     value={formData.sheetMusicUrl}
                                     onChange={(e) => setFormData({ ...formData, sheetMusicUrl: e.target.value })}
                                     placeholder="https://..."
@@ -226,6 +235,8 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                                     <div className="relative">
                                         <input
                                             type="file"
+                                            id="pdf-file"
+                                            name="pdf-file"
                                             accept=".pdf"
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0];

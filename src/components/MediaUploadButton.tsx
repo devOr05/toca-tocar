@@ -35,17 +35,22 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
 
         try {
             // Create FormData
+            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dwzz1kyxef';
+            const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'toca-tocar';
+
+            console.log('Cloudinary Upload Debug (Media):', { cloudName, uploadPreset, type: file.type });
+
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('upload_preset', 'toca-tocar'); // You'll need to create this in Cloudinary
+            formData.append('upload_preset', uploadPreset);
 
             // Upload to Cloudinary
-            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dwzz1kyxef';
             if (!cloudName || cloudName === 'your-cloud-name') {
-                alert('Cloudinary no está configurado. Contacta al administrador.');
+                alert('Cloudinary no está configurado correctamente (Cloud Name ausente).');
                 setIsUploading(false);
                 return;
             }
+
             const resourceType = isImage ? 'image' : 'video';
             const response = await fetch(
                 `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
@@ -61,6 +66,8 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
                 console.error('Cloudinary error response:', data);
                 throw new Error(data.error?.message || 'Error al subir archivo a Cloudinary');
             }
+
+            console.log('Media Upload Success:', data.secure_url);
 
             // Save to database
             const saveResponse = await fetch('/api/media/upload', {
