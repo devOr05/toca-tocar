@@ -73,7 +73,7 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
             // Handle PDF Upload if present
             const pdfFile = (window as any)._tempPdfFile;
             if (pdfFile) {
-                const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dwzz1kyxef';
+                const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dwzz6yxef';
                 const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'toca-tocar';
 
                 console.log('Cloudinary Upload Debug (PDF):', { cloudName, uploadPreset });

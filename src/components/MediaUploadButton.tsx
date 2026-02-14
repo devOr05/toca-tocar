@@ -35,7 +35,7 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
 
         try {
             // Create FormData
-            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dwzz1kyxef';
+            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dwzz6yxef';
             const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'toca-tocar';
 
             console.log('Cloudinary Upload Debug (Media):', { cloudName, uploadPreset, type: file.type });
