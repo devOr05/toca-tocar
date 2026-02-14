@@ -11,7 +11,7 @@ export const INSTRUMENT_MAP: Record<string, { icon: LucideIcon, label: string }>
     'Guitar': { icon: Guitar, label: 'Guitarra' },
     'Bass': { icon: AudioLines, label: 'Bajo/Contrabajo' },
     'Drums': { icon: Drum, label: 'Batería' },
-    'Percussion': { icon: Drum, label: 'Percusión' },
+    'Percussion': { icon: Drum, label: 'Percusión/Tabla' },
     'Voice': { icon: Mic2, label: 'Voz' },
     'Flute': { icon: Wind, label: 'Flauta' },
     'Clarinet': { icon: Music4, label: 'Clarinete' },

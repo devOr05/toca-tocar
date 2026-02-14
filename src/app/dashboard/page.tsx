@@ -12,23 +12,37 @@ export default async function Dashboard() {
     const session = await auth();
     if (!session?.user) redirect("/");
 
-    // Fetch active jams
-    const jams = await prisma.jam.findMany({
+    // Fetch all relevant jams
+    const allJams = await prisma.jam.findMany({
         where: {
-            status: { not: "FINISHED" },
             OR: [
                 { isPrivate: false },
                 { hostId: session.user.id }
             ]
         },
         include: { _count: { select: { themes: true } } },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { startTime: 'desc' }
     });
+
+    const now = new Date();
+    const threshold = new Date(now.getTime() - 6 * 60 * 60 * 1000); // 6 hours ago
+
+    const activeJams = allJams.filter(jam =>
+        jam.status !== 'FINISHED' &&
+        jam.startTime && jam.startTime > threshold
+    );
+
+    const pastJams = allJams.filter(jam =>
+        jam.status === 'FINISHED' ||
+        (jam.startTime && jam.startTime <= threshold)
+    ).slice(0, 3); // Limit history
 
     // Fetch user from DB to get latest metadata (city, etc)
     const dbUser = await prisma.user.findUnique({
         where: { id: session.user.id }
     });
+
+    const isAdmin = dbUser?.email === 'kavay86@gmail.com' || dbUser?.role === 'ADMIN';
 
     // Fetch musicians for sidebar
     const userCity = dbUser?.city || '';
@@ -59,14 +73,24 @@ export default async function Dashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 {/* Main Content: Jams */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-8">
                     <JamList
-                        jams={jams.map((j: any) => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
+                        jams={activeJams.map((j: any) => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
                         currentUserId={session.user.id}
+                        title="Jams Activas"
                     />
 
+                    {pastJams.length > 0 && (
+                        <JamList
+                            jams={pastJams.map((j: any) => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
+                            currentUserId={session.user.id}
+                            title="Historial de Jams"
+                            isHistory
+                        />
+                    )}
+
                     <div className="py-8">
-                        <NewsSection />
+                        <NewsSection isAdmin={isAdmin} />
                     </div>
                 </div>
 

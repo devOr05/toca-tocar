@@ -151,9 +151,9 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                 <p className="text-white/60 text-sm mb-4 line-clamp-2">{theme.description}</p>
             )}
 
-            {/* New Instrument Participation System */}
+            {/* Participation Section */}
             {theme.type !== 'TOPIC' && (
-                <div className="space-y-3">
+                <div className="space-y-4 pt-2">
                     <div className="flex flex-wrap gap-2">
                         {Object.keys(INSTRUMENT_MAP).map((instId) => (
                             <InstrumentIcon
@@ -167,8 +167,18 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                         ))}
                     </div>
 
-                    {participations.length === 0 && (
-                        <p className="text-white/10 text-[10px] italic">Haz clic en un instrumento para anotarte</p>
+                    {!myParticipation && (
+                        <button
+                            onClick={() => setShowInstruments(!showInstruments)}
+                            className="w-full py-2.5 bg-jazz-gold text-black font-bold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                        >
+                            <Music size={16} className="group-hover:rotate-12 transition-transform" />
+                            Quiero Tocar
+                        </button>
+                    )}
+
+                    {participations.length === 0 && !myParticipation && (
+                        <p className="text-white/10 text-[10px] italic text-center">Sé el primero en anotarte en este tema</p>
                     )}
                 </div>
             )}

@@ -846,3 +846,48 @@ export async function deleteMedia(mediaId: string) {
         return { success: false, error: 'Error al eliminar el archivo' };
     }
 }
+/**
+ * Create a new announcement (Admin only)
+ */
+export async function createAnnouncement(title: string, content: string, tag: string, tagColor: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autenticado' };
+
+    // Basic admin check (could use a dedicated field or email list)
+    const isAdmin = session.user.email === 'kavay86@gmail.com' || (session.user as any).role === 'ADMIN';
+    if (!isAdmin) return { success: false, error: 'No autorizado' };
+
+    try {
+        await prisma.announcement.create({
+            data: {
+                title,
+                content,
+                tag,
+                tagColor,
+                active: true,
+            },
+        });
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (error) {
+        console.error('Error creating announcement:', error);
+        return { success: false, error: 'Error al crear el anuncio' };
+    }
+}
+
+/**
+ * Get active announcements
+ */
+export async function getAnnouncements() {
+    try {
+        const announcements = await prisma.announcement.findMany({
+            where: { active: true },
+            orderBy: { createdAt: 'desc' },
+            take: 5
+        });
+        return announcements;
+    } catch (error) {
+        console.error('Error fetching announcements:', error);
+        return [];
+    }
+}
