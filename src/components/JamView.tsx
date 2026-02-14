@@ -11,6 +11,8 @@ import CreateThemeModal from './CreateThemeModal';
 import SuggestedThemes from './SuggestedThemes';
 import JamChat from './JamChat';
 import MusicianList from './MusicianList';
+import MediaGallery from './MediaGallery';
+import MediaUploadButton from './MediaUploadButton';
 
 interface JamViewProps {
     initialJam: Jam;
@@ -25,7 +27,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const [mounted, setMounted] = useState(false);
     const [formattedDate, setFormattedDate] = useState<string>('');
     const [isCreateThemeOpen, setIsCreateThemeOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'THEMES' | 'FORUM' | 'SUGGESTED'>('THEMES');
+    const [activeTab, setActiveTab] = useState<'THEMES' | 'FORUM' | 'SUGGESTED' | 'GALLERY'>('THEMES');
     const [createType, setCreateType] = useState<'SONG' | 'TOPIC'>('SONG');
 
     const openCreateModal = (type: 'SONG' | 'TOPIC') => {
@@ -143,9 +145,14 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         </button>
                         <button
                             onClick={() => setActiveTab('FORUM')}
-                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'FORUM' ? 'border-jazz-accent text-white' : 'border-transparent text-white/40 hover:text-white'}`}
-                        >
+                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'FORUM' ? 'border-jazz-accent text-white' : 'border-transparent text-white/40 hover:text-white'}`}>
                             <Share2 size={16} /> Foro / Tópicos
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('GALLERY')}
+                            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'GALLERY' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
+                        >
+                            <ImageIcon size={16} /> Galería
                         </button>
                     </div>
 
@@ -188,6 +195,28 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                     </button>
                                 </div>
                                 <ThemeList type="TOPIC" />
+                            </div>
+                        )}
+
+                        {/* GALLERY TAB */}
+                        {activeTab === 'GALLERY' && (
+                            <div className="pb-24">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h3 className="text-xl font-bold text-white">Galería de Fotos y Videos</h3>
+                                    {currentUser && (
+                                        <MediaUploadButton
+                                            jamId={initialJam.id}
+                                            onUploadComplete={() => {
+                                                // Refresh gallery - handled by polling in MediaGallery
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                                <MediaGallery
+                                    jamId={initialJam.id}
+                                    currentUserId={currentUser?.id}
+                                    isHost={isHost}
+                                />
                             </div>
                         )}
                     </div>
