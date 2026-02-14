@@ -471,11 +471,13 @@ export async function getMessages(jamId: string, themeId?: string) {
             orderBy: { createdAt: 'asc' },
         });
 
-        return messages.map(m => ({
+        return messages.map((m: any) => ({
             id: m.id,
             content: m.content,
             userId: m.userId,
             userName: m.user.name || 'Usuario',
+            jamId: m.jamId,
+            themeId: m.themeId,
             createdAt: m.createdAt,
         }));
     } catch (error) {
@@ -497,7 +499,7 @@ export async function getSuggestedThemes(jamCode: string) {
 
         if (!jam) return [];
 
-        const existingThemeNames = jam.themes.map(t => t.name.toLowerCase());
+        const existingThemeNames = jam.themes.map((t: any) => t.name.toLowerCase());
         const suggestions = STANDARD_THEMES.filter(
             st => !existingThemeNames.includes(st.name.toLowerCase())
         );
@@ -551,7 +553,7 @@ export async function getDirectMessages(otherUserId: string) {
             orderBy: { createdAt: 'asc' },
         });
 
-        return messages.map(m => ({
+        return messages.map((m: any) => ({
             id: m.id,
             content: m.content,
             senderId: m.senderId,

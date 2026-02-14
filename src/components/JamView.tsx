@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useJamStore } from '../store/jamStore';
-import { leaveJam } from '@/app/actions';
 import ThemeList from './ThemeList';
 import { Share2, Users, Music2, LogOut, Trash2, Calendar, MapPin, Image as ImageIcon, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';

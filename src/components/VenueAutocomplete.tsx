@@ -7,10 +7,10 @@ import { MapPin, TrendingUp } from 'lucide-react';
 interface Venue {
     id: string;
     name: string;
-    address?: string;
-    city?: string;
-    lat?: number;
-    lng?: number;
+    address?: string | null;
+    city?: string | null;
+    lat?: number | null;
+    lng?: number | null;
     usageCount: number;
 }
 
