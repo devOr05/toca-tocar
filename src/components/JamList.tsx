@@ -36,7 +36,7 @@ export default function JamList({ jams, currentUserId, title = 'Jams Activas', i
                     <Music2 className={isHistory ? 'text-white/20' : 'text-jazz-accent'} /> {title}
                 </h2>
                 <span className="bg-white/5 text-[10px] px-2 py-1 rounded-md text-white/30 font-mono uppercase tracking-widest">
-                    {filteredJams.length} {isHistory ? 'PASADAS' : 'VIVAS'}
+                    {filteredJams.length}
                 </span>
             </div>
 

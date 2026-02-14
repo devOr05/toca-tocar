@@ -38,21 +38,28 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
         const container = messagesEndRef.current?.parentElement;
         if (!container) return;
 
+        const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior
+            });
+        };
+
         // Force scroll on first load or mount
         if (!hasInitialScrolled && messages.length > 0) {
-            container.scrollTop = container.scrollHeight;
-            setHasInitialScrolled(true);
+            // Small timeout to ensure content is fully rendered
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+                setHasInitialScrolled(true);
+            }, 100);
             return;
         }
 
         // Only auto-scroll if user is near bottom or it's a new message from ME
-        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 200;
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 250;
 
         if (isNearBottom) {
-            container.scrollTo({
-                top: container.scrollHeight,
-                behavior: 'smooth'
-            });
+            scrollToBottom();
         }
     }, [messages, hasInitialScrolled]);
 

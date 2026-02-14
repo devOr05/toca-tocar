@@ -47,9 +47,9 @@ export default function CreateJamForm({ user }: { user: any }) {
 
             setVal('input[name="city"]', details.city);
             setVal('textarea[name="description"]', details.description);
-            setVal('input[name="openingBand"]', details.openingBand);
-            setVal('textarea[name="openingInfo"]', details.openingInfo);
-            setVal('textarea[name="openingThemes"]', details.openingThemes);
+            // setVal('input[name="openingBand"]', details.openingBand);
+            // setVal('textarea[name="openingInfo"]', details.openingInfo);
+            // setVal('textarea[name="openingThemes"]', details.openingThemes);
             setVal('input[name="flyerUrl"]', details.flyerUrl);
 
             if (details.location) {
@@ -236,7 +236,7 @@ export default function CreateJamForm({ user }: { user: any }) {
 
             <div className="pt-4">
                 <button type="submit" disabled={isPending} className="w-full bg-jazz-gold text-black font-bold p-4 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-jazz-gold/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isPending ? 'Creando...' : 'Crear Jam & Generar Flyer'}
+                    {isPending ? 'Creando...' : 'Crear Jam'}
                 </button>
                 <p className="text-xs text-center text-white/30 mt-3">
                     Al crearla, se generará un código único para compartir.

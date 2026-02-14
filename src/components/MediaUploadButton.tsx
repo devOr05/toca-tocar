@@ -52,13 +52,16 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
             }
 
             const resourceType = isImage ? 'image' : 'video';
-            const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
-                {
-                    method: 'POST',
-                    body: formData,
-                }
-            );
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+
+            console.log('Final Cloudinary URL:', url);
+            console.log('Upload Preset used:', uploadPreset);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                // Ensure NO headers are set manually to let the browser set the correct Boundary for FormData
+            });
 
             const data = await response.json();
 
