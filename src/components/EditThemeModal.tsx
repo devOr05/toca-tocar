@@ -28,7 +28,14 @@ export default function EditThemeModal({ isOpen, onClose, theme }: EditThemeModa
         e.preventDefault();
         setIsLoading(true);
 
-        const result = await updateTheme(theme.id, formData);
+        // Create FormData object
+        const fd = new FormData();
+        fd.append('name', formData.name);
+        fd.append('tonality', formData.tonality);
+        fd.append('description', formData.description);
+        fd.append('sheetMusicUrl', formData.sheetMusicUrl);
+
+        const result = await updateTheme(theme.id, fd);
 
         setIsLoading(false);
 
