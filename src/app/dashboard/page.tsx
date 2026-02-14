@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import JamList from "@/components/JamList";
 import LogoutButton from "@/components/LogoutButton";
 import MusicianList from "@/components/MusicianList";
+import NewsSection from "@/components/NewsSection";
 
 export default async function Dashboard() {
     const session = await auth();
@@ -51,6 +52,10 @@ export default async function Dashboard() {
                         jams={jams.map((j: any) => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
                         currentUserId={session.user.id}
                     />
+
+                    <div className="py-8">
+                        <NewsSection />
+                    </div>
 
                     <Link href="/create-jam" className="w-full bg-jazz-gold text-black font-bold p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-jazz-gold/20">
                         <Plus className="w-6 h-6" />

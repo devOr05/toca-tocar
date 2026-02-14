@@ -40,7 +40,12 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
             formData.append('upload_preset', 'toca-tocar'); // You'll need to create this in Cloudinary
 
             // Upload to Cloudinary
-            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'your-cloud-name';
+            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+            if (!cloudName || cloudName === 'your-cloud-name') {
+                alert('Cloudinary no está configurado. Contacta al administrador.');
+                setIsUploading(false);
+                return;
+            }
             const resourceType = isImage ? 'image' : 'video';
             const response = await fetch(
                 `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,

@@ -143,14 +143,14 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                     {participations.map(p => (
                         <div key={p.id} className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-full px-2 py-1">
                             <span className="text-[10px] text-jazz-gold font-bold uppercase">{p.instrument.slice(0, 3)}</span>
-                            <span className="text-xs text-white/80 truncate max-w-[80px]">{p.userName}</span>
+                            <span className="text-xs text-white/80 truncate max-w-[80px]">{p.user?.name || p.userName}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* Action Area */}
-            {theme.status === 'OPEN' && (
+            {/* Action Area - Only for Songs */}
+            {theme.status === 'OPEN' && theme.type !== 'TOPIC' && (
                 <div className="mt-2">
                     {myParticipation ? (
                         <button

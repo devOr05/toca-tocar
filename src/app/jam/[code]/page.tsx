@@ -28,7 +28,10 @@ export default async function JamPage({ params }: PageProps) {
         id: t.id,
         name: t.name,
         tonality: t.tonality || '',
+        description: t.description || '',
+        sheetMusicUrl: t.sheetMusicUrl || '',
         status: t.status as 'OPEN' | 'QUEUED' | 'PLAYING' | 'FINISHED',
+        type: t.type || 'SONG',
         jamId: t.jamId
     }));
 

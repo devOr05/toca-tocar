@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Music, FileText, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { X, Music, FileText, Link as LinkIcon, MessageSquare, Loader } from 'lucide-react';
 import { createTheme } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 
@@ -86,7 +86,7 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            {isSong ? <Music className="text-jazz-gold" /> : <Loader2 className="text-jazz-accent" />} {/* Use appropriate icon */}
+                            {isSong ? <Music className="text-jazz-gold" size={24} /> : <MessageSquare className="text-jazz-accent" size={24} />}
                             {isSong ? 'Proponer Tema' : 'Crear Tópico'}
                         </h2>
                         <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
@@ -179,7 +179,7 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                         >
                             {isLoading ? (
                                 <>
-                                    <Loader2 className="animate-spin" size={20} />
+                                    <Loader className="animate-spin" size={20} />
                                     Creando...
                                 </>
                             ) : (
