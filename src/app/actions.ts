@@ -23,6 +23,84 @@ export async function logoutAction() {
     await signOut({ redirectTo: '/' });
 }
 
+// Delete jam action
+export async function deleteJam(jamCode: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        // Check if user is the host
+        const jam = await prisma.jam.findUnique({
+            where: { code: jamCode },
+            select: { hostId: true }
+        });
+
+        if (!jam) {
+            return { success: false, error: 'Jam no encontrada' };
+        }
+
+        if (jam.hostId !== session.user.id) {
+            return { success: false, error: 'Solo el anfitrión puede eliminar la jam' };
+        }
+
+        // Delete jam (cascade will delete themes, participations, messages, media)
+        await prisma.jam.delete({
+            where: { code: jamCode }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting jam:', error);
+        return { success: false, error: 'Error al eliminar la jam' };
+    }
+}
+
+// Join theme action
+export async function joinThemeAction(themeId: string, instrument: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        await prisma.participation.create({
+            data: {
+                themeId,
+                userId: session.user.id,
+                userName: session.user.name || 'Usuario',
+                instrument,
+            },
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error joining theme:', error);
+        return { success: false, error: 'Error al unirse al tema' };
+    }
+}
+
+// Leave theme action
+export async function leaveTheme(themeId: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        await prisma.participation.deleteMany({
+            where: {
+                themeId,
+                userId: session.user.id,
+            },
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error leaving theme:', error);
+        return { success: false, error: 'Error al salir del tema' };
+    }
+}
+
 export async function createJam(prevState: any, formData: FormData) {
     // Try to get session
     const session = await auth();
