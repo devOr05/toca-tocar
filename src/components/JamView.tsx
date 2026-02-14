@@ -62,11 +62,27 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         }
     }, [initialJam, initialThemes, initialParticipations, setJamState, initialUser, currentUser, setUser, setAuthenticatedUser, router]);
 
-    // Filter unique users for musician list using STORE participations to reflect real-time joins
-    // MUST be called before any conditional returns to follow Rules of Hooks
-    const uniqueMusicians = Array.from(new Set(participations.map(p => p.userId)))
-        .map(id => participations.find(p => p.userId === id)?.user)
-        .filter(Boolean) as User[]; // Filter null and undefined
+    // Filter unique users for musician list
+    // Include Host and Current User even if they haven't joined a theme yet
+    const allMusicianIds = Array.from(new Set([
+        initialJam.hostId,
+        ...participations.map(p => p.userId),
+        ...(currentUser?.id ? [currentUser.id] : [])
+    ]));
+
+    const uniqueMusicians = allMusicianIds.map(id => {
+        // 1. Try from participations (has instrument info)
+        const fromParticipations = participations.find(p => p.userId === id)?.user;
+        if (fromParticipations) return fromParticipations;
+
+        // 2. Try from initial jam host data
+        if (id === initialJam.hostId && (initialJam as any).host) return (initialJam as any).host;
+
+        // 3. Try current user
+        if (currentUser && id === currentUser.id) return currentUser;
+
+        return null;
+    }).filter(Boolean) as User[];
 
     if (!mounted) return null;
 
@@ -319,8 +335,8 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
                     <ThemeList />
 
-                    {/* Chat Fixed at Bottom or inline? Inline for now to avoid complexity */}
-                    <div className="h-[400px] mb-20 bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+                    {/* Chat Section */}
+                    <div className="bg-black/20 rounded-xl border border-white/5 overflow-hidden flex flex-col h-[400px]">
                         {currentUser && <JamChat jamId={initialJam.id} currentUser={currentUser} hostId={initialJam.hostId} />}
                     </div>
                 </main>

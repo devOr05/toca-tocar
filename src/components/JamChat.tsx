@@ -89,7 +89,7 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
     if (isCommentMode) {
         return (
             <div className="flex flex-col h-full bg-black/20 rounded-xl overflow-hidden border border-white/5">
-                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
                     {messages.length === 0 && (
                         <p className="text-center text-white/20 text-xs italic py-4">
                             No hay comentarios aún.
@@ -154,7 +154,7 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                 <h3 className="font-bold text-sm text-white">{title}</h3>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[400px]">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {messages.length === 0 && (
                     <p className="text-center text-white/20 text-xs italic py-4">
                         Sé el primero en escribir...
