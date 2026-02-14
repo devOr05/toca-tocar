@@ -1,51 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 # Toca Tocar 🎷
 
-Organizador de Jams de Jazz en Tiempo Real.
+**Organizador de Jams de Jazz en Tiempo Real**
 
-## Características Nuevas
-- **Autenticación:** Login con Google o modo Invitado.
-- **Dashboard:** Ve todas las Jams activas.
-- **Base de Datos Real:** Integración con Vercel Postgres.
+[![Version](https://img.shields.io/badge/version-0.1.0--beta-blue.svg)](https://github.com/yourusername/toca-tocar)
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black)](https://nextjs.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Tech Stack
-- Next.js 15
-- Tailwind CSS v4
-- Prisma (Postgres)
-- NextAuth.js v5
+## 🎵 Descripción
 
-## Getting Started
+Toca Tocar es una plataforma web para organizar y participar en jams de jazz. Permite a músicos crear sesiones, proponer temas, unirse con sus instrumentos y chatear en tiempo real.
 
-First, run the development server:
+## ✨ Características Principales
 
+### Autenticación
+- 🔐 Login con Google OAuth
+- 👤 Modo Invitado (sin registro)
+- 📝 Perfiles de usuario con ciudad e instrumento principal
+
+### Gestión de Jams
+- 🎺 Crear jams públicas o privadas
+- 📍 Ubicación y fecha/hora
+- 🔗 Códigos únicos para compartir
+- ✏️ Edición de detalles del jam
+
+### Temas Musicales
+- 🎼 Proponer canciones y tópicos de discusión
+- 📄 Agregar partituras (URLs)
+- 🎹 Especificar tonalidad
+- 👥 Sistema de participación con instrumentos
+- 📊 Estados: OPEN, QUEUED, PLAYING, FINISHED
+
+### Chat
+- 💬 Chat general del jam
+- 🎵 Chat por tema musical
+- 📢 Chat por tópico de discusión
+
+### Dashboard
+- 📋 Lista de todos los jams activos
+- 🎷 Músicos cercanos (por ciudad)
+- 🔍 Vista de participantes por jam
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 16.1.6 (App Router)
+- **UI:** React 19, Tailwind CSS v4
+- **Base de Datos:** PostgreSQL (Vercel Postgres) / SQLite (local)
+- **ORM:** Prisma 5.10.2
+- **Autenticación:** NextAuth.js v5
+- **State Management:** Zustand
+- **Icons:** Lucide React
+- **Deployment:** Vercel
+
+## 🚀 Getting Started
+
+### Prerequisitos
+
+- Node.js 20+
+- npm/yarn/pnpm
+- PostgreSQL (producción) o SQLite (desarrollo)
+
+### Instalación
+
+1. **Clonar el repositorio**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/toca-tocar.git
+cd toca-tocar
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Instalar dependencias**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Configurar variables de entorno**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Crear archivo `.env` en la raíz:
 
-## Learn More
+```env
+# Database
+DATABASE_URL="file:./dev.db"  # SQLite local
+# DATABASE_URL="postgresql://..." # PostgreSQL producción
 
-To learn more about Next.js, take a look at the following resources:
+# NextAuth
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Google OAuth (opcional para desarrollo)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. **Inicializar base de datos**
+```bash
+npx prisma generate
+npx prisma db push
+```
 
-## Deploy on Vercel
+5. **Ejecutar servidor de desarrollo**
+```bash
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Abrir [http://localhost:3000](http://localhost:3000)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── app/
+│   ├── api/auth/          # NextAuth routes
+│   ├── create-jam/        # Crear jam
+│   ├── dashboard/         # Dashboard principal
+│   ├── jam/[code]/        # Vista de jam
+│   ├── profile/           # Perfil de usuario
+│   └── actions.ts         # Server actions
+├── components/            # Componentes React
+├── lib/                   # Utilidades
+├── store/                 # Zustand stores
+├── types/                 # TypeScript types
+└── auth.ts               # Configuración NextAuth
+```
+
+## 🎯 Roadmap
+
+### v0.1.0-beta (Actual)
+- [x] Autenticación con Google y modo invitado
+- [x] CRUD de jams y temas
+- [x] Sistema de participación
+- [x] Chat básico
+- [x] Dashboard con músicos cercanos
+
+### v0.2.0 (Próximo)
+- [ ] Chat en tiempo real (WebSocket/Pusher)
+- [ ] Búsqueda y filtros
+- [ ] Notificaciones
+- [ ] Subida de archivos (partituras)
+- [ ] Panel de administración
+
+### v1.0.0 (Futuro)
+- [ ] Video/audio integración
+- [ ] Sistema de ratings
+- [ ] Historial de jams
+- [ ] App móvil
+
+## 🐛 Known Issues
+
+- Chat requiere refresh manual (no real-time)
+- Lint warnings menores (imports no usados)
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detalles.
+
+## 👥 Autores
+
+- **Tu Nombre** - *Trabajo Inicial* - [YourGitHub](https://github.com/yourusername)
+
+## 🙏 Agradecimientos
+
+- Comunidad de jazz local
+- Next.js team
+- Vercel
+
+---
+
+**Hecho con ❤️ para la comunidad jazzística**

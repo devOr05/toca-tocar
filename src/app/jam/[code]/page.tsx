@@ -1,6 +1,7 @@
 import JamClientLoader from '@/components/JamClientLoader';
-import { MOCK_JAM, MOCK_THEMES, MOCK_PARTICIPATIONS } from '@/lib/mock-data';
-import { Jam, Theme, Participation } from '@/types';
+import { getJam } from '@/app/actions';
+import { notFound } from 'next/navigation';
+import { auth } from '@/auth';
 
 interface PageProps {
     params: Promise<{ code: string }>;
@@ -8,47 +9,83 @@ interface PageProps {
 
 export default async function JamPage({ params }: PageProps) {
     const { code } = await params;
+    const session = await auth();
 
-    // For local development, use mock data
-    // In production, this would fetch from database
-    if (code !== 'JAZZ') {
-        // Only JAZZ code works with mock data
-        return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center p-8">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Jam no encontrado</h1>
-                    <p className="text-white/60 mb-4">
-                        En desarrollo local, usa el código <code className="bg-white/10 px-2 py-1 rounded">JAZZ</code>
-                    </p>
-                    <a
-                        href="/jam/JAZZ"
-                        className="inline-block bg-jazz-gold text-black px-6 py-3 rounded-lg font-bold hover:bg-jazz-gold/90 transition-colors"
-                    >
-                        Ir al Jam de Prueba
-                    </a>
-                </div>
-            </div>
-        );
+    let jamData;
+    try {
+        jamData = await getJam(code);
+    } catch (error) {
+        console.error('Error fetching jam:', error);
+        notFound();
     }
 
-    // Use mock data
-    const jam: Jam = {
-        ...MOCK_JAM,
-        code: 'JAZZ',
+    if (!jamData) {
+        notFound();
+    }
+
+    // Transform Prisma data to Store types
+    const themes = jamData.themes.map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        tonality: t.tonality || '',
+        status: t.status as 'OPEN' | 'QUEUED' | 'PLAYING' | 'FINISHED',
+        jamId: t.jamId
+    }));
+
+    const participations = jamData.themes.flatMap((t: any) =>
+        t.participations
+            .filter((p: any) => p.user) // Filter out participations without users
+            .map((p: any) => ({
+                id: p.id,
+                userId: p.userId,
+                userName: p.user?.name || "Invitado",
+                themeId: p.themeId,
+                instrument: p.instrument,
+                status: p.status as 'WAITING' | 'SELECTED',
+                createdAt: p.createdAt,
+                user: {
+                    id: p.user.id,
+                    name: p.user.name || 'Invitado',
+                    role: (p.user.role as 'USER' | 'ADMIN') || 'USER',
+                    image: p.user.image || null,
+                    city: p.user.city || null,
+                    mainInstrument: p.user.mainInstrument || null
+                }
+            }))
+    );
+
+    const jam = {
+        id: jamData.id,
+        code: jamData.code,
+        name: jamData.name,
+        description: jamData.description || undefined,
+        location: jamData.location || undefined,
+        city: jamData.city || undefined,
+        flyerUrl: jamData.flyerUrl || undefined,
+        lat: jamData.lat || undefined,
+        lng: jamData.lng || undefined,
+        startTime: jamData.startTime || undefined,
+        status: jamData.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED',
+        hostId: jamData.hostId,
+        createdAt: jamData.createdAt,
+        isPrivate: jamData.isPrivate
     };
 
-    const themes: Theme[] = MOCK_THEMES;
-    const participations: Participation[] = MOCK_PARTICIPATIONS;
-
-    // Serialize for Client Component
+    // Serialize for Client Component (fix for Date objects)
     const serializedJam = JSON.parse(JSON.stringify(jam));
     const serializedThemes = JSON.parse(JSON.stringify(themes));
     const serializedParticipations = JSON.parse(JSON.stringify(participations));
+
+    const currentUser = session?.user ? {
+        id: session.user.id,
+        name: session.user.name || 'Usuario',
+        role: (session.user.role as 'USER' | 'ADMIN') || 'USER',
+    } : undefined;
 
     return <JamClientLoader
         initialJam={serializedJam}
         initialThemes={serializedThemes}
         initialParticipations={serializedParticipations}
-        currentUser={undefined}
+        currentUser={currentUser}
     />;
 }
