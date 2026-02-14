@@ -29,6 +29,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const [isCreateThemeOpen, setIsCreateThemeOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'THEMES' | 'FORUM' | 'SUGGESTED' | 'GALLERY'>('THEMES');
     const [createType, setCreateType] = useState<'SONG' | 'TOPIC'>('SONG');
+    const [refreshMedia, setRefreshMedia] = useState(0);
 
     const openCreateModal = (type: 'SONG' | 'TOPIC') => {
         setCreateType(type);
@@ -47,6 +48,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         }
 
         setMounted(true);
+        window.scrollTo(0, 0); // Force scroll to top on entry
 
         if (initialUser) {
             setAuthenticatedUser(initialUser);
@@ -213,7 +215,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                         <MediaUploadButton
                                             jamId={initialJam.id}
                                             onUploadComplete={() => {
-                                                // Refresh gallery - handled by polling in MediaGallery
+                                                setRefreshMedia(prev => prev + 1);
                                             }}
                                         />
                                     )}
@@ -222,6 +224,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                     jamId={initialJam.id}
                                     currentUserId={currentUser?.id}
                                     isHost={isHost}
+                                    refreshTrigger={refreshMedia}
                                 />
                             </div>
                         )}

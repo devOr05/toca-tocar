@@ -204,3 +204,16 @@ enum MediaType {
   PHOTO
   VIDEO
 }
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  tag       String?  // Ej. Anuncio, Tutorial, Comunidad
+  tagColor  String?  // Clases CSS: bg-jazz-gold/20 text-jazz-gold
+  link      String?
+  imageUrl  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

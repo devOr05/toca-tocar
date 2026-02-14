@@ -58,7 +58,8 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error('Error al subir archivo');
+                console.error('Cloudinary error response:', data);
+                throw new Error(data.error?.message || 'Error al subir archivo a Cloudinary');
             }
 
             // Save to database

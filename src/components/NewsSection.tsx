@@ -45,39 +45,21 @@ export default function NewsSection() {
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <Megaphone className="text-jazz-gold" size={24} />
-                    Noticias y Anuncios
+                    Novedades
                 </h2>
-                <span className="text-xs text-jazz-muted hover:text-white cursor-pointer transition-colors">Ver todas</span>
+                <button
+                    disabled
+                    className="text-xs bg-white/5 border border-white/10 text-white/40 px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all cursor-not-allowed"
+                >
+                    + Crear Anuncio
+                </button>
             </div>
 
             <div className="grid gap-4">
-                {NEWS.map((item) => (
-                    <div
-                        key={item.id}
-                        className="bg-jazz-surface border border-white/5 rounded-2xl p-5 hover:border-white/20 transition-all group"
-                    >
-                        <div className="flex justify-between items-start mb-3">
-                            <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${item.tagColor}`}>
-                                {item.tag}
-                            </span>
-                            <span className="text-[10px] text-jazz-muted font-mono">{item.date}</span>
-                        </div>
-                        <h3 className="text-lg font-bold text-white mb-2 group-hover:text-jazz-gold transition-colors">
-                            {item.title}
-                        </h3>
-                        <p className="text-white/60 text-sm leading-relaxed mb-4">
-                            {item.content}
-                        </p>
-                        {item.link && (
-                            <a
-                                href={item.link}
-                                className="inline-flex items-center gap-2 text-jazz-gold text-xs font-bold uppercase tracking-wider hover:underline"
-                            >
-                                Leer más <ExternalLink size={12} />
-                            </a>
-                        )}
-                    </div>
-                ))}
+                <div className="border border-dashed border-white/10 rounded-2xl p-10 flex flex-col items-center justify-center text-center">
+                    <Megaphone className="text-white/10 mb-4" size={48} />
+                    <p className="text-white/20 text-sm">No hay novedades por el momento.</p>
+                </div>
             </div>
 
             {/* Quick Stats / Extras Placeholder */}

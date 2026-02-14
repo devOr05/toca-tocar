@@ -35,10 +35,11 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
         const value = e.target.value;
         setFormData(prev => ({ ...prev, name: value }));
 
-        if (isSong && value.length > 1) {
+        if (isSong && value.length > 0) {
             const matches = JAZZ_STANDARDS.filter(s =>
+                s.name.toLowerCase().startsWith(value.toLowerCase()) ||
                 s.name.toLowerCase().includes(value.toLowerCase())
-            );
+            ).slice(0, 5); // Limit to top 5
             setSuggestions(matches);
             setShowSuggestions(true);
         } else {
@@ -60,23 +61,54 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
         e.preventDefault();
         setIsLoading(true);
 
-        const result = await createTheme(
-            jamCode,
-            formData.name,
-            formData.tonality,
-            formData.description,
-            formData.sheetMusicUrl,
-            type
-        );
+        try {
+            let sheetMusicUrl = formData.sheetMusicUrl;
 
-        setIsLoading(false);
+            // Handle PDF Upload if present
+            const pdfFile = (window as any)._tempPdfFile;
+            if (pdfFile) {
+                const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+                if (!cloudName) throw new Error('Cloudinary not configured');
 
-        if (result.success) {
-            setFormData({ name: '', tonality: '', description: '', sheetMusicUrl: '' });
-            router.refresh();
-            onClose();
-        } else {
-            alert(result.error || 'Error al crear el tema');
+                const uploadData = new FormData();
+                uploadData.append('file', pdfFile);
+                uploadData.append('upload_preset', 'toca-tocar');
+
+                const response = await fetch(
+                    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
+                    { method: 'POST', body: uploadData }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    sheetMusicUrl = data.secure_url;
+                } else {
+                    console.error('PDF Upload failed');
+                }
+                (window as any)._tempPdfFile = null;
+            }
+
+            const result = await createTheme(
+                jamCode,
+                formData.name,
+                formData.tonality,
+                formData.description,
+                sheetMusicUrl,
+                type
+            );
+
+            if (result.success) {
+                setFormData({ name: '', tonality: '', description: '', sheetMusicUrl: '' });
+                router.refresh();
+                onClose();
+            } else {
+                alert(result.error || 'Error al crear el tema');
+            }
+        } catch (error) {
+            console.error('Submit error:', error);
+            alert('Error al procesar la solicitud');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -104,9 +136,11 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                                 required
                                 value={formData.name}
                                 onChange={handleNameChange}
-                                onFocus={() => isSong && formData.name.length > 1 && setShowSuggestions(true)}
-                                // Delay blur to allow clicking suggestions
-                                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                onFocus={() => isSong && formData.name.length > 0 && setShowSuggestions(true)}
+                                onBlur={() => {
+                                    // Small delay so the click on suggestion is registered before the list disappears
+                                    setTimeout(() => setShowSuggestions(false), 300);
+                                }}
                                 placeholder={isSong ? "Ej. Autumn Leaves" : "Ej. ¿Quién trae amplificador?"}
                                 className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white placeholder:text-white/20 focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold outline-none transition-all"
                             />
@@ -169,6 +203,27 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                                     placeholder="https://..."
                                     className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white placeholder:text-white/20 focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold outline-none transition-all"
                                 />
+                            </div>
+                        )}
+
+                        {isSong && (
+                            <div>
+                                <label className="block text-xs font-bold text-jazz-muted mb-1 uppercase tracking-wider flex items-center gap-1">
+                                    <LinkIcon size={12} /> Subir Partitura (PDF)
+                                </label>
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            // Handle file preview or store in state
+                                            (window as any)._tempPdfFile = file;
+                                        }
+                                    }}
+                                    className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white file:bg-jazz-gold/10 file:text-jazz-gold file:border-0 file:rounded-md file:px-2 file:py-1 file:text-xs hover:file:bg-jazz-gold/20 cursor-pointer"
+                                />
+                                <p className="text-[10px] text-white/30 mt-1">Sube el archivo PDF directamente si no tienes un link.</p>
                             </div>
                         )}
 

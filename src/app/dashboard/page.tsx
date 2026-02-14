@@ -25,8 +25,13 @@ export default async function Dashboard() {
         orderBy: { createdAt: 'desc' }
     });
 
-    // Fetch musicians for sidebar (use empty string if no city)
-    const userCity = (session.user as any).city || '';
+    // Fetch user from DB to get latest metadata (city, etc)
+    const dbUser = await prisma.user.findUnique({
+        where: { id: session.user.id }
+    });
+
+    // Fetch musicians for sidebar
+    const userCity = dbUser?.city || '';
     const musicians = await import('@/app/actions').then(mod => mod.getMusiciansByCity(userCity));
 
     return (
@@ -45,6 +50,13 @@ export default async function Dashboard() {
                 </div>
             </header>
 
+            <div className="max-w-6xl mx-auto mb-8">
+                <Link href="/create-jam" className="w-full bg-jazz-gold text-black font-bold p-6 rounded-2xl flex items-center justify-center gap-3 hover:scale-[1.01] transition-all shadow-[0_0_30px_rgba(251,191,36,0.2)] border-b-4 border-jazz-gold-dark hover:brightness-110 active:translate-y-1 active:border-b-0">
+                    <Plus className="w-8 h-8" />
+                    <span className="text-xl uppercase tracking-tighter">Organizar Nueva Jam</span>
+                </Link>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 {/* Main Content: Jams */}
                 <div className="lg:col-span-2 space-y-6">
@@ -56,11 +68,6 @@ export default async function Dashboard() {
                     <div className="py-8">
                         <NewsSection />
                     </div>
-
-                    <Link href="/create-jam" className="w-full bg-jazz-gold text-black font-bold p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-jazz-gold/20">
-                        <Plus className="w-6 h-6" />
-                        Organizar Nueva Jam
-                    </Link>
                 </div>
 
                 {/* Sidebar: Musicians */}

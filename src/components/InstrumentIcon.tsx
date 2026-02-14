@@ -1,15 +1,23 @@
 'use client';
 
-import { LucideIcon, Music, Keyboard, Guitar, Drum, Mic2 } from 'lucide-react';
+import { LucideIcon, Music, Keyboard, Guitar, Drum, Mic2, Music2, Music3, Music4, Wind, AudioLines, Speaker } from 'lucide-react';
 
 export const INSTRUMENT_MAP: Record<string, { icon: LucideIcon, label: string }> = {
-    'Sax': { icon: Music, label: 'Saxo/Vientos' },
-    'Trumpet': { icon: Music, label: 'Trompeta' },
+    'Sax': { icon: Music, label: 'Saxo' },
+    'Trumpet': { icon: Music2, label: 'Trompeta' },
+    'Trombone': { icon: Music3, label: 'Trombón' },
     'Piano': { icon: Keyboard, label: 'Piano' },
+    'Keys': { icon: Speaker, label: 'Sinte/Teclas' },
     'Guitar': { icon: Guitar, label: 'Guitarra' },
-    'Bass': { icon: Guitar, label: 'Bajo' },
+    'Bass': { icon: AudioLines, label: 'Bajo/Contrabajo' },
     'Drums': { icon: Drum, label: 'Batería' },
+    'Percussion': { icon: Drum, label: 'Percusión' },
     'Voice': { icon: Mic2, label: 'Voz' },
+    'Flute': { icon: Wind, label: 'Flauta' },
+    'Clarinet': { icon: Music4, label: 'Clarinete' },
+    'Vibraphone': { icon: Keyboard, label: 'Vibráfono' },
+    'Harmonica': { icon: Wind, label: 'Armónica' },
+    'Violin': { icon: AudioLines, label: 'Violín' },
     'Other': { icon: Music, label: 'Otro' },
 };
 

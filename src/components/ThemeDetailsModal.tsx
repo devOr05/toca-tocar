@@ -88,7 +88,8 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser 
                                     jamId={theme.jamId}
                                     currentUser={currentUser}
                                     themeId={theme.id}
-                                    title={theme.type === 'TOPIC' ? 'Discusion' : 'Comentarios'}
+                                    isCommentMode={theme.type === 'TOPIC'}
+                                    title={theme.type === 'TOPIC' ? 'Comentarios del Tópico' : 'Chat del Tema'}
                                 />
                             </div>
                         ) : (

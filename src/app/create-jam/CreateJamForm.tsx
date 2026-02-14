@@ -10,10 +10,24 @@ const initialState = {
     success: false
 };
 
+const SUGGESTED_JAM_NAMES = [
+    'Jam de Jazz',
+    'Sesión de Bebop',
+    'Noche de Bossa Nova',
+    'Standard Jam',
+    'Gypsy Jazz Night',
+    'Fusion Session',
+    'Blues & Jazz Jam',
+    'Vocals Workshop Jam',
+    'Trio + Invitados',
+    'Encuentro de Músicos'
+];
+
 export default function CreateJamForm({ user }: { user: any }) {
     const [state, formAction, isPending] = useActionState(createJam, initialState);
     const [selectedVenue, setSelectedVenue] = useState<any>(null);
     const [locationInput, setLocationInput] = useState('');
+    const [jamName, setJamName] = useState(`${user.name}'s Jam`);
 
     const handleVenueSelect = (venue: any) => {
         setSelectedVenue(venue);
@@ -44,8 +58,20 @@ export default function CreateJamForm({ user }: { user: any }) {
             {/* Jam Name */}
             <div>
                 <label className="block text-sm font-medium text-white/60 mb-2">Nombre del Evento</label>
-                <input type="text" name="name" defaultValue={`${user.name}'s Jam`} required
-                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
+                <input
+                    type="text"
+                    name="name"
+                    value={jamName}
+                    onChange={(e) => setJamName(e.target.value)}
+                    list="jam-names"
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all"
+                />
+                <datalist id="jam-names">
+                    {SUGGESTED_JAM_NAMES.map(name => (
+                        <option key={name} value={name} />
+                    ))}
+                </datalist>
             </div>
 
             {/* Date & Time */}

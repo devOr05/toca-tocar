@@ -388,10 +388,11 @@ export async function getMusiciansByCity(city: string) {
         const musicians = await prisma.user.findMany({
             where: {
                 city: {
-                    equals: city,
+                    contains: city,
                     mode: 'insensitive',
                 },
             },
+            take: 20, // Limit results
             select: {
                 id: true,
                 name: true,

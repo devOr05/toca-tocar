@@ -24,13 +24,14 @@ interface MediaGalleryProps {
     isHost: boolean;
 }
 
-export default function MediaGallery({ jamId, currentUserId, isHost }: MediaGalleryProps) {
+// Add a way to trigger refresh from outside if needed (via prop or forwardRef)
+export default function MediaGallery({ jamId, currentUserId, isHost, refreshTrigger }: MediaGalleryProps & { refreshTrigger?: number }) {
     const [media, setMedia] = useState<Media[]>([]);
     const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchMedia = async () => {
-        setIsLoading(true);
+    const fetchMedia = async (showLoading = true) => {
+        if (showLoading) setIsLoading(true);
         const data = await getJamMedia(jamId);
         setMedia(data as any);
         setIsLoading(false);
@@ -39,9 +40,9 @@ export default function MediaGallery({ jamId, currentUserId, isHost }: MediaGall
     useEffect(() => {
         fetchMedia();
         // Poll every 10 seconds
-        const interval = setInterval(fetchMedia, 10000);
+        const interval = setInterval(() => fetchMedia(false), 10000);
         return () => clearInterval(interval);
-    }, [jamId]);
+    }, [jamId, refreshTrigger]);
 
     const handleDelete = async (mediaId: string) => {
         if (!confirm('¿Estás seguro de eliminar este archivo?')) return;
