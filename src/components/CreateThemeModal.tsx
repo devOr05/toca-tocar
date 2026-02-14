@@ -82,7 +82,7 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                 uploadData.append('file', pdfFile);
                 uploadData.append('upload_preset', uploadPreset);
 
-                const url = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
+                const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
                 console.log('Final PDF Upload URL:', url);
                 console.log('PDF Upload Preset used:', uploadPreset);
 
