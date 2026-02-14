@@ -173,7 +173,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         </div>
 
                         {/* OPENING SHOW SECTION */}
-                        {initialJam.openingBand && (
+                        {initialJam.openingBand && activeTab === 'THEMES' && (
                             <div className="bg-jazz-gold/5 border border-jazz-gold/20 rounded-xl p-6 shadow-lg shrink-0 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-2 opacity-10 rotate-12">
                                     <Music2 size={80} className="text-jazz-gold" />

@@ -70,7 +70,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                 isQueued ? 'bg-jazz-gold/10 border-jazz-gold/50' :
                     'bg-jazz-surface border-white/5'}
     `}>
-            {/* ... existing status badge and header ... */}
+            {/* Header */}
             <div className="flex justify-between items-start mb-3">
                 <div className="flex-1 min-w-0 mr-2">
                     <div className="flex items-center gap-2">
@@ -85,24 +85,14 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                             </button>
                         )}
                         {theme.type === 'TOPIC' && (
-                            <button
-                                onClick={() => setShowDetails(true)}
-                                className="text-jazz-accent hover:text-white transition-colors flex items-center gap-1 bg-jazz-accent/10 px-2 py-0.5 rounded-md"
-                                title="Ver discusión"
-                            >
-                                <MessageSquare size={14} />
-                                <span className="text-[10px] font-bold uppercase">Chat</span>
-                            </button>
+                            <span className="text-[10px] font-bold text-jazz-accent uppercase tracking-widest mt-1 block">
+                                Discusión Abierta
+                            </span>
                         )}
                     </div>
                     {theme.type !== 'TOPIC' && (
                         <span className="text-xs font-mono text-jazz-muted bg-white/5 px-2 py-0.5 rounded mt-1 inline-block">
                             {theme.tonality || 'Key?'}
-                        </span>
-                    )}
-                    {theme.type === 'TOPIC' && (
-                        <span className="text-[10px] font-bold text-jazz-accent uppercase tracking-widest mt-1 block">
-                            Discusión Abierta
                         </span>
                     )}
                 </div>
@@ -187,7 +177,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
             {theme.type === 'TOPIC' && (
                 <button
                     onClick={() => setShowDetails(true)}
-                    className="w-full py-2.5 bg-jazz-accent/10 hover:bg-jazz-accent/20 text-jazz-accent text-sm font-bold rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 bg-jazz-accent/10 hover:bg-jazz-accent/40 text-jazz-accent text-sm font-bold rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2"
                 >
                     <MessageSquare size={16} />
                     Entrar a la Discusión

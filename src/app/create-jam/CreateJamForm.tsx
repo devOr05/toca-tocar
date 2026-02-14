@@ -11,16 +11,19 @@ const initialState = {
 };
 
 const SUGGESTED_JAM_NAMES = [
+    'Standard Jam',
+    'Take The A Train Session',
     'Jam de Jazz',
     'Sesión de Bebop',
     'Noche de Bossa Nova',
-    'Standard Jam',
     'Gypsy Jazz Night',
     'Fusion Session',
     'Blues & Jazz Jam',
     'Vocals Workshop Jam',
-    'Trio + Invitados',
-    'Encuentro de Músicos'
+    'Encuentro de Músicos',
+    'Autumn Leaves Jam',
+    'Blue Bossa Night',
+    'Summertime Session'
 ];
 
 export default function CreateJamForm({ user }: { user: any }) {

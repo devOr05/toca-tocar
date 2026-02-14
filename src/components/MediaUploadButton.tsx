@@ -40,7 +40,7 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
             formData.append('upload_preset', 'toca-tocar'); // You'll need to create this in Cloudinary
 
             // Upload to Cloudinary
-            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dwzz1kyxef';
             if (!cloudName || cloudName === 'your-cloud-name') {
                 alert('Cloudinary no está configurado. Contacta al administrador.');
                 setIsUploading(false);

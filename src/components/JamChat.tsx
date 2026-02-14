@@ -82,14 +82,25 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
 
                     {messages.map((msg) => (
                         <div key={msg.id} className="border-b border-white/5 pb-4 last:border-0">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-jazz-gold uppercase">
-                                    {msg.userName.slice(0, 2)}
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-jazz-gold uppercase">
+                                        {msg.userName.slice(0, 2)}
+                                    </div>
+                                    <span className="text-xs font-bold text-white">{msg.userName}</span>
+                                    <span className="text-[10px] text-white/20">
+                                        {new Date(msg.createdAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                    </span>
                                 </div>
-                                <span className="text-xs font-bold text-white">{msg.userName}</span>
-                                <span className="text-[10px] text-white/20">
-                                    {new Date(msg.createdAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                </span>
+                                <button
+                                    onClick={() => {
+                                        setNewMessage(`@${msg.userName} `);
+                                        // Focus the textarea - would need a ref or just let auto-focus happen if possible
+                                    }}
+                                    className="text-[10px] font-bold text-jazz-accent hover:text-white transition-colors"
+                                >
+                                    Responder
+                                </button>
                             </div>
                             <p className="text-sm text-white/80 leading-relaxed pl-8">{msg.content}</p>
                         </div>
