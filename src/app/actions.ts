@@ -227,6 +227,66 @@ export async function getAllJams() {
     }
 }
 
+/**
+ * Fetch unique jam names matching the query from existing jams in the database
+ */
+export async function getJamTemplates(query: string) {
+    if (!query || query.length < 2) return [];
+
+    try {
+        const jams = await prisma.jam.findMany({
+            where: {
+                name: {
+                    contains: query,
+                    mode: 'insensitive',
+                },
+            },
+            distinct: ['name'],
+            select: { name: true },
+            orderBy: { name: 'asc' },
+            take: 10,
+        });
+        return jams.map((j: { name: string }) => j.name);
+    } catch (error) {
+        console.error('Error fetching jam templates:', error);
+        return [];
+    }
+}
+
+/**
+ * Fetch the most recent configuration for a given jam name to auto-fill the creation form
+ */
+export async function getJamTemplateDetails(name: string) {
+    if (!name) return null;
+
+    try {
+        const jam = await prisma.jam.findFirst({
+            where: {
+                name: {
+                    equals: name,
+                    mode: 'insensitive'
+                }
+            },
+            orderBy: { createdAt: 'desc' },
+            select: {
+                location: true,
+                city: true,
+                description: true,
+                openingBand: true,
+                openingInfo: true,
+                openingThemes: true,
+                lat: true,
+                lng: true,
+                flyerUrl: true,
+            }
+        });
+        return jam;
+    } catch (error) {
+        console.error('Error fetching jam template details:', error);
+        return null;
+    }
+}
+
 export async function createTheme(
     jamCode: string,
     name: string,

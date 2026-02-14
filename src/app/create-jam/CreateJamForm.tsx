@@ -1,8 +1,6 @@
-'use client';
-
-import { useActionState, useState } from 'react';
-import { createJam, createOrUpdateVenue } from '@/app/actions';
-import { MapPin, Calendar, Music, Info } from 'lucide-react';
+import { useActionState, useState, useEffect } from 'react';
+import { createJam, createOrUpdateVenue, getJamTemplates, getJamTemplateDetails } from '@/app/actions';
+import { MapPin, Calendar, Music, Info, Sparkles } from 'lucide-react';
 import VenueAutocomplete from '@/components/VenueAutocomplete';
 
 const initialState = {
@@ -10,27 +8,57 @@ const initialState = {
     success: false
 };
 
-const SUGGESTED_JAM_NAMES = [
-    'Standard Jam',
-    'Take The A Train Session',
-    'Jam de Jazz',
-    'Sesión de Bebop',
-    'Noche de Bossa Nova',
-    'Gypsy Jazz Night',
-    'Fusion Session',
-    'Blues & Jazz Jam',
-    'Vocals Workshop Jam',
-    'Encuentro de Músicos',
-    'Autumn Leaves Jam',
-    'Blue Bossa Night',
-    'Summertime Session'
-];
-
 export default function CreateJamForm({ user }: { user: any }) {
     const [state, formAction, isPending] = useActionState(createJam, initialState);
     const [selectedVenue, setSelectedVenue] = useState<any>(null);
     const [locationInput, setLocationInput] = useState('');
     const [jamName, setJamName] = useState(`${user.name}'s Jam`);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [isAutoFilling, setIsAutoFilling] = useState(false);
+
+    // Fetch suggestions as user types
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (jamName.length >= 2) {
+                const results = await getJamTemplates(jamName);
+                setSuggestions(results);
+            } else {
+                setSuggestions([]);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [jamName]);
+
+    const handleAutoFill = async (name: string) => {
+        setIsAutoFilling(true);
+        const details = await getJamTemplateDetails(name);
+        if (details) {
+            // Fill normal inputs via state if we had them as state, but since they are mostly uncontrolled or via refs...
+            // Let's use form selectors for simple ones or state for name
+            setJamName(name);
+
+            // For other fields, we can set values directly if we use refs or just DOM selection for simplicity in this specific component
+            const setVal = (selector: string, val: string | null) => {
+                const el = document.querySelector(selector) as HTMLInputElement | HTMLTextAreaElement;
+                if (el && val) el.value = val;
+            };
+
+            setVal('input[name="city"]', details.city);
+            setVal('textarea[name="description"]', details.description);
+            setVal('input[name="openingBand"]', details.openingBand);
+            setVal('textarea[name="openingInfo"]', details.openingInfo);
+            setVal('textarea[name="openingThemes"]', details.openingThemes);
+            setVal('input[name="flyerUrl"]', details.flyerUrl);
+
+            if (details.location) {
+                setLocationInput(details.location);
+                setVal('input[name="location"]', details.location);
+            }
+            if (details.lat) setVal('input[name="lat"]', details.lat.toString());
+            if (details.lng) setVal('input[name="lng"]', details.lng.toString());
+        }
+        setIsAutoFilling(false);
+    };
 
     const handleVenueSelect = (venue: any) => {
         setSelectedVenue(venue);
@@ -59,22 +87,48 @@ export default function CreateJamForm({ user }: { user: any }) {
             )}
 
             {/* Jam Name */}
-            <div>
+            <div className="relative">
                 <label className="block text-sm font-medium text-white/60 mb-2">Nombre del Evento</label>
-                <input
-                    type="text"
-                    name="name"
-                    value={jamName}
-                    onChange={(e) => setJamName(e.target.value)}
-                    list="jam-names"
-                    required
-                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all"
-                />
-                <datalist id="jam-names">
-                    {SUGGESTED_JAM_NAMES.map(name => (
-                        <option key={name} value={name} />
-                    ))}
-                </datalist>
+                <div className="relative">
+                    <input
+                        type="text"
+                        name="name"
+                        value={jamName}
+                        onChange={(e) => setJamName(e.target.value)}
+                        required
+                        autoComplete="off"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all"
+                    />
+                    {isAutoFilling && (
+                        <div className="absolute right-3 top-3">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-jazz-gold"></div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Custom Suggestions Dropdown */}
+                {suggestions.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-jazz-surface border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="p-2 border-b border-white/5 bg-white/5">
+                            <span className="text-[10px] uppercase font-bold text-jazz-gold tracking-widest flex items-center gap-2">
+                                <Sparkles size={10} /> Sugerencias Guardadas
+                            </span>
+                        </div>
+                        {suggestions.map((name) => (
+                            <button
+                                key={name}
+                                type="button"
+                                onClick={() => {
+                                    handleAutoFill(name);
+                                    setSuggestions([]);
+                                }}
+                                className="w-full text-left p-3 text-sm text-white hover:bg-jazz-gold/10 transition-colors border-b border-white/5 last:border-0"
+                            >
+                                {name}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Date & Time */}
@@ -128,10 +182,6 @@ export default function CreateJamForm({ user }: { user: any }) {
                         <option value="Madrid" />
                         <option value="Barcelona" />
                     </datalist>
-                </div>
-                <div>
-                    {/* Map Link is implicitly handled via location detection mostly, but kept for manual override */}
-                    <input type="hidden" name="mapLink" />
                 </div>
             </div >
 
