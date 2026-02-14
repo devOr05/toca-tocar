@@ -116,18 +116,18 @@ export async function getAllJams() {
     }
 }
 
-export async function createTheme(formData: FormData) {
+export async function createTheme(
+    jamCode: string,
+    name: string,
+    tonality?: string,
+    description?: string,
+    sheetMusicUrl?: string,
+    type?: 'SONG' | 'TOPIC'
+) {
     const session = await auth();
     if (!session?.user?.id) {
         return { success: false, error: 'No autenticado' };
     }
-
-    const jamCode = formData.get('jamCode') as string;
-    const name = formData.get('name') as string;
-    const tonality = formData.get('tonality') as string;
-    const description = formData.get('description') as string;
-    const sheetMusicUrl = formData.get('sheetMusicUrl') as string;
-    const type = formData.get('type') as string; // SONG or TOPIC
 
     if (!jamCode || !name) {
         return { success: false, error: 'Faltan campos obligatorios' };
