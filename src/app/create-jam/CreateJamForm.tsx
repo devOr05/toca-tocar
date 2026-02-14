@@ -1,3 +1,5 @@
+'use client';
+
 import { useActionState, useState, useEffect } from 'react';
 import { createJam, createOrUpdateVenue, getJamTemplates, getJamTemplateDetails } from '@/app/actions';
 import { MapPin, Calendar, Music, Info, Sparkles } from 'lucide-react';
