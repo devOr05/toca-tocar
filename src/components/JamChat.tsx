@@ -19,6 +19,7 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [hasInitialScrolled, setHasInitialScrolled] = useState(false);
 
     // Polling for messages
     useEffect(() => {
@@ -34,11 +35,18 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
 
     // Auto-scroll logic: scroll container only, avoid page jumps
     useEffect(() => {
-        if (isCommentMode) return; // Don't auto-scroll in comment mode
         const container = messagesEndRef.current?.parentElement;
         if (!container) return;
 
-        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+        // Force scroll on first load or mount
+        if (!hasInitialScrolled && messages.length > 0) {
+            container.scrollTop = container.scrollHeight;
+            setHasInitialScrolled(true);
+            return;
+        }
+
+        // Only auto-scroll if user is near bottom or it's a new message from ME
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 200;
 
         if (isNearBottom) {
             container.scrollTo({
@@ -46,7 +54,7 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                 behavior: 'smooth'
             });
         }
-    }, [messages, isCommentMode]);
+    }, [messages, hasInitialScrolled]);
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();

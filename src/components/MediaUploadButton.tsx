@@ -64,6 +64,9 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
 
             if (!response.ok) {
                 console.error('Cloudinary error response:', data);
+                if (response.status === 401) {
+                    throw new Error('Error 401: ¿Configuraste el Upload Preset como "Unsigned" en Cloudinary? Es obligatorio.');
+                }
                 throw new Error(data.error?.message || 'Error al subir archivo a Cloudinary');
             }
 

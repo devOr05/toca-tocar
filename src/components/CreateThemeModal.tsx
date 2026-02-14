@@ -94,6 +94,9 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                 } else {
                     const errorDetails = await response.json();
                     console.error('PDF Upload failed (Cloudinary):', errorDetails);
+                    if (response.status === 401) {
+                        throw new Error('Error 401: ¿Configuraste el Upload Preset como "Unsigned" en Cloudinary? Es obligatorio.');
+                    }
                     throw new Error(`Cloudinary Error: ${errorDetails.error?.message || 'Fallo al subir el archivo PDF'}`);
                 }
                 (window as any)._tempPdfFile = null;
