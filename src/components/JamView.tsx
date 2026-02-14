@@ -58,13 +58,14 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         }
     }, [initialJam, initialThemes, initialParticipations, setJamState, initialUser, currentUser, setUser, setAuthenticatedUser, router]);
 
-    if (!mounted) return null;
-
     // Filter unique users for musician list using STORE participations to reflect real-time joins
+    // MUST be called before any conditional returns to follow Rules of Hooks
     const { participations: storeParticipations } = useJamStore();
     const uniqueMusicians = Array.from(new Set(storeParticipations.map(p => p.userId)))
         .map(id => storeParticipations.find(p => p.userId === id)?.user)
         .filter(u => u !== undefined) as User[];
+
+    if (!mounted) return null;
 
     return (
         <div className="min-h-screen bg-black pb-20 lg:pb-0 font-sans flex flex-col">
