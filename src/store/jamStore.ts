@@ -14,6 +14,8 @@ interface JamState {
     joinTheme: (themeId: string, instrument: string) => void;
     leaveTheme: (themeId: string) => void;
     checkEnsembles: () => void;
+    removeTheme: (themeId: string) => void;
+    addTheme: (theme: Theme) => void;
 }
 
 export const useJamStore = create<JamState>((set, get) => ({
@@ -118,5 +120,17 @@ export const useJamStore = create<JamState>((set, get) => ({
         });
 
         set({ themes: updatedThemes });
+    },
+
+    removeTheme: (themeId: string) => {
+        set((state) => ({
+            themes: state.themes.filter((t) => t.id !== themeId),
+        }));
+    },
+
+    addTheme: (theme: Theme) => {
+        set((state) => ({
+            themes: [...state.themes, theme],
+        }));
     },
 }));

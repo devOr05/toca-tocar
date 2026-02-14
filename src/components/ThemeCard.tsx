@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { Theme, Participation, User } from '../types';
-import { Mic2, Music, Drum, Guitar, Keyboard, Info, Pencil, Trash2, MessageSquare } from 'lucide-react';
+import { Mic2, Music, Drum, Guitar, Keyboard, Info, Pencil, Trash2, MessageSquare, FileMusic } from 'lucide-react';
 import { deleteTheme } from '@/app/actions';
+import { useJamStore } from '@/store/jamStore';
 import ThemeDetailsModal from './ThemeDetailsModal';
 import EditThemeModal from './EditThemeModal';
 
@@ -31,6 +32,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
     const [showInstruments, setShowInstruments] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
+    const { removeTheme, addTheme } = useJamStore();
 
     const myParticipation = currentUser
         ? participations.find(p => p.userId === currentUser.id)
@@ -96,7 +98,15 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                             <button
                                 onClick={async () => {
                                     if (confirm('¿Estás seguro de que quieres eliminar este tema?')) {
-                                        await deleteTheme(theme.id);
+                                        // Optimistic update - remove immediately
+                                        removeTheme(theme.id);
+
+                                        const result = await deleteTheme(theme.id);
+                                        if (!result.success) {
+                                            // Revert if failed
+                                            addTheme(theme);
+                                            alert(result.error || 'Error al eliminar el tema');
+                                        }
                                     }
                                 }}
                                 className="text-white/40 hover:text-red-500 transition-colors p-1"
@@ -108,6 +118,21 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                     )}
                 </div>
             </div>
+
+            {/* Sheet Music Link */}
+            {theme.sheetMusicUrl && (
+                <div className="mb-3">
+                    <a
+                        href={theme.sheetMusicUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-jazz-gold hover:text-white flex items-center gap-1.5 text-sm transition-colors bg-jazz-gold/10 px-3 py-1.5 rounded-lg border border-jazz-gold/30 hover:border-jazz-gold/60 w-fit"
+                    >
+                        <FileMusic size={14} />
+                        <span className="font-medium">Ver Partitura</span>
+                    </a>
+                </div>
+            )}
 
             {/* Participants */}
             <div className="space-y-2 mb-4">

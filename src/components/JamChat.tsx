@@ -31,9 +31,20 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
         return () => clearInterval(interval);
     }, [jamId, themeId]);
 
-    // Auto-scroll to bottom
+    // Auto-scroll to bottom only if user is already near bottom
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        const container = messagesEndRef.current?.parentElement;
+        if (!container) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
+
+        // Check if user is near bottom (within 100px)
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+
+        if (isNearBottom) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
     }, [messages]);
 
     const handleSend = async (e: React.FormEvent) => {
