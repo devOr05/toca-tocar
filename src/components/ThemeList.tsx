@@ -23,12 +23,12 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
 
     return (
         <div className="space-y-8 pb-20">
-            {/* Playing Now */}
+            {/* Active / Featured */}
             {playing.length > 0 && (
                 <section>
                     <h2 className="text-jazz-accent text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-jazz-accent animate-pulse" />
-                        Sonando Ahora
+                        {type === 'TOPIC' ? 'Tópicos Destacados' : 'Sonando Ahora'}
                     </h2>
                     <div className="grid gap-4">
                         {playing.map(theme => (
@@ -46,8 +46,8 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
                 </section>
             )}
 
-            {/* Up Next */}
-            {queued.length > 0 && (
+            {/* Up Next - Only for Songs */}
+            {type === 'SONG' && queued.length > 0 && (
                 <section>
                     <h2 className="text-jazz-gold text-xs font-bold uppercase tracking-widest mb-3">
                         Siguiente (Ensamble Listo)
@@ -68,23 +68,36 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
                 </section>
             )}
 
-            {/* Open Themes */}
+            {/* Open / Regular */}
             <section>
                 <h2 className="text-jazz-muted text-xs font-bold uppercase tracking-widest mb-3">
-                    Temas Abiertos
+                    {type === 'TOPIC' ? 'Discusiones Abiertas' : 'Temas Abiertos'}
                 </h2>
                 <div className="grid gap-4">
-                    {open.map(theme => (
-                        <ThemeCard
-                            key={theme.id}
-                            theme={theme}
-                            participations={getParticipations(theme.id)}
-                            currentUser={currentUser}
-                            isHost={isHost}
-                            onJoin={(inst) => joinTheme(theme.id, inst)}
-                            onLeave={() => leaveTheme(theme.id)}
-                        />
-                    ))}
+                    {type === 'TOPIC'
+                        ? filteredThemes.filter(t => t.status !== 'PLAYING').map(theme => (
+                            <ThemeCard
+                                key={theme.id}
+                                theme={theme}
+                                participations={getParticipations(theme.id)}
+                                currentUser={currentUser}
+                                isHost={isHost}
+                                onJoin={(inst) => joinTheme(theme.id, inst)}
+                                onLeave={() => leaveTheme(theme.id)}
+                            />
+                        ))
+                        : open.map(theme => (
+                            <ThemeCard
+                                key={theme.id}
+                                theme={theme}
+                                participations={getParticipations(theme.id)}
+                                currentUser={currentUser}
+                                isHost={isHost}
+                                onJoin={(inst) => joinTheme(theme.id, inst)}
+                                onLeave={() => leaveTheme(theme.id)}
+                            />
+                        ))
+                    }
                 </div>
             </section>
         </div>

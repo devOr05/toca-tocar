@@ -95,9 +95,16 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                             </button>
                         )}
                     </div>
-                    <span className="text-xs font-mono text-jazz-muted bg-white/5 px-2 py-0.5 rounded mt-1 inline-block">
-                        {theme.tonality || 'Key?'}
-                    </span>
+                    {theme.type !== 'TOPIC' && (
+                        <span className="text-xs font-mono text-jazz-muted bg-white/5 px-2 py-0.5 rounded mt-1 inline-block">
+                            {theme.tonality || 'Key?'}
+                        </span>
+                    )}
+                    {theme.type === 'TOPIC' && (
+                        <span className="text-[10px] font-bold text-jazz-accent uppercase tracking-widest mt-1 block">
+                            Discusión Abierta
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -124,8 +131,8 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                 </div>
             </div>
 
-            {/* Sheet Music Link */}
-            {theme.sheetMusicUrl && (
+            {/* Sheet Music Link - Only for Songs */}
+            {theme.sheetMusicUrl && theme.type !== 'TOPIC' && (
                 <div className="mb-4">
                     <a
                         href={theme.sheetMusicUrl}
@@ -137,6 +144,11 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                         <span className="font-medium">Ver Partitura</span>
                     </a>
                 </div>
+            )}
+
+            {/* Description for Topics Preview */}
+            {theme.type === 'TOPIC' && theme.description && (
+                <p className="text-white/60 text-sm mb-4 line-clamp-2">{theme.description}</p>
             )}
 
             {/* New Instrument Participation System */}
@@ -168,7 +180,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                     className="w-full py-2.5 bg-jazz-accent/10 hover:bg-jazz-accent/20 text-jazz-accent text-sm font-bold rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2"
                 >
                     <MessageSquare size={16} />
-                    Ver Discusión
+                    Entrar a la Discusión
                 </button>
             )}
 
