@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useJamStore } from '../store/jamStore';
 import ThemeList from './ThemeList';
-import { Share2, Users, Music2, LogOut, Trash2, Calendar, MapPin, Image as ImageIcon, Plus } from 'lucide-react';
+import { Share2, Users, Music2, LogOut, Trash2, Calendar, MapPin, Image as ImageIcon, Plus, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Jam, Theme, Participation, User } from '../types';
 import CreateThemeModal from './CreateThemeModal';
