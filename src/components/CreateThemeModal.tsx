@@ -23,6 +23,7 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
         description: '',
         sheetMusicUrl: ''
     });
+    const [pdfFileName, setPdfFileName] = useState<string | null>(null);
 
     const [suggestions, setSuggestions] = useState<typeof JAZZ_STANDARDS>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -30,6 +31,11 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
     if (!isOpen) return null;
 
     const isSong = type === 'SONG';
+
+    const handleRemovePdf = () => {
+        (window as any)._tempPdfFile = null;
+        setPdfFileName(null);
+    };
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -68,7 +74,9 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
             const pdfFile = (window as any)._tempPdfFile;
             if (pdfFile) {
                 const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-                if (!cloudName) throw new Error('Cloudinary not configured');
+                if (!cloudName) {
+                    throw new Error('Cloudinary not configured (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)');
+                }
 
                 const uploadData = new FormData();
                 uploadData.append('file', pdfFile);
@@ -83,7 +91,9 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                     const data = await response.json();
                     sheetMusicUrl = data.secure_url;
                 } else {
-                    console.error('PDF Upload failed');
+                    const errorDetails = await response.json();
+                    console.error('PDF Upload failed:', errorDetails);
+                    throw new Error('Fallo al subir el archivo PDF');
                 }
                 (window as any)._tempPdfFile = null;
             }
@@ -99,14 +109,15 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
 
             if (result.success) {
                 setFormData({ name: '', tonality: '', description: '', sheetMusicUrl: '' });
+                setPdfFileName(null);
                 router.refresh();
                 onClose();
             } else {
                 alert(result.error || 'Error al crear el tema');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Submit error:', error);
-            alert('Error al procesar la solicitud');
+            alert(error.message || 'Error al procesar la solicitud');
         } finally {
             setIsLoading(false);
         }
@@ -209,21 +220,39 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
                         {isSong && (
                             <div>
                                 <label className="block text-xs font-bold text-jazz-muted mb-1 uppercase tracking-wider flex items-center gap-1">
-                                    <LinkIcon size={12} /> Subir Partitura (PDF)
+                                    <FileText size={12} /> Subir Partitura (PDF)
                                 </label>
-                                <input
-                                    type="file"
-                                    accept=".pdf"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                            // Handle file preview or store in state
-                                            (window as any)._tempPdfFile = file;
-                                        }
-                                    }}
-                                    className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white file:bg-jazz-gold/10 file:text-jazz-gold file:border-0 file:rounded-md file:px-2 file:py-1 file:text-xs hover:file:bg-jazz-gold/20 cursor-pointer"
-                                />
-                                <p className="text-[10px] text-white/30 mt-1">Sube el archivo PDF directamente si no tienes un link.</p>
+                                {!pdfFileName ? (
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            accept=".pdf"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    (window as any)._tempPdfFile = file;
+                                                    setPdfFileName(file.name);
+                                                }
+                                            }}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white file:bg-jazz-gold/10 file:text-jazz-gold file:border-0 file:rounded-md file:px-2 file:py-1 file:text-xs hover:file:bg-jazz-gold/20 cursor-pointer"
+                                        />
+                                        <p className="text-[10px] text-white/30 mt-1">Sube el archivo PDF directamente si no tienes un link.</p>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between bg-jazz-gold/10 border border-jazz-gold/30 rounded-lg p-3">
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <FileText className="text-jazz-gold shrink-0" size={16} />
+                                            <span className="text-sm text-white truncate">{pdfFileName}</span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleRemovePdf}
+                                            className="text-white/40 hover:text-red-500 transition-colors bg-white/5 p-1 rounded-md"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
 

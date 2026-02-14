@@ -127,6 +127,9 @@ export async function createJam(prevState: any, formData: FormData) {
     const flyerUrl = formData.get('flyerUrl') as string;
     const lat = parseFloat(formData.get('lat') as string) || null;
     const lng = parseFloat(formData.get('lng') as string) || null;
+    const openingBand = formData.get('openingBand') as string;
+    const openingInfo = formData.get('openingInfo') as string;
+    const openingThemes = formData.get('openingThemes') as string;
 
     // Simple validation
     if (!name || !location || !city || !startTimeStr) {
@@ -150,6 +153,9 @@ export async function createJam(prevState: any, formData: FormData) {
                 lat: lat || undefined,
                 lng: lng || undefined,
                 hostId: userId,
+                openingBand,
+                openingInfo,
+                openingThemes,
                 status: 'SCHEDULED',
             },
         });
@@ -181,6 +187,28 @@ export async function getJam(code: string) {
     } catch (error) {
         console.error('Error fetching jam:', error);
         return null;
+    }
+}
+
+export async function updateJamOpening(jamId: string, openingBand: string, openingInfo: string, openingThemes: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autenticado' };
+
+    try {
+        const jam = await prisma.jam.findUnique({ where: { id: jamId } });
+        if (!jam) return { success: false, error: 'Jam no encontrada' };
+        if (jam.hostId !== session.user.id) return { success: false, error: 'No autorizado' };
+
+        await prisma.jam.update({
+            where: { id: jamId },
+            data: { openingBand, openingInfo, openingThemes }
+        });
+
+        revalidatePath(`/jam/${jam.code}`);
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating opening info:', error);
+        return { success: false, error: 'Error al actualizar información de apertura' };
     }
 }
 
@@ -847,15 +875,11 @@ export async function deleteMedia(mediaId: string) {
     }
 }
 /**
- * Create a new announcement (Admin only)
+ * Create a new announcement
  */
 export async function createAnnouncement(title: string, content: string, tag: string, tagColor: string) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: 'No autenticado' };
-
-    // Basic admin check (could use a dedicated field or email list)
-    const isAdmin = session.user.email === 'kavay86@gmail.com' || (session.user as any).role === 'ADMIN';
-    if (!isAdmin) return { success: false, error: 'No autorizado' };
 
     try {
         await prisma.announcement.create({
@@ -864,6 +888,7 @@ export async function createAnnouncement(title: string, content: string, tag: st
                 content,
                 tag,
                 tagColor,
+                userId: session.user.id,
                 active: true,
             },
         });
@@ -876,14 +901,69 @@ export async function createAnnouncement(title: string, content: string, tag: st
 }
 
 /**
+ * Update an announcement
+ */
+export async function updateAnnouncement(id: string, title: string, content: string, tag: string, tagColor: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autenticado' };
+
+    try {
+        const announcement = await prisma.announcement.findUnique({ where: { id } });
+        if (!announcement) return { success: false, error: 'No encontrado' };
+
+        const isAdmin = session.user.email === 'orostizagamario@gmail.com' || (session.user as any).role === 'ADMIN';
+        if (announcement.userId !== session.user.id && !isAdmin) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        await prisma.announcement.update({
+            where: { id },
+            data: { title, content, tag, tagColor }
+        });
+
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating announcement:', error);
+        return { success: false, error: 'Error al actualizar el anuncio' };
+    }
+}
+
+/**
+ * Delete an announcement
+ */
+export async function deleteAnnouncement(id: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autenticado' };
+
+    try {
+        const announcement = await prisma.announcement.findUnique({ where: { id } });
+        if (!announcement) return { success: false, error: 'No encontrado' };
+
+        const isAdmin = session.user.email === 'orostizagamario@gmail.com' || (session.user as any).role === 'ADMIN';
+        if (announcement.userId !== session.user.id && !isAdmin) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        await prisma.announcement.delete({ where: { id } });
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting announcement:', error);
+        return { success: false, error: 'Error al eliminar el anuncio' };
+    }
+}
+
+/**
  * Get active announcements
  */
 export async function getAnnouncements() {
     try {
         const announcements = await prisma.announcement.findMany({
             where: { active: true },
+            include: { user: { select: { name: true, image: true } } },
             orderBy: { createdAt: 'desc' },
-            take: 5
+            take: 10
         });
         return announcements;
     } catch (error) {
@@ -891,3 +971,4 @@ export async function getAnnouncements() {
         return [];
     }
 }
+

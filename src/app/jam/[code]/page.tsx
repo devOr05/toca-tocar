@@ -70,6 +70,9 @@ export default async function JamPage({ params }: PageProps) {
         startTime: jamData.startTime || undefined,
         status: jamData.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED',
         hostId: jamData.hostId,
+        openingBand: jamData.openingBand,
+        openingInfo: jamData.openingInfo,
+        openingThemes: jamData.openingThemes,
         createdAt: jamData.createdAt,
         isPrivate: jamData.isPrivate
     };

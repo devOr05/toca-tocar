@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Jam, Theme } from '../types';
 import { Play, Square, CheckCircle2, ListOrdered, Settings2, Loader } from 'lucide-react';
-import { updateJamStatus, updateThemeStatus } from '@/app/actions';
+import { updateJamOpening, updateJamStatus, updateThemeStatus } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 
 interface HostControlPanelProps {
@@ -14,6 +14,29 @@ interface HostControlPanelProps {
 export default function HostControlPanel({ jam, themes }: HostControlPanelProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [isEditingOpening, setIsEditingOpening] = useState(false);
+    const [openingData, setOpeningData] = useState({
+        openingBand: jam.openingBand || '',
+        openingInfo: jam.openingInfo || '',
+        openingThemes: jam.openingThemes || ''
+    });
+
+    const handleSaveOpening = async () => {
+        setIsLoading(true);
+        const result = await updateJamOpening(
+            jam.id,
+            openingData.openingBand,
+            openingData.openingInfo,
+            openingData.openingThemes
+        );
+        if (result.success) {
+            setIsEditingOpening(false);
+            router.refresh();
+        } else {
+            alert(result.error);
+        }
+        setIsLoading(false);
+    };
 
     const activeThemes = themes.filter(t => t.status === 'PLAYING');
     const queuedThemes = themes.filter(t => t.status === 'QUEUED');
@@ -71,6 +94,70 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
             </div>
 
             <div className="p-6 space-y-6">
+                {/* Opening Info Section for Host */}
+                <div className="pb-6 border-b border-white/5">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
+                            Show de Apertura
+                        </h3>
+                        <button
+                            onClick={() => setIsEditingOpening(!isEditingOpening)}
+                            className="text-[10px] text-jazz-gold hover:underline font-bold"
+                        >
+                            {isEditingOpening ? 'Cancelar' : 'Editar Info'}
+                        </button>
+                    </div>
+
+                    {isEditingOpening ? (
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-[10px] text-white/40 mb-1 uppercase">Músico / Banda</label>
+                                <input
+                                    type="text"
+                                    value={openingData.openingBand}
+                                    onChange={(e) => setOpeningData({ ...openingData, openingBand: e.target.value })}
+                                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] text-white/40 mb-1 uppercase">Información / Links</label>
+                                <textarea
+                                    value={openingData.openingInfo}
+                                    onChange={(e) => setOpeningData({ ...openingData, openingInfo: e.target.value })}
+                                    rows={2}
+                                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] text-white/40 mb-1 uppercase">Temas (uno por línea)</label>
+                                <textarea
+                                    value={openingData.openingThemes}
+                                    onChange={(e) => setOpeningData({ ...openingData, openingThemes: e.target.value })}
+                                    rows={2}
+                                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white"
+                                />
+                            </div>
+                            <button
+                                onClick={handleSaveOpening}
+                                disabled={isLoading}
+                                className="w-full bg-jazz-gold text-black font-bold py-2 rounded-lg text-xs hover:scale-[1.02] transition-all disabled:opacity-50"
+                            >
+                                {isLoading ? 'Guardando...' : 'Guardar Cambios de Apertura'}
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="bg-black/20 rounded-xl p-3 border border-white/5">
+                            {jam.openingBand ? (
+                                <div>
+                                    <div className="text-white font-bold text-sm">{jam.openingBand}</div>
+                                    <div className="text-[10px] text-white/40 truncate">{jam.openingThemes?.split('\n').filter(t => t.trim()).length || 0} temas declarados</div>
+                                </div>
+                            ) : (
+                                <p className="text-white/40 text-xs italic">No hay información de apertura configurada.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
                 {/* Current Subject */}
                 <div>
                     <h3 className="text-xs font-bold text-jazz-muted uppercase tracking-widest mb-4 flex items-center gap-2">

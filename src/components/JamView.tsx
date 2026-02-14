@@ -172,6 +172,41 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             )}
                         </div>
 
+                        {/* OPENING SHOW SECTION */}
+                        {initialJam.openingBand && (
+                            <div className="bg-jazz-gold/5 border border-jazz-gold/20 rounded-xl p-6 shadow-lg shrink-0 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-2 opacity-10 rotate-12">
+                                    <Music2 size={80} className="text-jazz-gold" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-[10px] font-black bg-jazz-gold text-black px-2 py-0.5 rounded uppercase tracking-tighter">Apertura</span>
+                                        <h2 className="text-xl font-bold text-white tracking-tight">{initialJam.openingBand}</h2>
+                                    </div>
+
+                                    {initialJam.openingInfo && (
+                                        <p className="text-white/70 text-sm mb-4 leading-relaxed whitespace-pre-wrap max-w-2xl">
+                                            {initialJam.openingInfo}
+                                        </p>
+                                    )}
+
+                                    {initialJam.openingThemes && (
+                                        <div className="space-y-2 border-l-2 border-jazz-gold/30 pl-4 py-1">
+                                            <h4 className="text-[10px] uppercase font-bold text-jazz-gold tracking-widest mb-2">Repertorio de Apertura</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {initialJam.openingThemes.split('\n').filter(t => t.trim()).map((t, i) => (
+                                                    <div key={i} className="bg-black/40 border border-white/10 px-3 py-1.5 rounded-lg text-xs text-white/80 flex items-center gap-2 transition-all hover:border-jazz-gold/40">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-jazz-gold/40" />
+                                                        {t.trim()}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         {/* HOST CONTROLS */}
                         {isHost && activeTab === 'THEMES' && (
                             <section className="shrink-0">

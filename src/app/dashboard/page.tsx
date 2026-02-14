@@ -27,12 +27,12 @@ export default async function Dashboard() {
     const now = new Date();
     const threshold = new Date(now.getTime() - 6 * 60 * 60 * 1000); // 6 hours ago
 
-    const activeJams = allJams.filter(jam =>
+    const activeJams = allJams.filter((jam: any) =>
         jam.status !== 'FINISHED' &&
         jam.startTime && jam.startTime > threshold
     );
 
-    const pastJams = allJams.filter(jam =>
+    const pastJams = allJams.filter((jam: any) =>
         jam.status === 'FINISHED' ||
         (jam.startTime && jam.startTime <= threshold)
     ).slice(0, 3); // Limit history
@@ -90,7 +90,7 @@ export default async function Dashboard() {
                     )}
 
                     <div className="py-8">
-                        <NewsSection isAdmin={isAdmin} />
+                        <NewsSection isAdmin={isAdmin} currentUserId={session.user.id} />
                     </div>
                 </div>
 

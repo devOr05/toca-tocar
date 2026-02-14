@@ -23,6 +23,9 @@ export interface Jam {
     status: 'SCHEDULED' | 'ACTIVE' | 'FINISHED';
     isPrivate?: boolean;
     hostId: string;
+    openingBand?: string | null;
+    openingInfo?: string | null;
+    openingThemes?: string | null;
     createdAt: Date;
 }
 

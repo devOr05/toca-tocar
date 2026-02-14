@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Megaphone, Music, Loader } from 'lucide-react';
+import { Megaphone, Music, Loader, Trash2 } from 'lucide-react';
 import { getAnnouncements } from '@/app/actions';
 import CreateAnnouncementModal from './CreateAnnouncementModal';
 
@@ -14,15 +14,14 @@ interface NewsItem {
     createdAt: Date;
 }
 
-export default function NewsSection({ isAdmin = false }: { isAdmin?: boolean }) {
-    const [announcements, setAnnouncements] = useState<NewsItem[]>([]);
+export default function NewsSection({ isAdmin = false, currentUserId }: { isAdmin?: boolean, currentUserId?: string }) {
+    const [announcements, setAnnouncements] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
 
     const fetchNews = async () => {
         setIsLoading(true);
         const data = await getAnnouncements();
-        // @ts-ignore
         setAnnouncements(data);
         setIsLoading(false);
     };
@@ -31,6 +30,15 @@ export default function NewsSection({ isAdmin = false }: { isAdmin?: boolean }) 
         fetchNews();
     }, []);
 
+    const handleDelete = async (id: string) => {
+        if (confirm('¿Eliminar este anuncio?')) {
+            const { deleteAnnouncement } = await import('@/app/actions');
+            const result = await deleteAnnouncement(id);
+            if (result.success) fetchNews();
+            else alert(result.error);
+        }
+    };
+
     return (
         <section className="space-y-6">
             <div className="flex items-center justify-between">
@@ -38,7 +46,7 @@ export default function NewsSection({ isAdmin = false }: { isAdmin?: boolean }) 
                     <Megaphone className="text-jazz-gold" size={24} />
                     Novedades
                 </h2>
-                {isAdmin && (
+                {currentUserId && (
                     <button
                         onClick={() => setShowCreateModal(true)}
                         className="text-xs bg-jazz-gold/10 border border-jazz-gold/20 text-jazz-gold px-3 py-1.5 rounded-lg hover:bg-jazz-gold/20 transition-all font-bold"
@@ -59,22 +67,53 @@ export default function NewsSection({ isAdmin = false }: { isAdmin?: boolean }) 
                         <p className="text-white/20 text-sm">No hay novedades por el momento.</p>
                     </div>
                 ) : (
-                    announcements.map((news) => (
-                        <div key={news.id} className="bg-white/5 border border-white/5 rounded-2xl p-5 hover:bg-white/[0.08] transition-all group">
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="font-bold text-white group-hover:text-jazz-gold transition-colors">{news.title}</h3>
-                                {news.tag && (
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${news.tagColor || 'bg-white/10 text-white/40'}`}>
-                                        {news.tag}
-                                    </span>
+                    announcements.map((news) => {
+                        const isOwner = news.userId === currentUserId;
+                        const canManage = isOwner || isAdmin;
+
+                        return (
+                            <div key={news.id} className="bg-white/5 border border-white/5 rounded-2xl p-5 hover:bg-white/[0.08] transition-all group relative">
+                                <div className="flex justify-between items-start mb-2 pr-8">
+                                    <h3 className="font-bold text-white group-hover:text-jazz-gold transition-colors">{news.title}</h3>
+                                    {news.tag && (
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${news.tagColor || 'bg-white/10 text-white/40'}`}>
+                                            {news.tag}
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-sm text-white/50 leading-relaxed whitespace-pre-wrap">{news.content}</p>
+                                <div className="mt-3 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 h-5 rounded-full bg-white/10 overflow-hidden">
+                                            {news.user?.image ? (
+                                                <img src={news.user.image} alt={news.user.name || ''} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full bg-jazz-gold/20 flex items-center justify-center text-[8px] text-jazz-gold font-bold">
+                                                    {(news.user?.name || '?')[0]}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span className="text-[10px] text-white/30 font-medium">{news.user?.name || 'Músico'}</span>
+                                    </div>
+                                    <div className="text-[10px] text-white/20">
+                                        {new Date(news.createdAt).toLocaleDateString()}
+                                    </div>
+                                </div>
+
+                                {canManage && (
+                                    <div className="absolute top-5 right-5 flex gap-1">
+                                        <button
+                                            onClick={() => handleDelete(news.id)}
+                                            className="p-1.5 text-white/10 hover:text-red-500 transition-colors"
+                                            title="Eliminar"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
                                 )}
                             </div>
-                            <p className="text-sm text-white/50 leading-relaxed truncate-3-lines">{news.content}</p>
-                            <div className="mt-3 text-[10px] text-white/20">
-                                {new Date(news.createdAt).toLocaleDateString()}
-                            </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 

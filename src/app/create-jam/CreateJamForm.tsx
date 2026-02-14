@@ -144,11 +144,39 @@ export default function CreateJamForm({ user }: { user: any }) {
             </div >
 
             {/* Description */}
-            < div >
+            <div>
                 <label className="block text-sm font-medium text-white/60 mb-2">Descripción / Detalles</label>
-                <textarea name="description" rows={3} placeholder="¿Qué vamos a tocar? ¿Hay backline?"
+                <textarea name="description" rows={2} placeholder="¿Qué vamos a tocar? ¿Hay backline?"
                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
-            </div >
+            </div>
+
+            {/* Opening Info Section */}
+            <div className="pt-4 border-t border-white/5">
+                <h3 className="text-jazz-gold font-bold text-sm mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <Music size={16} /> Show de Apertura (Opcional)
+                </h3>
+
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-white/40 mb-1 uppercase tracking-widest">¿Quién hace la apertura?</label>
+                        <input type="text" name="openingBand" placeholder="Ej: Mario Oro Trio"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-white/40 mb-1 uppercase tracking-widest">Información del Grupo / Redes</label>
+                        <textarea name="openingInfo" rows={2} placeholder="Redes sociales, bio corta..."
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-white/40 mb-1 uppercase tracking-widest">Temas que tocarán</label>
+                        <textarea name="openingThemes" rows={2} placeholder="Listado de temas (estos se crearán como cerrados)..."
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
+                        <p className="text-[10px] text-white/30 mt-1">Estos temas aparecerán en la Jam pero no permitirán anotarse a otros músicos.</p>
+                    </div>
+                </div>
+            </div>
 
             <div className="pt-4">
                 <button type="submit" disabled={isPending} className="w-full bg-jazz-gold text-black font-bold p-4 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-jazz-gold/20 disabled:opacity-50 disabled:cursor-not-allowed">

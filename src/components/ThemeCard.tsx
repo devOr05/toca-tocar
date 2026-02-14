@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Theme, Participation, User } from '../types';
-import { Info, Pencil, Trash2, MessageSquare, FileMusic } from 'lucide-react';
+import { Info, Pencil, Trash2, MessageSquare, FileMusic, Music } from 'lucide-react';
 import { deleteTheme } from '@/app/actions';
 import { useJamStore } from '@/store/jamStore';
 import ThemeDetailsModal from './ThemeDetailsModal';

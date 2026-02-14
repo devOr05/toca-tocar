@@ -48,6 +48,7 @@ model User {
   sentMessages     DirectMessage[] @relation("SentMessages")
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
   uploadedMedia    Media[]         @relation("UploadedMedia")
+  announcements    Announcement[]
 }
 
 model Account {
@@ -111,6 +112,12 @@ model Jam {
   themes    Theme[]
   messages  Message[]
   media     Media[] @relation("JamMedia")
+  
+  // Opening show info
+  openingBand   String?
+  openingInfo   String? 
+  openingThemes String? 
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -214,6 +221,10 @@ model Announcement {
   link      String?
   imageUrl  String?
   active    Boolean  @default(true)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
