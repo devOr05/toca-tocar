@@ -69,7 +69,6 @@ export async function joinThemeAction(themeId: string, instrument: string) {
             data: {
                 themeId,
                 userId: session.user.id,
-                userName: session.user.name || 'Usuario',
                 instrument,
             },
         });
