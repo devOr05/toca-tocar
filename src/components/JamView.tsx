@@ -66,7 +66,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     // MUST be called before any conditional returns to follow Rules of Hooks
     const uniqueMusicians = Array.from(new Set(participations.map(p => p.userId)))
         .map(id => participations.find(p => p.userId === id)?.user)
-        .filter(u => u !== undefined) as User[];
+        .filter(Boolean) as User[]; // Filter null and undefined
 
     if (!mounted) return null;
 
@@ -303,14 +303,17 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                     <div className="bg-jazz-surface border border-white/10 rounded-xl overflow-hidden p-4">
                         <h3 className="font-bold text-white mb-2">Músicos</h3>
                         <div className="flex overflow-x-auto gap-2 pb-2">
-                            {uniqueMusicians.map(u => (
-                                <div key={u.id} className="flex flex-col items-center min-w-[60px]">
-                                    <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden border border-white/10">
-                                        {u.image ? <img src={u.image} className="w-full h-full object-cover" /> : <div className="p-2 text-center text-xs">🎷</div>}
+                            {uniqueMusicians.map(u => {
+                                if (!u) return null; // Theoretical safety
+                                return (
+                                    <div key={u.id} className="flex flex-col items-center min-w-[60px]">
+                                        <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden border border-white/10">
+                                            {u.image ? <img src={u.image} alt={u.name || ''} className="w-full h-full object-cover" /> : <div className="p-2 text-center text-xs">🎷</div>}
+                                        </div>
+                                        <span className="text-[10px] text-white truncate w-full text-center mt-1">{u.name}</span>
                                     </div>
-                                    <span className="text-[10px] text-white truncate w-full text-center mt-1">{u.name}</span>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 
