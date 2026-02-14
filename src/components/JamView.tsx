@@ -12,6 +12,7 @@ import JamChat from './JamChat';
 import MusicianList from './MusicianList';
 import MediaGallery from './MediaGallery';
 import MediaUploadButton from './MediaUploadButton';
+import HostControlPanel from './HostControlPanel';
 
 interface JamViewProps {
     initialJam: Jam;
@@ -22,7 +23,7 @@ interface JamViewProps {
 
 export default function JamView({ initialJam, initialThemes, initialParticipations, currentUser: initialUser }: JamViewProps) {
     const router = useRouter();
-    const { jam, setUser, setAuthenticatedUser, currentUser, setJamState } = useJamStore();
+    const { jam, themes, participations, setUser, setAuthenticatedUser, currentUser, setJamState } = useJamStore();
     const [mounted, setMounted] = useState(false);
     const [formattedDate, setFormattedDate] = useState<string>('');
     const [isCreateThemeOpen, setIsCreateThemeOpen] = useState(false);
@@ -61,9 +62,8 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
     // Filter unique users for musician list using STORE participations to reflect real-time joins
     // MUST be called before any conditional returns to follow Rules of Hooks
-    const { participations: storeParticipations } = useJamStore();
-    const uniqueMusicians = Array.from(new Set(storeParticipations.map(p => p.userId)))
-        .map(id => storeParticipations.find(p => p.userId === id)?.user)
+    const uniqueMusicians = Array.from(new Set(participations.map(p => p.userId)))
+        .map(id => participations.find(p => p.userId === id)?.user)
         .filter(u => u !== undefined) as User[];
 
     if (!mounted) return null;
@@ -170,6 +170,13 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             )}
                         </div>
 
+                        {/* HOST CONTROLS */}
+                        {isHost && activeTab === 'THEMES' && (
+                            <section className="shrink-0">
+                                <HostControlPanel jam={initialJam} themes={themes} />
+                            </section>
+                        )}
+
                         {activeTab === 'THEMES' && (
                             <div className="pb-24">
                                 <ThemeList type="SONG" />
@@ -241,11 +248,11 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         )}
                     </div>
                 </aside>
-            </div>
+            </div >
 
 
             {/* MOBILE LAYOUT */}
-            <div className="lg:hidden flex-1 overflow-y-auto">
+            < div className="lg:hidden flex-1 overflow-y-auto" >
                 <main className="p-4 space-y-6">
                     {/* Tabs / Toggle for Mobile? For now keeping stacks but using MusicianList */}
 
@@ -283,7 +290,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 >
                     <Plus className="w-7 h-7" />
                 </button>
-            </div>
+            </div >
 
             <CreateThemeModal
                 isOpen={isCreateThemeOpen}
@@ -291,6 +298,6 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 jamCode={jam.code}
                 type={createType}
             />
-        </div>
+        </div >
     );
 }

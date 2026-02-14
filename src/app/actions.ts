@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { auth, signOut } from '@/auth';
+import { revalidatePath } from 'next/cache';
 
 const STANDARD_THEMES = [
     { name: 'Autumn Leaves', tonality: 'Gm' },
@@ -239,6 +240,56 @@ export async function createTheme(
     }
 }
 
+export async function updateJamStatus(jamId: string, status: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autenticado' };
+
+    try {
+        const jam = await prisma.jam.findUnique({ where: { id: jamId } });
+        if (!jam || jam.hostId !== session.user.id) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        await prisma.jam.update({
+            where: { id: jamId },
+            data: { status },
+        });
+
+        revalidatePath(`/jam/${jam.code}`);
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating jam status:', error);
+        return { success: false, error: 'Error al actualizar el estado de la jam' };
+    }
+}
+
+export async function updateThemeStatus(themeId: string, status: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autenticado' };
+
+    try {
+        const theme = await prisma.theme.findUnique({
+            where: { id: themeId },
+            include: { jam: true }
+        });
+
+        if (!theme || theme.jam.hostId !== session.user.id) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        await prisma.theme.update({
+            where: { id: themeId },
+            data: { status },
+        });
+
+        revalidatePath(`/jam/${theme.jam.code}`);
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating theme status:', error);
+        return { success: false, error: 'Error al actualizar el estado del tema' };
+    }
+}
+
 export async function joinTheme(themeId: string, instrument: string) {
     const session = await auth();
     if (!session?.user?.id) {
@@ -261,18 +312,6 @@ export async function joinTheme(themeId: string, instrument: string) {
     }
 }
 
-export async function updateThemeStatus(themeId: string, status: string) {
-    try {
-        await prisma.theme.update({
-            where: { id: themeId },
-            data: { status },
-        });
-        return { success: true };
-    } catch (error) {
-        console.error('Error updating theme status:', error);
-        return { success: false, error: 'Error al actualizar el estado' };
-    }
-}
 
 export async function updateParticipationStatus(participationId: string, status: string) {
     try {
