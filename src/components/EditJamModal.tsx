@@ -32,15 +32,16 @@ export default function EditJamModal({ isOpen, onClose, jam }: EditJamModalProps
         e.preventDefault();
         setIsLoading(true);
 
-        const result = await updateJam(
-            jam.code,
-            formData.name,
-            formData.description,
-            formData.location,
-            formData.city,
-            formData.startTime,
-            formData.flyerUrl
-        );
+        // Create FormData object
+        const fd = new FormData();
+        fd.append('name', formData.name);
+        fd.append('description', formData.description);
+        fd.append('location', formData.location);
+        fd.append('city', formData.city);
+        fd.append('startTime', formData.startTime);
+        fd.append('flyerUrl', formData.flyerUrl);
+
+        const result = await updateJam(jam.id, fd);
 
         setIsLoading(false);
 
