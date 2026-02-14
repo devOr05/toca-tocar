@@ -24,8 +24,9 @@ export default async function Dashboard() {
         orderBy: { createdAt: 'desc' }
     });
 
-    // Fetch musicians for sidebar
-    const musicians = await import('@/app/actions').then(mod => mod.getMusiciansByCity(session.user.city || ''));
+    // Fetch musicians for sidebar (use empty string if no city)
+    const userCity = (session.user as any).city || '';
+    const musicians = await import('@/app/actions').then(mod => mod.getMusiciansByCity(userCity));
 
     return (
         <div className="min-h-screen bg-background p-6">
@@ -47,7 +48,7 @@ export default async function Dashboard() {
                 {/* Main Content: Jams */}
                 <div className="lg:col-span-2 space-y-6">
                     <JamList
-                        jams={jams.map(j => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
+                        jams={jams.map((j: any) => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
                         currentUserId={session.user.id}
                     />
 
@@ -63,7 +64,7 @@ export default async function Dashboard() {
                         <MusicianList
                             // @ts-ignore
                             users={musicians}
-                            title={`Músicos en ${musiciansLocation}`}
+                            title={`Músicos en ${userCity || 'tu zona'}`}
                             emptyMessage="No hay músicos en tu zona aún."
                         />
                     </div>
