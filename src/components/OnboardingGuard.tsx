@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function OnboardingGuard({ children }: { children: React.ReactNode }) {
     const { data: session, status } = useSession();
@@ -14,24 +15,20 @@ export default function OnboardingGuard({ children }: { children: React.ReactNod
         if (status === 'loading') return;
 
         // Paths that don't require onboarding
-        // Allowed: Home (maybe?), Onboarding itself, API routes
+        // Allowed: Home (maybe?), Profile itself, API routes
         const isPublicPath = pathname === '/' || pathname === '/login' || pathname.startsWith('/api') || pathname.startsWith('/_next') || pathname.includes('.');
-        const isOnboardingPath = pathname === '/onboarding';
+        const isProfilePath = pathname === '/profile';
 
         if (!session) return; // Let middleware or page protection handle unauth
 
         // Check if user has completed profile
         const isProfileComplete = !!(session.user?.city && session.user?.mainInstrument);
 
-        // If incomplete and NOT on onboarding page, redirect to onboarding
-        if (!isProfileComplete && !isOnboardingPath && !isPublicPath) {
-            console.log('Redirecting to onboarding due to incomplete profile:', session.user);
-            router.push('/onboarding');
-        }
-
-        // If complete and ON onboarding page, redirect to dashboard
-        if (isProfileComplete && isOnboardingPath) {
-            router.push('/dashboard');
+        // If incomplete and NOT on profile page, redirect to profile
+        if (!isProfileComplete && !isProfilePath && !isPublicPath) {
+            console.log('Redirecting to profile due to incomplete data:', session.user);
+            toast.info('Por favor completa tu perfil para continuar (Instrumento y Ciudad).');
+            router.push('/profile');
         }
 
     }, [session, status, pathname, router]);

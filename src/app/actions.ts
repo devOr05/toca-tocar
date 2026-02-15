@@ -491,7 +491,13 @@ export async function updateProfile(prevState: any, formData: FormData) {
                 website: website || undefined,
             },
         });
-        return { success: true };
+        return {
+            success: true,
+            updatedFields: {
+                city,
+                mainInstrument
+            }
+        };
     } catch (error) {
         console.error('Error updating profile:', error);
         return { success: false, error: 'Error al actualizar el perfil' };

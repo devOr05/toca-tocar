@@ -1,16 +1,30 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useActionState, useEffect } from 'react';
 import { updateProfile, logoutAction } from '@/app/actions';
 import { User, Music2, Link as LinkIcon, Save, Disc, LogOut, MapPin } from "lucide-react";
 
 const initialState = {
     error: '',
-    success: false
+    success: false,
+    updatedFields: null as any
 };
 
 export default function ProfileForm({ user }: { user: any }) {
+    const { update } = useSession();
     const [state, formAction, isPending] = useActionState(updateProfile, initialState);
+
+    useEffect(() => {
+        if (state?.success && state?.updatedFields) {
+            update({
+                user: {
+                    city: state.updatedFields.city,
+                    mainInstrument: state.updatedFields.mainInstrument
+                }
+            });
+        }
+    }, [state, update]);
 
     return (
         <>
@@ -40,20 +54,20 @@ export default function ProfileForm({ user }: { user: any }) {
 
                 {/* City */}
                 <div>
-                    <label className="block text-sm font-medium text-white/60 mb-2">Ciudad Base</label>
+                    <label className="block text-sm font-medium text-white/60 mb-2">Ciudad Base <span className="text-red-500">*</span></label>
                     <div className="relative group">
                         <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-jazz-gold transition-colors" />
-                        <input type="text" name="city" defaultValue={user.city || ''} placeholder="Ej: Buenos Aires, CABA..."
+                        <input type="text" name="city" defaultValue={user.city || ''} placeholder="Ej: Buenos Aires, CABA..." required
                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold transition-all" />
                     </div>
                 </div>
 
                 {/* Main Instrument */}
                 <div>
-                    <label className="block text-sm font-medium text-white/60 mb-2">Instrumento Principal</label>
+                    <label className="block text-sm font-medium text-white/60 mb-2">Instrumento Principal <span className="text-red-500">*</span></label>
                     <div className="relative group">
                         <Music2 className="absolute left-3 top-3.5 w-5 h-5 text-white/40 group-focus-within:text-jazz-gold transition-colors" />
-                        <input type="text" name="mainInstrument" defaultValue={user.mainInstrument || ''} placeholder="Ej: Saxo Tenor, Batería..."
+                        <input type="text" name="mainInstrument" defaultValue={user.mainInstrument || ''} placeholder="Ej: Saxo Tenor, Batería..." required
                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-jazz-gold focus:ring-1 focus:ring-jazz-gold transition-all" />
                     </div>
                 </div>
