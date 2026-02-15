@@ -348,8 +348,12 @@ export async function createTheme(
             },
         });
 
-        // Trigger update
-        await pusherServer.trigger(`jam-${jam.id}`, 'update-jam', {});
+        // Trigger update (fail-safe)
+        try {
+            await pusherServer.trigger(`jam-${jam.id}`, 'update-jam', {});
+        } catch (pusherError) {
+            console.error('Pusher trigger failed (createTheme):', pusherError);
+        }
 
         return { success: true };
     } catch (error) {
@@ -381,8 +385,12 @@ export async function updateJamStatus(jamId: string, status: string) {
 
         revalidatePath(`/jam/${jam.code}`);
 
-        // Trigger update
-        await pusherServer.trigger(`jam-${jamId}`, 'update-jam', {});
+        // Trigger update (fail-safe)
+        try {
+            await pusherServer.trigger(`jam-${jamId}`, 'update-jam', {});
+        } catch (pusherError) {
+            console.error('Pusher trigger failed (updateJamStatus):', pusherError);
+        }
 
         return { success: true };
     } catch (error) {
@@ -694,6 +702,20 @@ export async function checkInToJam(jamId: string, instrument: string) {
     if (!session?.user?.id) return { success: false, error: 'Not authenticated' };
 
     try {
+        // Idempotency check
+        const existing = await prisma.jamAttendance.findUnique({
+            where: {
+                userId_jamId: {
+                    userId: session.user.id,
+                    jamId
+                }
+            }
+        });
+
+        if (existing) {
+            return { success: true };
+        }
+
         await prisma.jamAttendance.create({
             data: {
                 userId: session.user.id,
@@ -712,6 +734,7 @@ export async function checkInToJam(jamId: string, instrument: string) {
         return { success: false, error: 'Failed to check in' };
     }
 }
+
 
 export async function getMessages(jamId: string, themeId?: string) {
     try {

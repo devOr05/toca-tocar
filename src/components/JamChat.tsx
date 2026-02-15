@@ -64,7 +64,10 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
             // Trigger scroll
             setTimeout(() => {
                 if (messagesEndRef.current) {
-                    messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                    const container = messagesEndRef.current.parentElement;
+                    if (container) {
+                        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+                    }
                 }
             }, 100);
         });
@@ -76,9 +79,35 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
     }, [jamId, themeId]);
 
     // Auto-scroll logic (Simplified)
+    // Auto-scroll logic (Conditioned)
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+        const container = messagesEndRef.current?.parentElement;
+        if (!container) return;
+
+        // 1. Initial Load: Always scroll to bottom
+        if (!hasInitialScrolled && messages.length > 0) {
+            container.scrollTop = container.scrollHeight;
+            setHasInitialScrolled(true);
+            return;
+        }
+
+        // 2. New Message:
+        // Check if the last message is from me
+        const lastMsg = messages[messages.length - 1];
+        if (!lastMsg) return;
+
+        const isMyMessage = lastMsg.userId === currentUser.id;
+
+        // Check if user is near bottom (e.g., within 150px)
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+
+        if (isMyMessage || isNearBottom) {
+            // Use timeout to ensure DOM checks are accurate after render
+            setTimeout(() => {
+                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            }, 50);
+        }
+    }, [messages, hasInitialScrolled, currentUser.id]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const val = e.target.value;
@@ -104,31 +133,29 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim()) return;
+        if (!newMessage.trim() || isLoading) return;
 
-        // ... (keep existing logic)
+        const content = newMessage;
+        setNewMessage('');
+        setIsLoading(true);
 
-        setMentionQuery(null); // Clear mention state just in case
+        try {
+            const result = await sendMessage(jamId, content, themeId);
+            if (!result.success) {
+                console.error('Error sending message:', result.error);
+                // alert('Error al enviar el mensaje'); // Optional: show toast
+                setNewMessage(content); // Restore message
+            }
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            setNewMessage(content);
+        } finally {
+            setIsLoading(false);
+            setMentionQuery(null);
+        }
     };
 
-    if (isCommentMode) {
-        // ... (keep existing isCommentMode return but update textarea onChange)
-        // Note: I will need to update the textarea onChange in isCommentMode block too if needed, but for now focusing on main chat
-        return (
-            <textarea
-                className="w-full h-full bg-transparent text-white p-4 resize-none focus:outline-none custom-scrollbar"
-                placeholder="Escribe un comentario..."
-                value={newMessage}
-                onChange={handleInputChange}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSend(e);
-                    }
-                }}
-            />
-        );
-    }
+    // Removed isCommentMode early return to allow full chat interface
 
     return (
         <div className="flex flex-col h-full bg-black/20 rounded-xl overflow-hidden border border-white/5 relative">
@@ -150,10 +177,12 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                 </div>
             )}
 
-            <div className="p-3 bg-white/5 border-b border-white/5 flex items-center gap-2">
-                <MessageSquare size={16} className="text-jazz-gold" />
-                <h3 className="font-bold text-sm text-white">{title}</h3>
-            </div>
+            {!isCommentMode && (
+                <div className="p-3 bg-white/5 border-b border-white/5 flex items-center gap-2">
+                    <MessageSquare size={16} className="text-jazz-gold" />
+                    <h3 className="font-bold text-sm text-white">{title}</h3>
+                </div>
+            )}
 
             {/* ... (keep message list) ... */}
 
@@ -198,7 +227,7 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                     type="text"
                     value={newMessage}
                     onChange={handleInputChange}
-                    placeholder="Escribe un mensaje... (@ para mencionar)"
+                    placeholder={isCommentMode ? "Escribe un comentario..." : "Escribe un mensaje... (@ para mencionar)"}
                     className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-jazz-gold outline-none"
                 />
                 <button

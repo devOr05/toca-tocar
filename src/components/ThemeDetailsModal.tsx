@@ -58,23 +58,39 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser 
                     {theme.sheetMusicUrl && (
                         <div className="bg-black/30 p-4 rounded-xl border border-white/5">
                             <h3 className="text-xs font-bold text-jazz-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                <LinkIcon size={14} /> Partitura
                             </h3>
-                            <a
-                                href={theme.sheetMusicUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-3 text-jazz-gold hover:underline group"
-                            >
-                                <div className="w-10 h-10 rounded-lg bg-jazz-gold/10 flex items-center justify-center group-hover:bg-jazz-gold/20 transition-colors">
-                                    <Music size={20} />
+                            {theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf') ? (
+                                <div className="space-y-3">
+                                    <img
+                                        src={theme.sheetMusicUrl.replace('.pdf', '.jpg')}
+                                        alt="Partitura Completa"
+                                        className="w-full rounded-lg border border-white/10"
+                                    />
+                                    <a
+                                        href={theme.sheetMusicUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-center gap-2 text-jazz-gold hover:text-white text-sm py-2 border border-jazz-gold/30 rounded-lg hover:bg-jazz-gold/10 transition-all"
+                                    >
+                                        <ExternalLink size={16} /> Abrir PDF Original
+                                    </a>
                                 </div>
-                                <div className="flex-1">
-                                    <div className="text-sm font-bold">Ver Partitura / Enlace</div>
-                                    <div className="text-xs text-white/40 truncate max-w-[200px]">{theme.sheetMusicUrl}</div>
-                                </div>
-                                <ExternalLink size={16} />
-                            </a>
+                            ) : (
+                                <a
+                                    href={theme.sheetMusicUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 text-jazz-gold hover:underline group"
+                                >
+                                    <div className="w-10 h-10 rounded-lg bg-jazz-gold/10 flex items-center justify-center group-hover:bg-jazz-gold/20 transition-colors">
+                                        <Music size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-sm font-bold">Ver Partitura / Enlace</div>
+                                        <div className="text-xs text-white/40 truncate max-w-[200px]">{theme.sheetMusicUrl}</div>
+                                    </div>
+                                    <ExternalLink size={16} />
+                                </a>
                         </div>
                     )}
 

@@ -2,23 +2,23 @@
 
 import { LucideIcon, Music, Keyboard, Guitar, Drum, Mic2, Music2, Music3, Music4, Wind, AudioLines, Speaker } from 'lucide-react';
 
-export const INSTRUMENT_MAP: Record<string, { icon: LucideIcon, label: string }> = {
-    'Sax': { icon: Music, label: 'Saxo' },
-    'Trumpet': { icon: Music2, label: 'Trompeta' },
-    'Trombone': { icon: Music3, label: 'Trombón' },
-    'Piano': { icon: Keyboard, label: 'Piano' },
-    'Keys': { icon: Speaker, label: 'Sinte/Teclas' },
-    'Guitar': { icon: Guitar, label: 'Guitarra' },
-    'Bass': { icon: AudioLines, label: 'Bajo/Contrabajo' },
-    'Drums': { icon: Drum, label: 'Batería' },
-    'Percussion': { icon: Drum, label: 'Percusión/Tabla' },
-    'Voice': { icon: Mic2, label: 'Voz' },
-    'Flute': { icon: Wind, label: 'Flauta' },
-    'Clarinet': { icon: Music4, label: 'Clarinete' },
-    'Vibraphone': { icon: Keyboard, label: 'Vibráfono' },
-    'Harmonica': { icon: Wind, label: 'Armónica' },
-    'Violin': { icon: AudioLines, label: 'Violín' },
-    'Other': { icon: Music, label: 'Otro' },
+export const INSTRUMENT_MAP: Record<string, { label: string, emoji: string }> = {
+    'Sax': { label: 'Saxo', emoji: '🎷' },
+    'Trumpet': { label: 'Trompeta', emoji: '🎺' },
+    'Trombone': { label: 'Trombón', emoji: '🦴' }, // Bone? Or just use Trumpet emoji
+    'Piano': { label: 'Piano', emoji: '🎹' },
+    'Keys': { label: 'Teclado', emoji: '🎹' },
+    'Guitar': { label: 'Guitarra', emoji: '🎸' },
+    'Bass': { label: 'Bajo', emoji: '🎸' }, // No specific bass emoji, maybe 🎻?
+    'Drums': { label: 'Batería', emoji: '🥁' },
+    'Percussion': { label: 'Percusión', emoji: '🪘' },
+    'Voice': { label: 'Voz', emoji: '🎤' },
+    'Flute': { label: 'Flauta', emoji: '🪈' },
+    'Clarinet': { label: 'Clarinete', emoji: '🎷' },
+    'Vibraphone': { label: 'Vibráfono', emoji: '🎹' },
+    'Harmonica': { label: 'Armónica', emoji: 'harmonica' }, // No emoji for harmonica, maybe 🎵
+    'Violin': { label: 'Violín', emoji: '🎻' },
+    'Other': { label: 'Otro', emoji: '🎵' },
 };
 
 interface InstrumentIconProps {
@@ -39,24 +39,24 @@ export default function InstrumentIcon({
     participants = []
 }: InstrumentIconProps) {
     const config = INSTRUMENT_MAP[instrumentId] || INSTRUMENT_MAP['Other'];
-    const Icon = config.icon;
+    // const Icon = config.icon; // Removed logic
 
     return (
         <button
             onClick={onClick}
             title={`${config.label}: ${participants.join(', ')}`}
             className={`
-                relative flex items-center justify-center p-2 rounded-xl transition-all
+                relative flex items-center justify-center rounded-xl transition-all
                 ${count > 0
                     ? 'bg-jazz-gold/10 border border-jazz-gold/30 text-jazz-gold'
                     : 'bg-white/5 border border-white/5 text-jazz-muted hover:border-white/20'
                 }
                 ${isActive ? 'ring-2 ring-jazz-gold bg-jazz-gold/20' : ''}
-                ${isMobile ? 'p-1.5' : 'p-2'}
+                ${isMobile ? 'p-1.5 w-8 h-8' : 'p-2 w-10 h-10'}
                 hover:scale-110 active:scale-95 group
             `}
         >
-            <Icon size={isMobile ? 18 : 22} />
+            <span className={`${isMobile ? 'text-sm' : 'text-lg'}`}>{config.emoji || '🎵'}</span>
 
             {count > 0 && (
                 <span className={`

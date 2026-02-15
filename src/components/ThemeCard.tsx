@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { Theme, Participation, User } from '../types';
-import { Info, Pencil, Trash2, MessageSquare, FileMusic, Music } from 'lucide-react';
+import { Info, Pencil, Trash2, MessageSquare, FileMusic } from 'lucide-react';
 import { deleteTheme } from '@/app/actions';
 import { useJamStore } from '@/store/jamStore';
 import ThemeDetailsModal from './ThemeDetailsModal';
 import EditThemeModal from './EditThemeModal';
-import InstrumentIcon, { INSTRUMENT_MAP } from './InstrumentIcon';
+import InstrumentSelector from './InstrumentSelector';
 
 interface ThemeCardProps {
     theme: Theme;
@@ -19,7 +19,6 @@ interface ThemeCardProps {
 }
 
 export default function ThemeCard({ theme, participations, currentUser, isHost, onJoin, onLeave }: ThemeCardProps) {
-    const [showInstruments, setShowInstruments] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const { removeTheme, addTheme } = useJamStore();
@@ -31,37 +30,9 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
     const isQueued = theme.status === 'QUEUED';
     const isPlaying = theme.status === 'PLAYING';
 
-    // Group participants by instrument
-    const instrumentCounts = participations.reduce((acc: Record<string, { count: number, names: string[] }>, p: Participation) => {
-        const inst = p.instrument;
-        if (!acc[inst]) acc[inst] = { count: 0, names: [] };
-        acc[inst].count++;
-        acc[inst].names.push(p.userName || 'Músico');
-        return acc;
-    }, {});
-
     // Check if theme has extra info to show
     const hasInfo = Boolean(theme.description || theme.sheetMusicUrl);
 
-    const handleInstrumentClick = (instrumentId: string) => {
-        if (!currentUser) {
-            alert('Debes iniciar sesión para anotarte.');
-            return;
-        }
-
-        if (myParticipation) {
-            if (myParticipation.instrument === instrumentId) {
-                onLeave();
-            } else {
-                // To change instrument, they must leave first or we just switch it
-                // For simplicity, let's leave then join (or the action handles it)
-                onLeave();
-                onJoin(instrumentId);
-            }
-        } else {
-            onJoin(instrumentId);
-        }
-    };
 
     return (
         <div className={`
@@ -120,19 +91,33 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                     )}
                 </div>
             </div>
-
-            {/* Sheet Music Link - Only for Songs */}
+            {/* Sheet Music Preview - Only for Songs */}
             {theme.sheetMusicUrl && theme.type !== 'TOPIC' && (
                 <div className="mb-4">
-                    <a
-                        href={theme.sheetMusicUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-jazz-gold hover:text-white flex items-center gap-1.5 text-xs transition-colors bg-jazz-gold/5 px-3 py-1.5 rounded-lg border border-jazz-gold/20 hover:border-jazz-gold/40 w-fit"
-                    >
-                        <FileMusic size={14} />
-                        <span className="font-medium">Ver Partitura</span>
-                    </a>
+                    {theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf') ? (
+                        <div className="relative group cursor-pointer overflow-hidden rounded-lg border border-white/10" onClick={() => setShowDetails(true)}>
+                            <img
+                                src={theme.sheetMusicUrl.replace('.pdf', '.jpg')}
+                                alt="Partitura Preview"
+                                className="w-full h-32 object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-white text-xs font-bold flex items-center gap-1 bg-black/60 px-2 py-1 rounded">
+                                    <FileMusic size={12} /> Ver Completa
+                                </span>
+                            </div>
+                        </div>
+                    ) : (
+                        <a
+                            href={theme.sheetMusicUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-jazz-gold hover:text-white flex items-center gap-1.5 text-xs transition-colors bg-jazz-gold/5 px-3 py-1.5 rounded-lg border border-jazz-gold/20 hover:border-jazz-gold/40 w-fit"
+                        >
+                            <FileMusic size={14} />
+                            <span className="font-medium">Ver Partitura / Link</span>
+                        </a>
+                    )}
                 </div>
             )}
 
@@ -144,47 +129,28 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
             {/* Participation Section */}
             {theme.type !== 'TOPIC' && (
                 <div className="space-y-4 pt-2">
-                    {/* Instrument Icons - Show if requested or if there are participants */}
-                    {(showInstruments || participations.length > 0) && (
-                        <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                            {Object.keys(INSTRUMENT_MAP).map((instId) => (
-                                <InstrumentIcon
-                                    key={instId}
-                                    instrumentId={instId}
-                                    count={instrumentCounts[instId]?.count || 0}
-                                    isActive={myParticipation?.instrument === instId}
-                                    participants={instrumentCounts[instId]?.names}
-                                    onClick={() => handleInstrumentClick(instId)}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    <InstrumentSelector
+                        participations={participations}
+                        currentUser={currentUser}
+                        myParticipation={myParticipation}
+                        onJoin={(inst) => {
+                            if (!currentUser) return alert('Debes iniciar sesión para anotarte.');
+                            onJoin(inst);
+                        }}
+                        onLeave={onLeave}
+                    />
 
                     <div className="flex gap-2">
-                        {!myParticipation && (
-                            <button
-                                onClick={() => setShowInstruments(!showInstruments)}
-                                className={`flex-1 py-2.5 ${showInstruments ? 'bg-white/10 text-white' : 'bg-jazz-gold text-black'} font-bold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group`}
-                            >
-                                <Music size={16} className={showInstruments ? '' : 'group-hover:rotate-12 transition-transform'} />
-                                {showInstruments ? 'Cerrar' : 'Quiero Tocar'}
-                            </button>
-                        )}
-
                         {/* Direct Chat Button for Songs */}
                         <button
                             onClick={() => setShowDetails(true)}
-                            className={`py-2.5 px-4 bg-jazz-accent/10 hover:bg-jazz-accent/20 text-jazz-accent rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2 ${myParticipation ? 'w-full' : ''}`}
+                            className={`py-2.5 px-4 bg-jazz-accent/10 hover:bg-jazz-accent/20 text-jazz-accent rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2 ${myParticipation ? 'w-full' : 'w-full'}`}
                             title="Abrir Chat"
                         >
                             <MessageSquare size={16} />
-                            {myParticipation && <span className="text-xs font-bold uppercase tracking-wider">Chat del Tema</span>}
+                            {myParticipation ? <span className="text-xs font-bold uppercase tracking-wider">Chat del Tema</span> : <span>Chat / Detalles</span>}
                         </button>
                     </div>
-
-                    {participations.length === 0 && !myParticipation && !showInstruments && (
-                        <p className="text-white/10 text-[10px] italic text-center">Sé el primero en anotarte en este tema</p>
-                    )}
                 </div>
             )}
 

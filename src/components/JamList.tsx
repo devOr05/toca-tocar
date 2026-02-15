@@ -29,13 +29,13 @@ export default function JamList({ jams, currentUserId, title = 'Jams Activas', i
     return (
         <div className={`
             border transition-all rounded-2xl p-6 shadow-xl
-            ${isHistory ? 'bg-black/20 border-white/5 opacity-80' : 'bg-jazz-surface border-white/10'}
+            ${isHistory ? 'bg-black/40 border-white/10' : 'bg-jazz-surface border-white/10'}
         `}>
             <div className="flex items-center justify-between mb-6">
-                <h2 className={`text-lg font-semibold flex items-center gap-2 ${isHistory ? 'text-white/40' : 'text-white'}`}>
-                    <Music2 className={isHistory ? 'text-white/20' : 'text-jazz-accent'} /> {title}
+                <h2 className={`${isHistory ? 'text-xl text-white/70' : 'text-3xl text-white'} font-bold flex items-center gap-3`}>
+                    <Music2 className={isHistory ? 'text-white/40 w-6 h-6' : 'text-jazz-accent w-8 h-8'} /> {title}
                 </h2>
-                <span className="bg-white/5 text-[10px] px-2 py-1 rounded-md text-white/30 font-mono uppercase tracking-widest">
+                <span className="bg-white/5 text-xs px-3 py-1.5 rounded-lg text-white/50 font-mono uppercase tracking-widest border border-white/5">
                     {filteredJams.length}
                 </span>
             </div>

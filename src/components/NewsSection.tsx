@@ -117,14 +117,41 @@ export default function NewsSection({ isAdmin = false, currentUserId }: { isAdmi
                 )}
             </div>
 
-            {/* Quick Stats / Extras Placeholder */}
-            <div className="bg-gradient-to-br from-jazz-gold/10 to-transparent border border-jazz-gold/20 rounded-2xl p-6 mt-8">
-                <h3 className="text-jazz-gold font-bold mb-2 flex items-center gap-2">
-                    <Music size={18} /> Tip del día
-                </h3>
-                <p className="text-white/80 text-sm italic">
-                    "En una jam, el silencio es tan importante como las notas. Escucha al ensamble antes de entrar al solo."
-                </p>
+            {/* Extras Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                {/* Daily Tip */}
+                <div className="bg-gradient-to-br from-jazz-gold/10 to-transparent border border-jazz-gold/20 rounded-2xl p-6 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Music size={48} className="text-jazz-gold" />
+                    </div>
+                    <h3 className="text-jazz-gold font-bold mb-2 flex items-center gap-2">
+                        <Music size={18} /> Tip del día
+                    </h3>
+                    <p className="text-white/80 text-sm italic relative z-10">
+                        "{TIPS[new Date().getDate() % TIPS.length]}"
+                    </p>
+                </div>
+
+                {/* Useful Links */}
+                <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
+                    <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                        ✨ Recursos & Extras
+                    </h3>
+                    <div className="space-y-3">
+                        <a href="https://realbook.us" target="_blank" rel="noopener noreferrer" className="block p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-between group">
+                            <span className="text-sm text-gray-300 group-hover:text-white">📖 Real Book Online</span>
+                            <span className="text-xs text-white/20 group-hover:text-jazz-gold">Ver &rarr;</span>
+                        </a>
+                        <a href="#" className="block p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-between group">
+                            <span className="text-sm text-gray-300 group-hover:text-white">🎸 Acordes de Jazz (PDF)</span>
+                            <span className="text-xs text-white/20 group-hover:text-jazz-gold">Descargar &rarr;</span>
+                        </a>
+                        <a href="#" className="block p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-between group">
+                            <span className="text-sm text-gray-300 group-hover:text-white">👂 Entrenamiento Auditivo</span>
+                            <span className="text-xs text-white/20 group-hover:text-jazz-gold">Practicar &rarr;</span>
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <CreateAnnouncementModal
@@ -137,3 +164,14 @@ export default function NewsSection({ isAdmin = false, currentUserId }: { isAdmi
         </section>
     );
 }
+
+const TIPS = [
+    "En una jam, el silencio es tan importante como las notas. Escucha al ensamble antes de entrar al solo.",
+    "Si te pierdes en la forma, deja de tocar y escucha al bajista y baterista para reencontrarte.",
+    "Menos es más. A veces una sola nota bien colocada vale más que mil escalas rápidas.",
+    "Asegúrate de mirar a los demás músicos, la comunicación visual es clave para los finales y cambios.",
+    "No toques encima del solo de otro a menos que estés haciendo backgrounds muy suaves.",
+    "Aprende la melodía (head) de memoria, no dependas siempre del Real Book.",
+    "Si no conoces el tema, es mejor no subir. ¡Aprovecha para escuchar y aprender!",
+    "Dinámicas: No toques todo al mismo volumen. Sigue la intensidad del solista."
+];
