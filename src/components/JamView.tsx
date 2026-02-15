@@ -548,6 +548,6 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
             jamCode={jam.code}
             type={createType}
         />
-    </div >
+    </div>
     );
 }
