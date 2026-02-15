@@ -27,6 +27,10 @@ interface JamViewProps {
 export default function JamView({ initialJam, initialThemes, initialParticipations, currentUser: initialUser, initialCityMusicians = [] }: JamViewProps) {
     const router = useRouter();
     const { jam, themes, participations, setUser, setAuthenticatedUser, currentUser, setJamState } = useJamStore();
+
+    console.log('JamView Debug - CurrentUser:', currentUser);
+    console.log('JamView Debug - InitialUser:', initialUser);
+
     const [mounted, setMounted] = useState(false);
     const [formattedDate, setFormattedDate] = useState<string>('');
     const [isCreateThemeOpen, setIsCreateThemeOpen] = useState(false);
@@ -58,6 +62,14 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
             />
         </div>
     </aside>
+
+    {/* DEBUG ADMIN */ }
+    <div className="fixed bottom-4 right-4 bg-red-500 text-white p-2 z-50 text-xs font-mono shadow-lg rounded border border-white/20">
+        <div>Role: {currentUser?.role || 'NONE'}</div>
+        <div>ID: {currentUser?.id || 'No ID'}</div>
+        <div>Name: {currentUser?.name || 'No Name'}</div>
+        <div>isHost: {String(currentUser?.id === initialJam.hostId)}</div>
+    </div>
 
     // Real-time Jam Updates
     useEffect(() => {
