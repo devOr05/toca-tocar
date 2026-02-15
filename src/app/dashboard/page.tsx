@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import JamList from "@/components/JamList";
 import LogoutButton from "@/components/LogoutButton";
-import MusicianList from "@/components/MusicianList";
 import NewsSection from "@/components/NewsSection";
 
 export default async function Dashboard() {
@@ -97,12 +96,32 @@ export default async function Dashboard() {
                 {/* Sidebar: Musicians */}
                 <div className="lg:col-span-1">
                     <div className="sticky top-6">
-                        <MusicianList
-                            // @ts-ignore
-                            users={musicians}
-                            title={`Músicos en ${userCity || 'tu zona'}`}
-                            emptyMessage="No hay músicos en tu zona aún."
-                        />
+                        <div className="bg-jazz-surface border border-white/10 rounded-2xl p-6">
+                            <h3 className="font-bold text-white mb-4 flex items-center gap-2 uppercase tracking-widest text-xs">
+                                <span className="text-jazz-gold">📍</span> Músicos en {userCity || 'tu zona'}
+                            </h3>
+                            {musicians.length > 0 ? (
+                                <ul className="space-y-3">
+                                    {musicians.map((musician: any) => (
+                                        <li key={musician.id} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-colors">
+                                            <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden shrink-0">
+                                                {musician.image ? (
+                                                    <img src={musician.image} alt={musician.name || ''} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-sm">👤</div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm text-white">{musician.name}</p>
+                                                <p className="text-xs text-white/50">{musician.mainInstrument || 'Músico'}</p>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-white/30 text-sm italic">No hay músicos en tu zona aún.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
