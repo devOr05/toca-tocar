@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { Toaster } from 'sonner';
+import OnboardingGuard from "@/components/OnboardingGuard";
 
 
 const geistSans = Geist({
@@ -40,7 +41,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>
-          {children}
+          <OnboardingGuard>
+            {children}
+          </OnboardingGuard>
           <Toaster richColors position="top-center" />
         </Providers>
       </body>

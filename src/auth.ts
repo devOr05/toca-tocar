@@ -61,16 +61,26 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         async jwt({ token, user, trigger, session }) {
             // Initial sign in
             if (user) {
-                token.sub = user.id; // Ensure sub is set to user ID
-                token.role = user.role;
-                token.id = user.id; // Redundant but safe
+                token.sub = user.id;
+                token.role = (user as any).role;
+                token.city = (user as any).city;
+                token.mainInstrument = (user as any).mainInstrument;
             }
+
+            // Update session flow (if we update profile)
+            if (trigger === 'update' && session) {
+                token.city = session.user.city;
+                token.mainInstrument = session.user.mainInstrument;
+            }
+
             return token;
         },
         async session({ session, token }) {
             if (session.user && token.sub) {
                 session.user.id = token.sub;
                 session.user.role = token.role as string;
+                session.user.city = token.city as string | null;
+                session.user.mainInstrument = token.mainInstrument as string | null;
             }
             return session;
         }

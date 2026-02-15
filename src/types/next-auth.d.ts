@@ -16,6 +16,7 @@ declare module "next-auth" {
             tiktok?: string | null
             bandcamp?: string | null
             soundcloud?: string | null
+            city?: string | null
             isVerifiedOrganizer?: boolean
         } & DefaultSession["user"]
     }
