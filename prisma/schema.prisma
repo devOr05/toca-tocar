@@ -139,7 +139,7 @@ model Theme {
   type          String  @default("SONG") // SONG, TOPIC
 
   jamId String
-  jam   Jam    @relation(fields: [jamId], references: [id])
+  jam   Jam    @relation(fields: [jamId], references: [id], onDelete: Cascade)
 
   participations Participation[]
   messages       Message[]
@@ -168,7 +168,7 @@ model Message {
   userId  String
   user    User    @relation(fields: [userId], references: [id])
   jamId   String
-  jam     Jam     @relation(fields: [jamId], references: [id])
+  jam     Jam     @relation(fields: [jamId], references: [id], onDelete: Cascade)
   themeId String?
   theme   Theme?  @relation(fields: [themeId], references: [id])
 
@@ -208,7 +208,7 @@ model Media {
   caption      String?
   uploadedBy   User      @relation("UploadedMedia", fields: [userId], references: [id])
   userId       String
-  jam          Jam       @relation("JamMedia", fields: [jamId], references: [id])
+  jam          Jam       @relation("JamMedia", fields: [jamId], references: [id], onDelete: Cascade)
   jamId        String
   createdAt    DateTime  @default(now())
 }
@@ -259,7 +259,7 @@ model JamAttendance {
   userId     String
   user       User     @relation(fields: [userId], references: [id])
   jamId      String
-  jam        Jam      @relation(fields: [jamId], references: [id])
+  jam        Jam      @relation(fields: [jamId], references: [id], onDelete: Cascade)
   instrument String?  // Instrument played in this specific jam
 
   joinedAt   DateTime @default(now())
