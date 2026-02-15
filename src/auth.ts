@@ -67,6 +67,22 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 token.mainInstrument = (user as any).mainInstrument;
             }
 
+            // Sync with DB if fields are missing (e.g. existing sessions)
+            if (!token.city || !token.mainInstrument || !token.role) {
+                try {
+                    const dbUser = await prisma.user.findUnique({
+                        where: { id: token.sub }
+                    });
+                    if (dbUser) {
+                        token.role = dbUser.role;
+                        token.city = dbUser.city;
+                        token.mainInstrument = dbUser.mainInstrument;
+                    }
+                } catch (error) {
+                    console.error("Error syncing user data in JWT:", error);
+                }
+            }
+
             // Update session flow (if we update profile)
             if (trigger === 'update' && session) {
                 token.city = session.user.city;
@@ -76,12 +92,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             return token;
         },
         async session({ session, token }) {
-            if (session.user && token.sub) {
-                session.user.id = token.sub;
-                session.user.role = token.role as string;
-                session.user.city = token.city as string | null;
-                session.user.mainInstrument = token.mainInstrument as string | null;
-            }
+            session.user.mainInstrument = token.mainInstrument as string | null;
             return session;
         }
     }
