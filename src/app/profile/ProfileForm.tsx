@@ -1,8 +1,10 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useActionState, useEffect } from 'react';
 import { updateProfile, logoutAction } from '@/app/actions';
+import { toast } from 'sonner';
 import { User, Music2, Link as LinkIcon, Save, Disc, LogOut, MapPin } from "lucide-react";
 
 const initialState = {
@@ -15,6 +17,8 @@ export default function ProfileForm({ user }: { user: any }) {
     const { update } = useSession();
     const [state, formAction, isPending] = useActionState(updateProfile, initialState);
 
+    const router = useRouter();
+
     useEffect(() => {
         if (state?.success && state?.updatedFields) {
             update({
@@ -23,8 +27,10 @@ export default function ProfileForm({ user }: { user: any }) {
                     mainInstrument: state.updatedFields.mainInstrument
                 }
             });
+            // toast.success('Perfil actualizado! Redirigiendo...'); // Assuming toast is imported and configured
+            router.push('/dashboard');
         }
-    }, [state, update]);
+    }, [state, update, router]);
 
     return (
         <>

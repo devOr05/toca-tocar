@@ -9,6 +9,7 @@ import CreateJamForm from "./CreateJamForm";
 export default async function CreateJamPage() {
     const session = await auth();
     if (!session?.user?.id) redirect("/");
+    if (!session?.user?.email) redirect("/profile?error=email_required"); // Enforce email for hosting
 
     // 1. Check Profile Completeness
     const user = await prisma.user.findUnique({

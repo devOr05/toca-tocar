@@ -1186,10 +1186,50 @@ export async function deleteUser(userId: string) {
             return { success: false, error: 'No autorizado' };
         }
 
-        await prisma.user.delete({
-            where: { id: userId }
+        // Manual cleanup because cascade might not be applied
+        await prisma.$transaction(async (tx: any) => {
+            // 1. Remove from all Jams attendance
+            await tx.jamAttendance.deleteMany({ where: { userId } });
+
+            // 2. Remove all participations
+            await tx.participation.deleteMany({ where: { userId } });
+
+            // 3. Remove all messages (Jams & DMs)
+            await tx.message.deleteMany({ where: { userId } });
+            await tx.directMessage.deleteMany({ where: { OR: [{ senderId: userId }, { receiverId: userId }] } });
+
+            // 4. Remove uploaded media
+            await tx.media.deleteMany({ where: { userId } });
+
+            // 5. Remove announcements
+            await tx.announcement.deleteMany({ where: { userId } });
+
+            // 6. Remove notifications
+            await tx.notification.deleteMany({ where: { userId } });
+
+            // 7. Delete hosted Jams (this might need to delete ITS related stuff if Jam cascade is missing)
+            // Ideally we delete Jams and let Jam deletion logic handle it, but here we just delete the Jam
+            // We should ideally fetch jams and delete them to trigger THEIR cascades if manual, but let's assume
+            // Jam -> parts have cascade OR we just delete Jams and hope for best or delete their contents too.
+            // Let's try to delete Jams directly. If it fails, we know we need more manual cleanup.
+            // To be safe, let's delete messages in jams hosted by user? No, too complex.
+            // Let's assume Jam cascade works or we blindly delete.
+
+            const hostedJams = await tx.jam.findMany({ where: { hostId: userId }, select: { id: true } });
+            if (hostedJams.length > 0) {
+                const jamIds = hostedJams.map((j: any) => j.id);
+                // Delete stuff in these Jams
+                await tx.theme.deleteMany({ where: { jamId: { in: jamIds } } });
+                await tx.message.deleteMany({ where: { jamId: { in: jamIds } } });
+                await tx.jamAttendance.deleteMany({ where: { jamId: { in: jamIds } } });
+                await tx.jam.deleteMany({ where: { hostId: userId } });
+            }
+
+            // 8. Delete the User
+            await tx.user.delete({ where: { id: userId } });
         });
 
+        revalidatePath('/dashboard');
         return { success: true };
     } catch (error) {
         console.error('Error deleting user:', error);

@@ -108,7 +108,7 @@ model Jam {
   status    String  @default("SCHEDULED") // SCHEDULED, ACTIVE, FINISHED
   isPrivate Boolean @default(false)
   hostId    String
-  host      User    @relation(fields: [hostId], references: [id])
+  host      User    @relation(fields: [hostId], references: [id], onDelete: Cascade)
 
   // Venue relation (optional, fallback to location string)
   venue     Venue?  @relation("VenueJams", fields: [venueId], references: [id])
@@ -151,7 +151,7 @@ model Theme {
 model Participation {
   id         String @id @default(cuid())
   userId     String
-  user       User   @relation(fields: [userId], references: [id])
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   themeId    String
   theme      Theme  @relation(fields: [themeId], references: [id])
   instrument String
@@ -166,7 +166,7 @@ model Message {
   id      String  @id @default(cuid())
   content String
   userId  String
-  user    User    @relation(fields: [userId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   jamId   String
   jam     Jam     @relation(fields: [jamId], references: [id], onDelete: Cascade)
   themeId String?
@@ -179,9 +179,9 @@ model DirectMessage {
   id         String @id @default(cuid())
   content    String
   senderId   String
-  sender     User   @relation("SentMessages", fields: [senderId], references: [id])
+  sender     User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiverId String
-  receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   read      Boolean  @default(false)
@@ -206,7 +206,7 @@ model Media {
   url          String
   thumbnailUrl String?
   caption      String?
-  uploadedBy   User      @relation("UploadedMedia", fields: [userId], references: [id])
+  uploadedBy   User      @relation("UploadedMedia", fields: [userId], references: [id], onDelete: Cascade)
   userId       String
   jam          Jam       @relation("JamMedia", fields: [jamId], references: [id], onDelete: Cascade)
   jamId        String
@@ -229,7 +229,7 @@ model Announcement {
   active    Boolean  @default(true)
   
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -246,10 +246,10 @@ model Notification {
 
   // Relationships
   userId    String   // Recipient
-  user      User     @relation("UserNotifications", fields: [userId], references: [id])
+  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
 
   actorId   String?  // Sender (optional)
-  actor     User?    @relation("NotificationActor", fields: [actorId], references: [id])
+  actor     User?    @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
   
   createdAt DateTime @default(now())
 }
@@ -257,7 +257,7 @@ model Notification {
 model JamAttendance {
   id         String   @id @default(cuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   jamId      String
   jam        Jam      @relation(fields: [jamId], references: [id], onDelete: Cascade)
   instrument String?  // Instrument played in this specific jam

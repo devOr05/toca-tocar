@@ -1,6 +1,8 @@
 'use client';
 
 import { useActionState, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { createJam, createOrUpdateVenue, getJamTemplates, getJamTemplateDetails } from '@/app/actions';
 import { MapPin, Calendar, Music, Info, Sparkles } from 'lucide-react';
 import VenueAutocomplete from '@/components/VenueAutocomplete';
@@ -17,6 +19,15 @@ export default function CreateJamForm({ user }: { user: any }) {
     const [jamName, setJamName] = useState(`${user.name}'s Jam`);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [isAutoFilling, setIsAutoFilling] = useState(false);
+
+    const router = useRouter();
+
+    useEffect(() => {
+        if (state?.success && state?.code) {
+            toast.success(`Jam creada! Código: ${state.code}`);
+            router.push('/dashboard');
+        }
+    }, [state, router]);
 
     // Sync locationInput to hidden form field
     useEffect(() => {
