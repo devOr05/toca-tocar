@@ -92,7 +92,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             return token;
         },
         async session({ session, token }) {
-            session.user.mainInstrument = token.mainInstrument as string | null;
+            if (session.user && token.sub) {
+                session.user.id = token.sub;
+                session.user.role = token.role as string;
+                session.user.city = token.city as string | null;
+                session.user.mainInstrument = token.mainInstrument as string | null;
+            }
             return session;
         }
     }
