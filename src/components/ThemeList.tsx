@@ -19,7 +19,7 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
     const getParticipations = (themeId: string) =>
         participations.filter(p => p.themeId === themeId);
 
-    const isHost = Boolean(currentUser && jam && currentUser.id === jam.hostId);
+    const isHost = Boolean(currentUser && jam && (currentUser.id === jam.hostId || currentUser.role === 'ADMIN'));
 
     return (
         <div className="space-y-8 pb-20">

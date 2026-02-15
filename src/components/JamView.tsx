@@ -20,7 +20,7 @@ interface JamViewProps {
     initialJam: Jam;
     initialThemes: Theme[];
     initialParticipations: Participation[];
-    currentUser?: User;
+    currentUser?: User | null;
     initialCityMusicians: Partial<User>[];
 }
 
@@ -263,7 +263,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         )}
 
                         {/* HOST CONTROLS */}
-                        {isHost && activeTab === 'THEMES' && (
+                        {(isHost || currentUser?.role === 'ADMIN') && activeTab === 'THEMES' && (
                             <section className="shrink-0">
                                 <HostControlPanel jam={initialJam} themes={themes} />
                             </section>
@@ -453,7 +453,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             )}
 
                             {/* Host Control Panel */}
-                            {isHost && <HostControlPanel jam={initialJam} themes={themes} />}
+                            {(isHost || currentUser?.role === 'ADMIN') && <HostControlPanel jam={initialJam} themes={themes} />}
 
                             <ThemeList type="SONG" />
                         </>

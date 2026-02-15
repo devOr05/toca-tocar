@@ -33,7 +33,7 @@ export async function deleteJam(jamCode: string) {
     }
 
     try {
-        // Check if user is the host
+        // Check if user is the host or admin
         const jam = await prisma.jam.findUnique({
             where: { code: jamCode },
             select: { hostId: true }
@@ -43,8 +43,13 @@ export async function deleteJam(jamCode: string) {
             return { success: false, error: 'Jam no encontrada' };
         }
 
-        if (jam.hostId !== session.user.id) {
-            return { success: false, error: 'Solo el anfitrión puede eliminar la jam' };
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true }
+        });
+
+        if (jam.hostId !== session.user.id && user?.role !== 'ADMIN') {
+            return { success: false, error: 'Solo el anfitrión o admin puede eliminar la jam' };
         }
 
         // Delete jam (cascade will delete themes, participations, messages, media)
@@ -359,7 +364,13 @@ export async function updateJamStatus(jamId: string, status: string) {
 
     try {
         const jam = await prisma.jam.findUnique({ where: { id: jamId } });
-        if (!jam || jam.hostId !== session.user.id) {
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true }
+        });
+
+        if (!jam || (jam.hostId !== session.user.id && user?.role !== 'ADMIN')) {
             return { success: false, error: 'No autorizado' };
         }
 
@@ -719,7 +730,7 @@ export async function getMessages(jamId: string, themeId?: string) {
             createdAt: m.createdAt,
         }));
     } catch (error) {
-        console.error('Error fetching messages:', error);
+        console.error('Error fetching DMs:', error);
         return [];
     }
 }
@@ -830,9 +841,14 @@ export async function deleteTheme(themeId: string) {
             return { success: false, error: 'Tema no encontrado' };
         }
 
-        // Check if user is host
-        if (theme.jam.hostId !== session.user.id) {
-            return { success: false, error: 'Solo el anfitrión puede eliminar temas' };
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true }
+        });
+
+        // Check if user is host or admin
+        if (theme.jam.hostId !== session.user.id && user?.role !== 'ADMIN') {
+            return { success: false, error: 'Solo el anfitrión o admin puede eliminar temas' };
         }
 
         // Delete participations first (cascade)
@@ -1142,6 +1158,36 @@ export async function getAnnouncements() {
     } catch (error) {
         console.error('Error fetching announcements:', error);
         return [];
+    }
+}
+
+/**
+ * Delete a user (Admin only)
+ */
+export async function deleteUser(userId: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true }
+        });
+
+        if (currentUser?.role !== 'ADMIN') {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        await prisma.user.delete({
+            where: { id: userId }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        return { success: false, error: 'Error al eliminar usuario' };
     }
 }
 

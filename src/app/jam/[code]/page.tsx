@@ -99,14 +99,25 @@ export default async function JamPage({ params }: PageProps) {
     const serializedThemes = JSON.parse(JSON.stringify(themes));
     const serializedParticipations = JSON.parse(JSON.stringify(participations));
 
-    const currentUser = session?.user ? {
-        id: session.user.id,
-        name: session.user.name || 'Usuario',
-        role: (session.user.role as 'USER' | 'ADMIN') || 'USER',
-        city: session.user.city || null,
-        mainInstrument: session.user.mainInstrument || null,
-        image: session.user.image || null
-    } : undefined;
+    // Fetch fresh user data for currentUser to ensure role is up to date
+    let currentUser = undefined;
+    if (session?.user?.id) {
+        const { prisma } = await import('@/lib/prisma');
+        const userDb = await prisma.user.findUnique({
+            where: { id: session.user.id }
+        });
+
+        if (userDb) {
+            currentUser = {
+                id: userDb.id,
+                name: userDb.name || 'Usuario',
+                role: (userDb.role as 'USER' | 'ADMIN') || 'USER',
+                city: userDb.city || null,
+                mainInstrument: userDb.mainInstrument || null,
+                image: userDb.image || null
+            };
+        }
+    }
 
     // Fetch other musicians in the same city (if jam has city)
     let cityMusicians = [];

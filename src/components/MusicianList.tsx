@@ -1,7 +1,7 @@
 'use client';
 
 import { User } from '@/types';
-import { MapPin, Music } from 'lucide-react';
+import { MapPin, Music, Trash2 } from 'lucide-react';
 
 import { useState } from 'react';
 import { checkInToJam } from '@/app/actions';
@@ -11,7 +11,7 @@ import { JamAttendance } from '@/types';
 
 interface MusicianListProps {
     jamId: string;
-    currentUser?: User;
+    currentUser?: User | null;
     attendance: JamAttendance[];
     cityMusicians: Partial<User>[];
     title?: string;
@@ -90,6 +90,20 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                                 {att.userId === currentUser?.id && (
                                     <div className="ml-auto w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
                                 )}
+                                {currentUser?.role === 'ADMIN' && att.userId !== currentUser.id && (
+                                    <button
+                                        onClick={async () => {
+                                            if (confirm('¿Admin: Eliminar usuario ' + att.user.name + '?')) {
+                                                const { deleteUser } = await import('@/app/actions');
+                                                await deleteUser(att.userId);
+                                                window.location.reload();
+                                            }
+                                        }}
+                                        className="ml-2 text-red-500 hover:text-red-400 p-1"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -106,7 +120,7 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                 </h3>
                 <ul className="space-y-2 opacity-60 hover:opacity-100 transition-opacity">
                     {filteredCityMusicians.map((user) => (
-                        <li key={user.id} className="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-lg transition-colors">
+                        <li key={user.id} className="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-lg transition-colors group">
                             <div className="w-6 h-6 rounded-full bg-white/10 overflow-hidden shrink-0 grayscale hover:grayscale-0 transition-all">
                                 {user.image ? (
                                     <img src={user.image} alt={user.name || ''} className="w-full h-full object-cover" />
@@ -114,7 +128,21 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                                     <div className="w-full h-full flex items-center justify-center text-[10px]">user</div>
                                 )}
                             </div>
-                            <span className="text-xs text-white truncate">{user.name}</span>
+                            <span className="text-xs text-white truncate flex-1">{user.name}</span>
+                            {currentUser?.role === 'ADMIN' && (
+                                <button
+                                    onClick={async () => {
+                                        if (confirm('¿Admin: Eliminar usuario ' + user.name + '?')) {
+                                            const { deleteUser } = await import('@/app/actions');
+                                            await deleteUser(user.id!); // user.id can be undef in partial
+                                            window.location.reload();
+                                        }
+                                    }}
+                                    className="hidden group-hover:block text-red-500 hover:text-red-400 p-1"
+                                >
+                                    <Trash2 size={12} />
+                                </button>
+                            )}
                         </li>
                     ))}
                 </ul>

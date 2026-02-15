@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Jam, Theme } from '../types';
-import { Play, Square, CheckCircle2, ListOrdered, Settings2, Loader } from 'lucide-react';
+import { Play, Square, CheckCircle2, ListOrdered, Settings2, Loader, Trash2 } from 'lucide-react';
 import { updateJamOpening, updateJamStatus, updateThemeStatus } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 
@@ -228,6 +228,27 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
                             </div>
                         ))}
                     </div>
+                </div>
+                {/* Admin Zone */}
+                <div className="pt-4 border-t border-white/5 mt-4">
+                    <button
+                        onClick={async () => {
+                            if (confirm('¿Estás seguro de ELIMINAR esta Jam? Esta acción no se puede deshacer.')) {
+                                setIsLoading(true);
+                                const { deleteJam } = await import('@/app/actions');
+                                const res = await deleteJam(jam.code);
+                                if (res.success) {
+                                    router.push('/dashboard');
+                                } else {
+                                    alert(res.error);
+                                    setIsLoading(false);
+                                }
+                            }
+                        }}
+                        className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 p-2 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                    >
+                        <Trash2 size={14} /> Eliminar Jam (Zona Peligrosa)
+                    </button>
                 </div>
             </div>
 
