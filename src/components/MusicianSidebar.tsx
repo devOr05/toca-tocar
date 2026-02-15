@@ -54,7 +54,7 @@ export default function MusicianSidebar({ musicians, currentUser, userCity }: { 
                             {isSuperAdmin && (
                                 <button
                                     onClick={() => handleDelete(musician.id, musician.name)}
-                                    className="hidden group-hover:block p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                                     title="Eliminar usuario"
                                 >
                                     <Trash2 size={16} />
