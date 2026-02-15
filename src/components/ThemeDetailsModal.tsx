@@ -91,6 +91,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser 
                                     </div>
                                     <ExternalLink size={16} />
                                 </a>
+                            )}
                         </div>
                     )}
 

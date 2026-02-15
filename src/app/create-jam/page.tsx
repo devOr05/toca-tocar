@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Music, Sparkles } from "lucide-react";
 import CreateJamForm from "./CreateJamForm";
 
 export default async function CreateJamPage() {
@@ -42,6 +42,32 @@ export default async function CreateJamPage() {
                 <h1 className="text-2xl font-bold text-white">Nueva Jam 🎷</h1>
                 <div className="w-6" />
             </header>
+
+            {/* Daily Jazz Tip */}
+            <div className="w-full max-w-md bg-jazz-gold/10 border border-jazz-gold/20 rounded-xl p-4 mb-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-2 opacity-10">
+                    <Music size={48} />
+                </div>
+                <h2 className="text-[10px] font-bold text-jazz-gold uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <Sparkles size={12} /> Frase del Día
+                </h2>
+                <blockquote className="text-white/80 text-sm italic mb-2 relative z-10">
+                    "{(() => {
+                        const { JAZZ_QUOTES } = require('@/data/jazzQuotes');
+                        const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+                        const quote = JAZZ_QUOTES[dayOfYear % JAZZ_QUOTES.length];
+                        return quote.quote;
+                    })()}"
+                </blockquote>
+                <cite className="text-xs text-jazz-gold font-bold block text-right">
+                    — {(() => {
+                        const { JAZZ_QUOTES } = require('@/data/jazzQuotes');
+                        const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+                        const quote = JAZZ_QUOTES[dayOfYear % JAZZ_QUOTES.length];
+                        return quote.author;
+                    })()}
+                </cite>
+            </div>
 
             <CreateJamForm user={user} />
         </div>
