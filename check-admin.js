@@ -1,22 +1,30 @@
 const { PrismaClient } = require('@prisma/client');
+const fs = require('fs');
+
 const prisma = new PrismaClient();
 
 async function checkUserRole() {
-    const email = 'orostizagamario@gmail.com';
-    console.log(`Checking role for ${email}...`);
+    try {
+        const email = 'orostizagamario@gmail.com';
+        console.log(`Checking role for ${email}...`);
 
-    const user = await prisma.user.findUnique({
-        where: { email },
-        select: { id: true, name: true, email: true, role: true }
-    });
+        const user = await prisma.user.findFirst({ // Changed to findFirst to carry on even if unique constraint valid fails?
+            where: { email: email }
+        });
 
-    if (user) {
-        console.log('User found:', user);
-    } else {
-        console.log('User not found!');
+        if (user) {
+            console.log('User found:', user.id);
+            fs.writeFileSync('admin_id.txt', user.id);
+        } else {
+            console.log('User not found!');
+            fs.writeFileSync('admin_id.txt', 'NOT_FOUND');
+        }
+    } catch (e) {
+        console.error('ERROR:', e);
+        fs.writeFileSync('admin_id.txt', 'ERROR: ' + e.message);
+    } finally {
+        await prisma.$disconnect();
     }
 }
 
-checkUserRole()
-    .catch(e => console.error(e))
-    .finally(async () => await prisma.$disconnect());
+checkUserRole();

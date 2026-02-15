@@ -1,0 +1,16 @@
+ERROR: 
+Invalid `prisma.user.findFirst()` invocation in
+C:\Users\kavay\.gemini\antigravity\playground\toca-tocar\check-admin.js:11:40
+
+   8 const email = 'orostizagamario@gmail.com';
+   9 console.log(`Checking role for ${email}...`);
+  10 
+→ 11 const user = await prisma.user.findFirst(
+error: Environment variable not found: POSTGRES_PRISMA_URL.
+  -->  schema.prisma:10
+   | 
+ 9 |   provider  = "postgresql"
+10 |   url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+   | 
+
+Validation Error Count: 1

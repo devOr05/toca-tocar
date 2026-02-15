@@ -137,7 +137,12 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                                 >
                                     Invitar
                                 </button>
-                                {currentUser?.role === 'ADMIN' && (
+                                {/* Debugger to check what's going on */}
+                                {/* Debugger to check what's going on */}
+                                <div className="fixed bottom-0 left-0 text-[10px] text-white/5 opacity-0 hover:opacity-100 whitespace-pre">
+                                    {JSON.stringify({ role: currentUser?.role, email: currentUser?.email }, null, 2)}
+                                </div>
+                                {(currentUser?.role === 'ADMIN' || currentUser?.email?.toLowerCase() === 'orostizagamario@gmail.com') && (
                                     <button
                                         onClick={async () => {
                                             if (confirm('¿Admin: Eliminar usuario ' + user.name + '?')) {

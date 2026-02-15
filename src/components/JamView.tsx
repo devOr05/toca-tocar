@@ -129,7 +129,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     if (!mounted) return null;
 
     // Check if current user is the host or Super Admin
-    const isSuperAdmin = currentUser?.role === 'ADMIN' || currentUser?.email === 'orostizagamario@gmail.com';
+    const isSuperAdmin = currentUser?.role === 'ADMIN' || currentUser?.email?.toLowerCase() === 'orostizagamario@gmail.com';
     const isHost = currentUser?.id === initialJam.hostId || isSuperAdmin;
 
     return (
