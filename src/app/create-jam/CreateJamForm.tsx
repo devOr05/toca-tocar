@@ -18,6 +18,14 @@ export default function CreateJamForm({ user }: { user: any }) {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [isAutoFilling, setIsAutoFilling] = useState(false);
 
+    // Sync locationInput to hidden form field
+    useEffect(() => {
+        const hiddenLocInput = document.querySelector('input[name="location"]') as HTMLInputElement;
+        if (hiddenLocInput) {
+            hiddenLocInput.value = locationInput;
+        }
+    }, [locationInput]);
+
     // Fetch suggestions as user types
     useEffect(() => {
         const timer = setTimeout(async () => {
