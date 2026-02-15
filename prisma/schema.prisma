@@ -49,6 +49,7 @@ model User {
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
   uploadedMedia    Media[]         @relation("UploadedMedia")
   announcements    Announcement[]
+  proposedThemes   Theme[]         @relation("ProposedThemes")
 
   notifications     Notification[]  @relation("UserNotifications")
   sentNotifications Notification[]  @relation("NotificationActor")
