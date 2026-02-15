@@ -68,7 +68,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             }
 
             // Sync with DB if fields are missing (e.g. existing sessions)
-            if (!token.city || !token.mainInstrument || !token.role) {
+            if (token.sub && (!token.city || !token.mainInstrument || !token.role)) {
                 try {
                     const dbUser = await prisma.user.findUnique({
                         where: { id: token.sub }
