@@ -5,10 +5,12 @@ import { useJamStore } from '../store/jamStore';
 import ThemeList from './ThemeList';
 import { Share2, Users, Music2, LogOut, Trash2, Calendar, MapPin, Image as ImageIcon, Plus, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { pusherClient } from '@/lib/pusher';
 import { Jam, Theme, Participation, User } from '../types';
 import CreateThemeModal from './CreateThemeModal';
 import SuggestedThemes from './SuggestedThemes';
 import JamChat from './JamChat';
+import NotificationBell from './NotificationBell';
 import MusicianList from './MusicianList';
 import MediaGallery from './MediaGallery';
 import MediaUploadButton from './MediaUploadButton';
@@ -19,15 +21,16 @@ interface JamViewProps {
     initialThemes: Theme[];
     initialParticipations: Participation[];
     currentUser?: User;
+    initialCityMusicians: Partial<User>[];
 }
 
-export default function JamView({ initialJam, initialThemes, initialParticipations, currentUser: initialUser }: JamViewProps) {
+export default function JamView({ initialJam, initialThemes, initialParticipations, currentUser: initialUser, initialCityMusicians = [] }: JamViewProps) {
     const router = useRouter();
     const { jam, themes, participations, setUser, setAuthenticatedUser, currentUser, setJamState } = useJamStore();
     const [mounted, setMounted] = useState(false);
     const [formattedDate, setFormattedDate] = useState<string>('');
     const [isCreateThemeOpen, setIsCreateThemeOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'THEMES' | 'FORUM' | 'SUGGESTED' | 'GALLERY' | 'CHAT'>('THEMES');
+    const [activeTab, setActiveTab] = useState<'THEMES' | 'FORUM' | 'SUGGESTED' | 'GALLERY' | 'CHAT' | 'MUSICIANS'>('THEMES');
     const [createType, setCreateType] = useState<'SONG' | 'TOPIC'>('SONG');
     const [refreshMedia, setRefreshMedia] = useState(0);
 
@@ -35,6 +38,40 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         setCreateType(type);
         setIsCreateThemeOpen(true);
     };
+
+    // ... (rest of code)
+
+    // ... inside render ...
+    {/* LEFT: MUSICIANS */ }
+    <aside className="w-64 bg-jazz-surface border-r border-white/5 flex flex-col">
+        <div className="p-4 border-b border-white/5 bg-black/20">
+            <h2 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
+                <Users className="w-4 h-4" /> Músicos
+            </h2>
+        </div>
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
+            <MusicianList
+                jamId={initialJam.id}
+                currentUser={currentUser}
+                attendance={initialJam.attendance || []}
+                cityMusicians={initialCityMusicians}
+            />
+        </div>
+    </aside>
+
+    // Real-time Jam Updates
+    useEffect(() => {
+        const channel = pusherClient.subscribe(`jam-${initialJam.id}`);
+
+        channel.bind('update-jam', () => {
+            console.log('Jam update received, refreshing...');
+            router.refresh();
+        });
+
+        return () => {
+            pusherClient.unsubscribe(`jam-${initialJam.id}`);
+        };
+    }, [initialJam.id, router]);
 
     useEffect(() => {
         setJamState(initialJam, initialThemes, initialParticipations);
@@ -114,6 +151,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {currentUser && <NotificationBell userId={currentUser.id} />}
                     {isHost && (
                         <span className="text-[10px] bg-jazz-gold/20 text-jazz-gold px-2 py-1 rounded-full border border-jazz-gold/30 font-bold uppercase tracking-wider">
                             Anfitrión
@@ -137,9 +175,10 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
                         <MusicianList
-                            users={uniqueMusicians}
-                            title=""
-                            emptyMessage="Nadie se ha unido aún."
+                            jamId={initialJam.id}
+                            currentUser={currentUser}
+                            attendance={initialJam.attendance || []}
+                            cityMusicians={initialCityMusicians}
                         />
                     </div>
                 </aside>
@@ -296,7 +335,12 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 <aside className="w-80 bg-jazz-surface border-l border-white/5 flex flex-col">
                     <div className="flex-1 flex flex-col min-h-0">
                         {currentUser ? (
-                            <JamChat jamId={initialJam.id} currentUser={currentUser} hostId={initialJam.hostId} />
+                            <JamChat
+                                jamId={initialJam.id}
+                                currentUser={currentUser}
+                                hostId={initialJam.hostId}
+                                users={uniqueMusicians}
+                            />
                         ) : (
                             <div className="flex items-center justify-center h-full text-white/20">Login to Chat</div>
                         )}
@@ -314,6 +358,12 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'THEMES' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40'}`}
                     >
                         <Music2 size={14} /> Repertorio
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('MUSICIANS')}
+                        className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'MUSICIANS' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40'}`}
+                    >
+                        <Users size={14} /> Músicos
                     </button>
                     <button
                         onClick={() => setActiveTab('SUGGESTED')}
@@ -430,13 +480,28 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
                     {/* CHAT TAB */}
                     {activeTab === 'CHAT' && (
-                        <div className="h-[calc(100vh-200px)] min-h-[400px] flex flex-col">
+                        <div className="h-[calc(100vh-180px)]">
                             {currentUser ? (
-                                <JamChat jamId={initialJam.id} currentUser={currentUser} hostId={initialJam.hostId} />
+                                <JamChat
+                                    jamId={initialJam.id}
+                                    currentUser={currentUser}
+                                    hostId={initialJam.hostId}
+                                    users={uniqueMusicians}
+                                />
                             ) : (
-                                <p className="text-white/40 text-center text-sm my-auto">Inicia sesión para chatear.</p>
+                                <div className="flex items-center justify-center h-full text-white/20">Login to Chat</div>
                             )}
                         </div>
+                    )}
+
+                    {/* MUSICIANS TAB */}
+                    {activeTab === 'MUSICIANS' && (
+                        <MusicianList
+                            jamId={initialJam.id}
+                            currentUser={currentUser}
+                            attendance={initialJam.attendance || []}
+                            cityMusicians={initialCityMusicians}
+                        />
                     )}
 
                     {/* GALLERY TAB */}

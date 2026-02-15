@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { auth, signOut } from '@/auth';
 import { revalidatePath } from 'next/cache';
+import { pusherServer } from '@/lib/pusher-server';
 
 const STANDARD_THEMES = [
     { name: 'Autumn Leaves', tonality: 'Gm' },
@@ -73,6 +74,13 @@ export async function joinThemeAction(themeId: string, instrument: string) {
                 instrument,
             },
         });
+
+        // Trigger update
+        const theme = await prisma.theme.findUnique({ where: { id: themeId }, select: { jam: { select: { id: true } } } });
+        if (theme?.jam?.id) {
+            await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+        }
+
         return { success: true };
     } catch (error) {
         console.error('Error joining theme:', error);
@@ -94,6 +102,12 @@ export async function leaveTheme(themeId: string) {
                 userId: session.user.id,
             },
         });
+
+        // Trigger update
+        const theme = await prisma.theme.findUnique({ where: { id: themeId }, select: { jam: { select: { id: true } } } });
+        if (theme?.jam?.id) {
+            await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+        }
         return { success: true };
     } catch (error) {
         console.error('Error leaving theme:', error);
@@ -174,6 +188,7 @@ export async function getJam(code: string) {
         const jam = await prisma.jam.findUnique({
             where: { code },
             include: {
+                host: true,
                 themes: {
                     include: {
                         participations: {
@@ -183,6 +198,11 @@ export async function getJam(code: string) {
                         },
                     },
                 },
+                attendance: {
+                    include: {
+                        user: true
+                    }
+                }
             },
         });
         return jam;
@@ -323,6 +343,9 @@ export async function createTheme(
             },
         });
 
+        // Trigger update
+        await pusherServer.trigger(`jam-${jam.id}`, 'update-jam', {});
+
         return { success: true };
     } catch (error) {
         console.error('Error creating theme:', error);
@@ -346,6 +369,10 @@ export async function updateJamStatus(jamId: string, status: string) {
         });
 
         revalidatePath(`/jam/${jam.code}`);
+
+        // Trigger update
+        await pusherServer.trigger(`jam-${jamId}`, 'update-jam', {});
+
         return { success: true };
     } catch (error) {
         console.error('Error updating jam status:', error);
@@ -373,6 +400,10 @@ export async function updateThemeStatus(themeId: string, status: string) {
         });
 
         revalidatePath(`/jam/${theme.jam.code}`);
+
+        // Trigger update
+        await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+
         return { success: true };
     } catch (error) {
         console.error('Error updating theme status:', error);
@@ -566,6 +597,9 @@ export async function updateTheme(themeId: string, formData: FormData) {
     }
 }
 
+
+import { pusherClient } from '@/lib/pusher';
+
 export async function sendMessage(jamId: string, content: string, themeId?: string) {
     const session = await auth();
     if (!session?.user?.id) {
@@ -573,18 +607,92 @@ export async function sendMessage(jamId: string, content: string, themeId?: stri
     }
 
     try {
-        await prisma.message.create({
+        const message = await prisma.message.create({
             data: {
                 content,
                 userId: session.user.id,
                 jamId,
                 themeId: themeId || undefined,
             },
+            include: {
+                user: true // Include user for the real-time payload
+            }
         });
+
+        // Trigger update
+        await pusherServer.trigger(`jam-${jamId}`, 'new-message', {
+            id: message.id,
+            content: message.content,
+            userId: message.userId,
+            userName: message.user.name || 'Usuario', // Flatten for client
+            jamId: message.jamId,
+            themeId: message.themeId,
+            createdAt: message.createdAt,
+        });
+
+        // ---------------------------------------------------------
+        // NOTIFICATIONS LOGIC (Async - don't block response)
+        // ---------------------------------------------------------
+        (async () => {
+            // 1. Check for mentions: @Name
+            const mentionRegex = /@(\w+)/g;
+            const mentions = content.match(mentionRegex);
+
+            if (mentions) {
+                for (const mention of mentions) {
+                    const mentionedName = mention.substring(1); // Remove @
+                    // Find user by name (approximate)
+                    const targetUser = await prisma.user.findFirst({
+                        where: {
+                            name: {
+                                equals: mentionedName,
+                                mode: 'insensitive'
+                            }
+                        }
+                    });
+
+                    if (targetUser && targetUser.id !== session.user.id) {
+                        const { createNotification } = await import('@/lib/notifications');
+                        await createNotification(
+                            targetUser.id,
+                            'MENTION',
+                            `${session.user.name} te mencionó en el chat`,
+                            `/jam/${jamId}`, // Link to Jam
+                            session.user.id
+                        );
+                    }
+                }
+            }
+        })();
+
         return { success: true };
     } catch (error) {
         console.error('Error sending message:', error);
-        return { success: false, error: 'Error al enviar el mensaje' };
+        return { success: false, error: 'Failed to send message' };
+    }
+}
+
+export async function checkInToJam(jamId: string, instrument: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'Not authenticated' };
+
+    try {
+        await prisma.jamAttendance.create({
+            data: {
+                userId: session.user.id,
+                jamId,
+                instrument
+            }
+        });
+
+        const { pusherServer } = await import('@/lib/pusher-server');
+        await pusherServer.trigger(`jam-${jamId}`, 'update-jam', {});
+
+        revalidatePath(`/jam/${jamId}`);
+        return { success: true };
+    } catch (error) {
+        console.error('Error checking in:', error);
+        return { success: false, error: 'Failed to check in' };
     }
 }
 
@@ -741,6 +849,9 @@ export async function deleteTheme(themeId: string) {
         await prisma.theme.delete({
             where: { id: themeId },
         });
+
+        // Trigger update
+        await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
 
         return { success: true };
     } catch (error) {

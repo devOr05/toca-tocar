@@ -49,6 +49,11 @@ model User {
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
   uploadedMedia    Media[]         @relation("UploadedMedia")
   announcements    Announcement[]
+
+  notifications     Notification[]  @relation("UserNotifications")
+  sentNotifications Notification[]  @relation("NotificationActor")
+  
+  jamAttendance     JamAttendance[]
 }
 
 model Account {
@@ -112,6 +117,7 @@ model Jam {
   themes    Theme[]
   messages  Message[]
   media     Media[] @relation("JamMedia")
+  attendance JamAttendance[] // Musicians checked in
   
   // Opening show info
   openingBand   String?
@@ -227,4 +233,36 @@ model Announcement {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // MENTION, SYSTEM, REPLY
+  read      Boolean  @default(false)
+  
+  // Content
+  message   String?
+  link      String?  // URL to redirect to
+
+  // Relationships
+  userId    String   // Recipient
+  user      User     @relation("UserNotifications", fields: [userId], references: [id])
+
+  actorId   String?  // Sender (optional)
+  actor     User?    @relation("NotificationActor", fields: [actorId], references: [id])
+  
+  createdAt DateTime @default(now())
+}
+
+model JamAttendance {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  jamId      String
+  jam        Jam      @relation(fields: [jamId], references: [id])
+  instrument String?  // Instrument played in this specific jam
+
+  joinedAt   DateTime @default(now())
+
+  @@unique([userId, jamId]) // One check-in per user per jam
 }

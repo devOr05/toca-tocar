@@ -17,6 +17,7 @@ interface JamClientLoaderProps {
     initialThemes: Theme[];
     initialParticipations: Participation[];
     currentUser?: User;
+    initialCityMusicians: Partial<User>[];
 }
 
 export default function JamClientLoader(props: JamClientLoaderProps) {

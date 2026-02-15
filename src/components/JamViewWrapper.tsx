@@ -10,6 +10,7 @@ interface JamViewWrapperProps {
     initialThemes: Theme[];
     initialParticipations: Participation[];
     currentUser?: User;
+    initialCityMusicians: Partial<User>[];
 }
 
 export default function JamViewWrapper(props: JamViewWrapperProps) {

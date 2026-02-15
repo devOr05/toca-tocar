@@ -57,6 +57,22 @@ export default async function JamPage({ params }: PageProps) {
             }))
     );
 
+    // Assuming jamData now includes attendance due to the instruction
+    const attendance = jamData.attendance?.map((a: any) => ({
+        id: a.id,
+        userId: a.userId,
+        jamId: a.jamId,
+        status: a.status,
+        user: {
+            id: a.user.id,
+            name: a.user.name || 'Invitado',
+            role: (a.user.role as 'USER' | 'ADMIN') || 'USER',
+            image: a.user.image || null,
+            city: a.user.city || null,
+            mainInstrument: a.user.mainInstrument || null
+        }
+    })) || [];
+
     const jam = {
         id: jamData.id,
         code: jamData.code,
@@ -74,7 +90,8 @@ export default async function JamPage({ params }: PageProps) {
         openingInfo: jamData.openingInfo,
         openingThemes: jamData.openingThemes,
         createdAt: jamData.createdAt,
-        isPrivate: jamData.isPrivate
+        isPrivate: jamData.isPrivate,
+        attendance: attendance
     };
 
     // Serialize for Client Component (fix for Date objects)
@@ -86,12 +103,32 @@ export default async function JamPage({ params }: PageProps) {
         id: session.user.id,
         name: session.user.name || 'Usuario',
         role: (session.user.role as 'USER' | 'ADMIN') || 'USER',
+        city: session.user.city || null,
+        mainInstrument: session.user.mainInstrument || null,
+        image: session.user.image || null
     } : undefined;
+
+    // Fetch other musicians in the same city (if jam has city)
+    let cityMusicians = [];
+    if (jamData.city) {
+        // This should theoretically be a separate action/cached
+        const { prisma } = await import('@/lib/prisma');
+        const usersInCity = await prisma.user.findMany({
+            where: {
+                city: jamData.city,
+                NOT: { id: session?.user?.id } // Exclude current user
+            },
+            take: 20,
+            select: { id: true, name: true, image: true, mainInstrument: true, city: true }
+        });
+        cityMusicians = JSON.parse(JSON.stringify(usersInCity));
+    }
 
     return <JamClientLoader
         initialJam={serializedJam}
         initialThemes={serializedThemes}
         initialParticipations={serializedParticipations}
         currentUser={currentUser}
+        initialCityMusicians={cityMusicians}
     />;
 }

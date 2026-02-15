@@ -27,6 +27,7 @@ export interface Jam {
     openingInfo?: string | null;
     openingThemes?: string | null;
     createdAt: Date;
+    attendance?: JamAttendance[];
 }
 
 export interface Theme {
@@ -72,4 +73,17 @@ export interface Message {
     jamId: string;
     themeId?: string | null;
     createdAt: Date;
+}
+
+export interface JamAttendance {
+    id: string;
+    userId: string;
+    jamId: string;
+    instrument?: string | null;
+    joinedAt: Date;
+    user: User;
+}
+
+export interface JamWithAttendance extends Jam {
+    attendance: JamAttendance[];
 }
