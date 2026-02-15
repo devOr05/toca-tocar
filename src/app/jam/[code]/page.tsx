@@ -111,6 +111,7 @@ export default async function JamPage({ params }: PageProps) {
             currentUser = {
                 id: userDb.id,
                 name: userDb.name || 'Usuario',
+                email: userDb.email,
                 role: (userDb.role as 'USER' | 'ADMIN') || 'USER',
                 city: userDb.city || null,
                 mainInstrument: userDb.mainInstrument || null,

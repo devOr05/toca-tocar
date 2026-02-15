@@ -129,20 +129,29 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                                 )}
                             </div>
                             <span className="text-xs text-white truncate flex-1">{user.name}</span>
-                            {currentUser?.role === 'ADMIN' && (
+                            <div className="flex items-center gap-1">
                                 <button
-                                    onClick={async () => {
-                                        if (confirm('¿Admin: Eliminar usuario ' + user.name + '?')) {
-                                            const { deleteUser } = await import('@/app/actions');
-                                            await deleteUser(user.id!); // user.id can be undef in partial
-                                            window.location.reload();
-                                        }
-                                    }}
-                                    className="hidden group-hover:block text-red-500 hover:text-red-400 p-1"
+                                    onClick={() => toast.success(`Invitación enviada a ${user.name}`)}
+                                    className="hidden group-hover:block text-jazz-gold hover:text-white p-1 text-[10px] font-bold uppercase border border-jazz-gold/30 rounded px-2 hover:bg-jazz-gold/20 transition-all"
+                                    title="Invitar a la Jam"
                                 >
-                                    <Trash2 size={12} />
+                                    Invitar
                                 </button>
-                            )}
+                                {currentUser?.role === 'ADMIN' && (
+                                    <button
+                                        onClick={async () => {
+                                            if (confirm('¿Admin: Eliminar usuario ' + user.name + '?')) {
+                                                const { deleteUser } = await import('@/app/actions');
+                                                await deleteUser(user.id!); // user.id can be undef in partial
+                                                window.location.reload();
+                                            }
+                                        }}
+                                        className="hidden group-hover:block text-red-500 hover:text-red-400 p-1"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                )}
+                            </div>
                         </li>
                     ))}
                 </ul>

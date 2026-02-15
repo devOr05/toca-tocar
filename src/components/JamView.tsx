@@ -128,8 +128,9 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
     if (!mounted) return null;
 
-    // Check if current user is the host
-    const isHost = currentUser?.id === initialJam.hostId;
+    // Check if current user is the host or Super Admin
+    const isSuperAdmin = currentUser?.role === 'ADMIN' || currentUser?.email === 'orostizagamario@gmail.com';
+    const isHost = currentUser?.id === initialJam.hostId || isSuperAdmin;
 
     return (
         <div className="min-h-screen bg-black pb-20 lg:pb-0 font-sans flex flex-col relative">
@@ -459,7 +460,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             )}
 
                             {/* Host Control Panel */}
-                            {(isHost || currentUser?.role === 'ADMIN') && <HostControlPanel jam={initialJam} themes={themes} />}
+                            {isHost && <HostControlPanel jam={initialJam} themes={themes} />}
 
                             <ThemeList type="SONG" />
                         </>
