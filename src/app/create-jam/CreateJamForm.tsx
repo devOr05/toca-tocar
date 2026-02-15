@@ -238,6 +238,13 @@ export default function CreateJamForm({ user }: { user: any }) {
                 <button type="submit" disabled={isPending} className="w-full bg-jazz-gold text-black font-bold p-4 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-jazz-gold/20 disabled:opacity-50 disabled:cursor-not-allowed">
                     {isPending ? 'Creando...' : 'Crear Jam'}
                 </button>
+                <button
+                    type="button"
+                    onClick={() => alert(`Debug User: ${user?.id} - ${user?.name}`)}
+                    className="w-full mt-2 text-[10px] text-white/20 hover:text-white/50"
+                >
+                    Ver Sesión (Debug)
+                </button>
                 <p className="text-xs text-center text-white/30 mt-3">
                     Al crearla, se generará un código único para compartir.
                 </p>

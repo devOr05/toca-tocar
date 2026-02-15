@@ -109,11 +109,13 @@ export async function createJam(prevState: any, formData: FormData) {
     let userName = '';
 
     // If logged in, use that user
+    console.log('Create Jam Session Debug:', JSON.stringify(session, null, 2));
+
     if (session?.user?.id) {
         userId = session.user.id;
         userName = session.user.name || 'Anfitrión';
     } else {
-        // Fallback or Error if auth required
+        console.error('Create Jam Failed: No User ID in session', session);
         return { success: false, error: 'Debes iniciar sesión para ser anfitrión' };
     }
 

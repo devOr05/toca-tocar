@@ -28,24 +28,30 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 if (parsedCredentials.success) {
                     const { name } = parsedCredentials.data;
 
-                    // Check if user exists, if not create a guest user (or find existing by name)
-                    // Ideally for Guest credentials we might verify connection to a Jam Code?
-                    // For now, simple name-based login as requested
-
-                    // WARNING: Credentials provider with Prisma Adapter doesn't persist sessions in DB automatically
-                    // We handle this via JWT strategy.
-
-                    let user = await prisma.user.findFirst({
-                        where: { name: name, email: null } // Find guest user
-                    });
-
-                    if (!user) {
-                        user = await prisma.user.create({
-                            data: { name: name }
+                    try {
+                        // 1. Try to find existing guest user
+                        let user = await prisma.user.findFirst({
+                            where: { name: name, email: null }
                         });
-                    }
 
-                    return user as any;
+                        // 2. If not found, create new guest user
+                        if (!user) {
+                            console.log('Creating new guest user:', name);
+                            user = await prisma.user.create({
+                                data: {
+                                    name: name,
+                                    role: 'USER', // Explicit default
+                                    image: `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${name}` // Auto avatar
+                                }
+                            });
+                        }
+
+                        console.log('Authorize successful:', user.id, user.name);
+                        return user; // Prisma user object has 'id'
+                    } catch (error) {
+                        console.error('Auth error:', error);
+                        return null;
+                    }
                 }
                 return null;
             },
@@ -53,20 +59,18 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     ],
     callbacks: {
         async jwt({ token, user, trigger, session }) {
+            // Initial sign in
             if (user) {
-                token.id = user.id;
+                token.sub = user.id; // Ensure sub is set to user ID
                 token.role = user.role;
-                token.mainInstrument = user.mainInstrument;
-                token.isVerifiedOrganizer = user.isVerifiedOrganizer;
+                token.id = user.id; // Redundant but safe
             }
             return token;
         },
         async session({ session, token }) {
-            if (session.user) {
-                session.user.id = token.sub!;
+            if (session.user && token.sub) {
+                session.user.id = token.sub;
                 session.user.role = token.role as string;
-                session.user.mainInstrument = token.mainInstrument as string | null;
-                session.user.isVerifiedOrganizer = token.isVerifiedOrganizer as boolean;
             }
             return session;
         }
