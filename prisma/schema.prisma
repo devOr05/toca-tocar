@@ -138,6 +138,10 @@ model Theme {
   visibility    String  @default("PUBLIC") // PUBLIC, PRIVATE
   type          String  @default("SONG") // SONG, TOPIC
 
+  order         Int     @default(0)
+  proposedById  String?
+  proposedBy    User?    @relation("ProposedThemes", fields: [proposedById], references: [id])
+  
   jamId String
   jam   Jam    @relation(fields: [jamId], references: [id], onDelete: Cascade)
 

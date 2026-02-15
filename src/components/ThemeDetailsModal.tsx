@@ -123,7 +123,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                 </div>
 
                 <div className="p-4 border-t border-white/5 shrink-0 bg-jazz-surface flex gap-3">
-                    {isHost && theme.status !== 'QUEUED' && (
+                    {(isHost || (currentUser && theme.proposedById === currentUser.id)) && theme.status !== 'QUEUED' && (
                         <button
                             onClick={async () => {
                                 const { updateThemeStatus } = await import('@/app/actions');

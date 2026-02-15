@@ -345,6 +345,7 @@ export async function createTheme(
                 sheetMusicUrl: sheetMusicUrl || undefined,
                 type: type || 'SONG',
                 jamId: jam.id,
+                proposedById: session.user.id,
             },
         });
 
@@ -409,7 +410,7 @@ export async function updateThemeStatus(themeId: string, status: string) {
             include: { jam: true }
         });
 
-        if (!theme || theme.jam.hostId !== session.user.id) {
+        if (!theme || (theme.jam.hostId !== session.user.id && theme.proposedById !== session.user.id)) {
             return { success: false, error: 'No autorizado' };
         }
 

@@ -41,6 +41,8 @@ export interface Theme {
     jamId: string;
     type?: 'SONG' | 'TOPIC' | string;
     visibility?: 'PUBLIC' | 'PRIVATE' | string;
+    order?: number;
+    proposedById?: string | null;
     createdAt?: Date;
     updatedAt?: Date;
 }

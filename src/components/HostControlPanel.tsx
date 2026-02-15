@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { Jam, Theme } from '../types';
 import { Play, Square, CheckCircle2, ListOrdered, Settings2, Loader, Trash2 } from 'lucide-react';
-import { updateJamOpening, updateJamStatus, updateThemeStatus } from '@/app/actions';
 import { updateJamOpening, updateJamStatus, updateThemeStatus, reorderThemes } from '@/app/actions';
+import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import {
     DndContext,
@@ -103,9 +103,7 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
     };
 
     const activeThemes = themes.filter(t => t.status === 'PLAYING');
-    const activeThemes = themes.filter(t => t.status === 'PLAYING');
     // const queuedThemes = themes.filter(t => t.status === 'QUEUED'); // Replaced by state
-    const openThemes = themes.filter(t => t.status === 'OPEN');
     const openThemes = themes.filter(t => t.status === 'OPEN');
 
     const handleStatusChange = async (newStatus: string) => {
