@@ -1,12 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
+  /* Slightly lighter background (Slate 950/Mixed) instead of pure Zinc 950 */
+  --background: #0f1218;
   --foreground: #ededed;
-  
+
   /* Jazz Palette */
   --jazz-gold: #fbbf24;
-  --jazz-surface: #18181b; 
+  --jazz-surface: #1e212b;
+  /* Slightly lighter surface */
   --jazz-accent: #6366f1;
 }
 
@@ -16,13 +18,18 @@
   --color-jazz-gold: var(--jazz-gold);
   --color-jazz-surface: var(--jazz-surface);
   --color-jazz-accent: var(--jazz-accent);
-  
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  /* Add subtle radial gradient for "life" */
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 10%, rgba(251, 191, 36, 0.05) 0%, transparent 30%);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }

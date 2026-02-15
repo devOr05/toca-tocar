@@ -36,10 +36,10 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
 
     return (
         <div className={`
-      relative rounded-xl border p-4 transition-all
+      relative rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5
       ${isPlaying ? 'bg-jazz-accent/20 border-jazz-accent shadow-[0_0_20px_rgba(99,102,241,0.3)]' :
                 isQueued ? 'bg-jazz-gold/10 border-jazz-gold/50' :
-                    'bg-jazz-surface border-white/5'}
+                    'bg-jazz-surface/80 border-white/5 hover:border-jazz-gold/20 hover:shadow-[0_8px_20px_rgba(0,0,0,0.3)] hover:shadow-jazz-gold/5 backdrop-blur-sm'}
     `}>
             {/* Header */}
             <div className="flex justify-between items-start mb-3">
@@ -94,12 +94,20 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
             {/* Sheet Music Preview - Only for Songs */}
             {theme.sheetMusicUrl && theme.type !== 'TOPIC' && (
                 <div className="mb-4">
-                    {theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf') ? (
+                    {/* 1. If it's an image (jpg/png) or a Cloudinary PDF we can convert */}
+                    {(theme.sheetMusicUrl.match(/\.(jpg|jpeg|png|webp)$/i) || (theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf'))) ? (
                         <div className="relative group cursor-pointer overflow-hidden rounded-lg border border-white/10" onClick={() => setShowDetails(true)}>
                             <img
-                                src={theme.sheetMusicUrl.replace('.pdf', '.jpg')}
+                                src={theme.sheetMusicUrl.endsWith('.pdf') ? theme.sheetMusicUrl.replace('.pdf', '.jpg') : theme.sheetMusicUrl}
                                 alt="Partitura Preview"
-                                className="w-full h-32 object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity"
+                                className="w-full h-32 object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity bg-white/5"
+                                onError={(e) => {
+                                    // Fallback if image fails (e.g. PDF conversion failed)
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.parentElement!.style.display = 'none';
+                                    // We could force show the link button here, but React state would be better.
+                                    // For now, hiding the broken image is a good first step.
+                                }}
                             />
                             <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <span className="text-white text-xs font-bold flex items-center gap-1 bg-black/60 px-2 py-1 rounded">
@@ -120,56 +128,65 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                     )}
                 </div>
             )}
-
-            {/* Description for Topics Preview */}
-            {theme.type === 'TOPIC' && theme.description && (
-                <p className="text-white/60 text-sm mb-4 line-clamp-2">{theme.description}</p>
-            )}
+            {
+                theme.type === 'TOPIC' && theme.description && (
+                    <p className="text-white/60 text-sm mb-4 line-clamp-2">{theme.description}</p>
+                )
+            }
 
             {/* Participation Section */}
-            {theme.type !== 'TOPIC' && (
-                <div className="space-y-4 pt-2">
-                    <InstrumentSelector
-                        participations={participations}
-                        currentUser={currentUser}
-                        myParticipation={myParticipation}
-                        onJoin={(inst) => {
-                            if (!currentUser) return alert('Debes iniciar sesión para anotarte.');
-                            onJoin(inst);
-                        }}
-                        onLeave={onLeave}
-                    />
+            {
+                theme.type !== 'TOPIC' && (
+                    <div className="space-y-4 pt-2">
+                        <InstrumentSelector
+                            participations={participations}
+                            currentUser={currentUser}
+                            myParticipation={myParticipation}
+                            onJoin={async (inst) => {
+                                if (!currentUser) return alert('Debes iniciar sesión para anotarte.');
 
-                    <div className="flex gap-2">
-                        {/* Direct Chat Button for Songs */}
-                        <button
-                            onClick={() => setShowDetails(true)}
-                            className={`py-2.5 px-4 bg-jazz-accent/10 hover:bg-jazz-accent/20 text-jazz-accent rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2 ${myParticipation ? 'w-full' : 'w-full'}`}
-                            title="Abrir Chat"
-                        >
-                            <MessageSquare size={16} />
-                            {myParticipation ? <span className="text-xs font-bold uppercase tracking-wider">Chat del Tema</span> : <span>Chat / Detalles</span>}
-                        </button>
+                                // Optimistic update handled by parent or revalidation, 
+                                // but we can add a local loading state if needed.
+                                // For now, checks are strict.
+                                onJoin(inst);
+                            }}
+                            onLeave={onLeave}
+                        />
+
+                        <div className="flex gap-2">
+                            {/* Direct Chat Button for Songs */}
+                            <button
+                                onClick={() => setShowDetails(true)}
+                                className={`py-2.5 px-4 bg-jazz-accent/10 hover:bg-jazz-accent/20 text-jazz-accent rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2 ${myParticipation ? 'w-full' : 'w-full'}`}
+                                title="Abrir Chat"
+                            >
+                                <MessageSquare size={16} />
+                                {myParticipation ? <span className="text-xs font-bold uppercase tracking-wider">Chat del Tema</span> : <span>Chat / Detalles</span>}
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Topic Discussion Button - Only for topics */}
-            {theme.type === 'TOPIC' && (
-                <button
-                    onClick={() => setShowDetails(true)}
-                    className="w-full py-2.5 bg-jazz-accent/10 hover:bg-jazz-accent/40 text-jazz-accent text-sm font-bold rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2"
-                >
-                    <MessageSquare size={16} />
-                    Entrar a la Discusión
-                </button>
-            )}
+            {
+                theme.type === 'TOPIC' && (
+                    <button
+                        onClick={() => setShowDetails(true)}
+                        className="w-full py-2.5 bg-jazz-accent/10 hover:bg-jazz-accent/40 text-jazz-accent text-sm font-bold rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2"
+                    >
+                        <MessageSquare size={16} />
+                        Entrar a la Discusión
+                    </button>
+                )
+            }
 
             <ThemeDetailsModal
                 isOpen={showDetails}
                 onClose={() => setShowDetails(false)}
                 theme={theme}
                 currentUser={currentUser}
+                isHost={isHost}
             />
 
             <EditThemeModal

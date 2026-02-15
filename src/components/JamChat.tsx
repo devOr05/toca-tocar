@@ -80,34 +80,18 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
 
     // Auto-scroll logic (Simplified)
     // Auto-scroll logic (Conditioned)
+    // Simplified Auto-scroll
     useEffect(() => {
         const container = messagesEndRef.current?.parentElement;
         if (!container) return;
 
-        // 1. Initial Load: Always scroll to bottom
-        if (!hasInitialScrolled && messages.length > 0) {
-            container.scrollTop = container.scrollHeight;
-            setHasInitialScrolled(true);
-            return;
-        }
-
-        // 2. New Message:
-        // Check if the last message is from me
-        const lastMsg = messages[messages.length - 1];
-        if (!lastMsg) return;
-
-        const isMyMessage = lastMsg.userId === currentUser.id;
-
-        // Check if user is near bottom (e.g., within 150px)
-        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
-
-        if (isMyMessage || isNearBottom) {
-            // Use timeout to ensure DOM checks are accurate after render
-            setTimeout(() => {
-                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-            }, 50);
-        }
-    }, [messages, hasInitialScrolled, currentUser.id]);
+        // Force scroll to bottom on every message change
+        // This is "brute force" but ensures users always see the latest in a live jam context
+        // We can optimize later if reading history becomes annoying, but for now "live" is priority
+        setTimeout(() => {
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        }, 100);
+    }, [messages]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const val = e.target.value;

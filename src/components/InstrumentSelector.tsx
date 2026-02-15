@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { INSTRUMENT_MAP } from './InstrumentIcon';
 import { Participation, User } from '../types'; // Adjust path if needed
 import { Plus } from 'lucide-react';
@@ -62,6 +62,8 @@ export default function InstrumentSelector({
     // We also need the full list for the "picker" mode
     const allInstruments = Object.keys(INSTRUMENT_MAP);
 
+    const [isOpen, setIsOpen] = useState(false);
+
     return (
         <div className="flex flex-wrap gap-2 items-center">
             {/* Active Instruments Pills */}
@@ -107,30 +109,39 @@ export default function InstrumentSelector({
 
             {/* "Add Info" or "Join" Pill if not participating or to show empty state actions */}
             {!myParticipation && (
-                <div className="dropdown dropdown-end relative group">
+                <div className="relative">
                     <button
+                        onClick={() => setIsOpen(!isOpen)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold bg-jazz-accent/10 text-jazz-accent border border-jazz-accent/20 hover:bg-jazz-accent/20 transition-all"
                     >
-                        <Plus size={14} />
+                        <Plus size={14} className={isOpen ? 'rotate-45 transition-transform' : 'transition-transform'} />
                         <span>Sumarme</span>
                     </button>
 
                     {/* Dropdown with all instruments */}
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-jazz-surface border border-white/10 rounded-xl shadow-xl p-2 z-50 hidden group-hover:block grid grid-cols-2 gap-1 animate-in fade-in zoom-in-95 duration-200">
-                        {allInstruments.map(instId => {
-                            const config = INSTRUMENT_MAP[instId];
-                            return (
-                                <button
-                                    key={instId}
-                                    onClick={() => onJoin(instId)}
-                                    className="flex items-center gap-2 p-2 hover:bg-white/10 rounded-lg text-left transition-colors"
-                                >
-                                    <span className="text-lg">{config.emoji}</span>
-                                    <span className="text-xs text-white">{config.label}</span>
-                                </button>
-                            );
-                        })}
-                    </div>
+                    {isOpen && (
+                        <>
+                            <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+                            <div className="absolute top-full left-0 mt-2 w-48 bg-jazz-surface border border-white/10 rounded-xl shadow-xl p-2 z-50 grid grid-cols-2 gap-1 animate-in fade-in zoom-in-95 duration-200">
+                                {allInstruments.map(instId => {
+                                    const config = INSTRUMENT_MAP[instId];
+                                    return (
+                                        <button
+                                            key={instId}
+                                            onClick={() => {
+                                                onJoin(instId);
+                                                setIsOpen(false);
+                                            }}
+                                            className="flex items-center gap-2 p-2 hover:bg-white/10 rounded-lg text-left transition-colors"
+                                        >
+                                            <span className="text-lg">{config.emoji}</span>
+                                            <span className="text-xs text-white truncate">{config.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
         </div>

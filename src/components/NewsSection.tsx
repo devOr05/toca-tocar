@@ -142,14 +142,6 @@ export default function NewsSection({ isAdmin = false, currentUserId }: { isAdmi
                             <span className="text-sm text-gray-300 group-hover:text-white">📖 Real Book Online</span>
                             <span className="text-xs text-white/20 group-hover:text-jazz-gold">Ver &rarr;</span>
                         </a>
-                        <a href="#" className="block p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-between group">
-                            <span className="text-sm text-gray-300 group-hover:text-white">🎸 Acordes de Jazz (PDF)</span>
-                            <span className="text-xs text-white/20 group-hover:text-jazz-gold">Descargar &rarr;</span>
-                        </a>
-                        <a href="#" className="block p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-between group">
-                            <span className="text-sm text-gray-300 group-hover:text-white">👂 Entrenamiento Auditivo</span>
-                            <span className="text-xs text-white/20 group-hover:text-jazz-gold">Practicar &rarr;</span>
-                        </a>
                     </div>
                 </div>
             </div>

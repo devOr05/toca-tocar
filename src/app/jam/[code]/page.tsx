@@ -127,7 +127,10 @@ export default async function JamPage({ params }: PageProps) {
         const { prisma } = await import('@/lib/prisma');
         const usersInCity = await prisma.user.findMany({
             where: {
-                city: jamData.city,
+                city: {
+                    equals: jamData.city,
+                    mode: 'insensitive'
+                },
                 NOT: { id: session?.user?.id } // Exclude current user
             },
             take: 20,

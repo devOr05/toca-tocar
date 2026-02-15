@@ -68,12 +68,17 @@ export const useJamStore = create<JamState>((set, get) => ({
         // Next.js allows importing server actions in client files.
 
         try {
-            const { joinThemeAction } = await import('@/app/actions');
-            const result = await joinThemeAction(themeId, instrument);
+            // Import the action dynamically
+            const { joinTheme } = await import('@/app/actions');
+            const result = await joinTheme(themeId, instrument);
+
             if (!result.success) {
                 // Revert if failed
                 set({ participations: get().participations.filter(p => p.id !== newParticipation.id) });
-                alert(result.error);
+                // Don't alert if it's just a duplicate/race condition that we handled gracefully
+                if (result.error !== 'Already joined') {
+                    alert(result.error);
+                }
             }
         } catch (err) {
             console.error(err);
@@ -89,6 +94,7 @@ export const useJamStore = create<JamState>((set, get) => ({
 
         const previousParticipations = [...participations];
 
+        // Optimistic remove
         set({
             participations: participations.filter((p) => !(p.userId === currentUser.id && p.themeId === themeId)),
         });

@@ -4,7 +4,25 @@ import { useState } from 'react';
 import { Jam, Theme } from '../types';
 import { Play, Square, CheckCircle2, ListOrdered, Settings2, Loader, Trash2 } from 'lucide-react';
 import { updateJamOpening, updateJamStatus, updateThemeStatus } from '@/app/actions';
+import { updateJamOpening, updateJamStatus, updateThemeStatus, reorderThemes } from '@/app/actions';
 import { useRouter } from 'next/navigation';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface HostControlPanelProps {
     jam: Jam;
@@ -20,6 +38,52 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
         openingInfo: jam.openingInfo || '',
         openingThemes: jam.openingThemes || ''
     });
+
+    // Dnd-kit sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    // Local state for optimistic updates
+    const [queuedThemes, setQueuedThemes] = useState(
+        themes.filter(t => t.status === 'QUEUED').sort((a, b) => (a.order || 0) - (b.order || 0))
+    );
+
+    // Sync queuedThemes when props change (e.g. pusher update)
+    // We only update if the IDs changed or length changed to avoid conflict with local drag
+    const propQueuedThemes = themes.filter(t => t.status === 'QUEUED').sort((a, b) => (a.order || 0) - (b.order || 0));
+    if (JSON.stringify(propQueuedThemes.map(t => t.id)) !== JSON.stringify(queuedThemes.map(t => t.id))) {
+        setQueuedThemes(propQueuedThemes);
+    }
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (active.id !== over?.id) {
+            setQueuedThemes((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over?.id);
+                const newItems = arrayMove(items, oldIndex, newIndex);
+
+                // Update server
+                // Calculate new order values based on index
+                const updates = newItems.map((item, index) => ({
+                    id: item.id,
+                    order: index
+                }));
+
+                // Call server action without waiting to keep UI snappy
+                reorderThemes(jam.id, updates).then(res => {
+                    if (!res.success) toast.error("Error al reordenar");
+                });
+
+                return newItems;
+            });
+        }
+    };
 
     const handleSaveOpening = async () => {
         setIsLoading(true);
@@ -39,7 +103,9 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
     };
 
     const activeThemes = themes.filter(t => t.status === 'PLAYING');
-    const queuedThemes = themes.filter(t => t.status === 'QUEUED');
+    const activeThemes = themes.filter(t => t.status === 'PLAYING');
+    // const queuedThemes = themes.filter(t => t.status === 'QUEUED'); // Replaced by state
+    const openThemes = themes.filter(t => t.status === 'OPEN');
     const openThemes = themes.filter(t => t.status === 'OPEN');
 
     const handleStatusChange = async (newStatus: string) => {
@@ -203,30 +269,26 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
                         <ListOrdered size={14} /> Cola de Espera ({queuedThemes.length})
                     </h3>
                     <div className="space-y-2">
-                        {queuedThemes.map((t, i) => (
-                            <div key={t.id} className="flex items-center justify-between text-sm bg-black/20 rounded-lg p-2 border border-white/5 hover:border-jazz-gold/30 transition-colors">
-                                <div className="flex items-center gap-3 truncate">
-                                    <span className="text-jazz-muted font-mono text-[10px]">{i + 1}</span>
-                                    <span className="text-white/80 truncate">{t.name}</span>
-                                </div>
-                                <div className="flex gap-1">
-                                    <button
-                                        onClick={() => handleThemeStatus(t.id, 'PLAYING')}
-                                        className="text-jazz-gold hover:bg-jazz-gold/20 p-1.5 rounded-md transition-all"
-                                        title="Poner en Escenario"
-                                    >
-                                        <Play size={14} fill="currentColor" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleThemeStatus(t.id, 'OPEN')}
-                                        className="text-white/20 hover:text-white hover:bg-white/10 p-1.5 rounded-md transition-all"
-                                        title="Mover a Abiertos"
-                                    >
-                                        <Square size={14} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >
+                            <SortableContext
+                                items={queuedThemes.map(t => t.id)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                {queuedThemes.map((t, i) => (
+                                    <SortableThemeItem
+                                        key={t.id}
+                                        id={t.id}
+                                        theme={t}
+                                        index={i}
+                                        onStatusChange={handleThemeStatus}
+                                    />
+                                ))}
+                            </SortableContext>
+                        </DndContext>
                     </div>
                 </div>
                 {/* Admin Zone */}
@@ -257,6 +319,54 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
                     <Loader className="animate-spin text-jazz-gold" size={32} />
                 </div>
             )}
+        </div>
+    );
+}
+function SortableThemeItem(props: any) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: props.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            className="flex items-center justify-between text-sm bg-black/20 rounded-lg p-2 border border-white/5 hover:border-jazz-gold/30 transition-colors cursor-move"
+        >
+            <div className="flex items-center gap-3 truncate">
+                <span className="text-jazz-muted font-mono text-[10px] flex items-center gap-1">
+                    <ListOrdered size={12} className="opacity-50" />
+                    {props.index + 1}
+                </span>
+                <span className="text-white/80 truncate">{props.theme.name}</span>
+            </div>
+            <div className="flex gap-1 on-no-drag" onPointerDown={(e) => e.stopPropagation()}>
+                <button
+                    onClick={() => props.onStatusChange(props.id, 'PLAYING')}
+                    className="text-jazz-gold hover:bg-jazz-gold/20 p-1.5 rounded-md transition-all"
+                    title="Poner en Escenario"
+                >
+                    <Play size={14} fill="currentColor" />
+                </button>
+                <button
+                    onClick={() => props.onStatusChange(props.id, 'OPEN')}
+                    className="text-white/20 hover:text-white hover:bg-white/10 p-1.5 rounded-md transition-all"
+                    title="Mover a Abiertos"
+                >
+                    <Square size={14} />
+                </button>
+            </div>
         </div>
     );
 }

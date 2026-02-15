@@ -136,7 +136,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         <div className="min-h-screen bg-black pb-20 lg:pb-0 font-sans flex flex-col relative">
 
             {/* HEADER */}
-            <header className="sticky top-0 z-50 bg-jazz-surface/90 backdrop-blur-md border-b border-white/5 px-4 py-3 flex items-center justify-between shrink-0">
+            <header className="sticky top-0 z-50 bg-jazz-surface/80 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center justify-between shrink-0 shadow-lg transition-all">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => router.push('/dashboard')}
@@ -174,7 +174,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
             <div className="hidden lg:flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
 
                 {/* LEFT: MUSICIANS */}
-                <aside className="w-64 bg-jazz-surface border-r border-white/5 flex flex-col">
+                <aside className="w-64 bg-jazz-surface/60 backdrop-blur-md border-r border-white/5 flex flex-col">
                     <div className="p-4 border-b border-white/5 bg-black/20">
                         <h2 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
                             <Users className="w-4 h-4" /> Músicos
@@ -339,7 +339,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </main>
 
                 {/* RIGHT: CHAT */}
-                <aside className="w-80 bg-jazz-surface border-l border-white/5 flex flex-col">
+                <aside className="w-80 bg-jazz-surface/60 backdrop-blur-md border-l border-white/5 flex flex-col">
                     <div className="flex-1 flex flex-col min-h-0">
                         {currentUser ? (
                             <JamChat

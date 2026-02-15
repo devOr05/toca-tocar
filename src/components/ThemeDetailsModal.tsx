@@ -7,9 +7,10 @@ interface ThemeDetailsModalProps {
     onClose: () => void;
     theme: Theme;
     currentUser: User | null;
+    isHost?: boolean;
 }
 
-export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser }: ThemeDetailsModalProps) {
+export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser, isHost }: ThemeDetailsModalProps) {
     if (!isOpen) return null;
 
     return (
@@ -59,12 +60,16 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser 
                         <div className="bg-black/30 p-4 rounded-xl border border-white/5">
                             <h3 className="text-xs font-bold text-jazz-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
                             </h3>
-                            {theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf') ? (
+                            {(theme.sheetMusicUrl.match(/\.(jpg|jpeg|png|webp)$/i) || (theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf'))) ? (
                                 <div className="space-y-3">
                                     <img
-                                        src={theme.sheetMusicUrl.replace('.pdf', '.jpg')}
+                                        src={theme.sheetMusicUrl.endsWith('.pdf') ? theme.sheetMusicUrl.replace('.pdf', '.jpg') : theme.sheetMusicUrl}
                                         alt="Partitura Completa"
-                                        className="w-full rounded-lg border border-white/10"
+                                        className="w-full rounded-lg border border-white/10 bg-white/5"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            // If failed, we should probably show the link prominently
+                                        }}
                                     />
                                     <a
                                         href={theme.sheetMusicUrl}
@@ -72,7 +77,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser 
                                         rel="noopener noreferrer"
                                         className="flex items-center justify-center gap-2 text-jazz-gold hover:text-white text-sm py-2 border border-jazz-gold/30 rounded-lg hover:bg-jazz-gold/10 transition-all"
                                     >
-                                        <ExternalLink size={16} /> Abrir PDF Original
+                                        <ExternalLink size={16} /> Abrir Archivo Original
                                     </a>
                                 </div>
                             ) : (
@@ -117,15 +122,27 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser 
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-white/5 shrink-0 bg-jazz-surface">
+                <div className="p-4 border-t border-white/5 shrink-0 bg-jazz-surface flex gap-3">
+                    {isHost && theme.status !== 'QUEUED' && (
+                        <button
+                            onClick={async () => {
+                                const { updateThemeStatus } = await import('@/app/actions');
+                                const res = await updateThemeStatus(theme.id, 'QUEUED');
+                                if (res.success) onClose();
+                            }}
+                            className="flex-1 bg-jazz-gold/20 hover:bg-jazz-gold/30 text-jazz-gold font-bold py-3 rounded-xl transition-colors border border-jazz-gold/20"
+                        >
+                            Mandar a Cola
+                        </button>
+                    )}
                     <button
                         onClick={onClose}
-                        className="w-full bg-white/5 hover:bg-white/10 text-white font-medium py-3 rounded-xl transition-colors"
+                        className="flex-1 bg-white/5 hover:bg-white/10 text-white font-medium py-3 rounded-xl transition-colors"
                     >
                         Cerrar
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

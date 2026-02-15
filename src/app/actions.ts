@@ -430,6 +430,40 @@ export async function updateThemeStatus(themeId: string, status: string) {
     }
 }
 
+export async function reorderThemes(jamId: string, themes: { id: string; order: number }[]) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autenticado' };
+
+    try {
+        const jam = await prisma.jam.findUnique({ where: { id: jamId } });
+        if (!jam || jam.hostId !== session.user.id) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        // Transactional update for all themes
+        await prisma.$transaction(
+            themes.map((t) =>
+                prisma.theme.update({
+                    where: { id: t.id },
+                    data: { order: t.order },
+                })
+            )
+        );
+
+        // Trigger update to refresh everyone's view
+        try {
+            await pusherServer.trigger(`jam-${jamId}`, 'update-jam', {});
+        } catch (error) {
+            console.error('Pusher trigger failed (reorderThemes):', error);
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error reordering themes:', error);
+        return { success: false, error: 'Error al reordenar temas' };
+    }
+}
+
 export async function joinTheme(themeId: string, instrument: string) {
     const session = await auth();
     if (!session?.user?.id) {
@@ -437,14 +471,36 @@ export async function joinTheme(themeId: string, instrument: string) {
     }
 
     try {
-        await prisma.participation.create({
+        // Check for existing participation to be idempotent
+        const existing = await prisma.participation.findFirst({
+            where: {
+                userId: session.user.id,
+                themeId,
+                instrument
+            }
+        });
+
+        if (existing) {
+            return { success: true }; // Already joined
+        }
+
+        const participation = await prisma.participation.create({
             data: {
                 userId: session.user.id,
                 themeId,
                 instrument,
                 status: 'WAITING',
             },
+            include: { theme: true }
         });
+
+        // Trigger update
+        try {
+            await pusherServer.trigger(`jam-${participation.theme.jamId}`, 'update-jam', {});
+        } catch (pusherError) {
+            console.error('Pusher trigger failed (joinTheme):', pusherError);
+        }
+
         return { success: true };
     } catch (error) {
         console.error('Error joining theme:', error);
@@ -778,11 +834,18 @@ export async function getSuggestedThemes(jamCode: string) {
         if (!jam) return [];
 
         const existingThemeNames = jam.themes.map((t: any) => t.name.toLowerCase());
-        const suggestions = STANDARD_THEMES.filter(
+
+        // Use REAL_BOOK_STANDARDS for a more complete list
+        const { REAL_BOOK_STANDARDS } = await import('@/data/realBook');
+
+        // Filter out existing themes
+        const suggestions = REAL_BOOK_STANDARDS.filter(
             st => !existingThemeNames.includes(st.name.toLowerCase())
         );
 
-        return suggestions;
+        // Randomize and take 20 to avoid overwhelming the user
+        const shuffled = suggestions.sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 20);
     } catch (error) {
         console.error('Error fetching suggested themes:', error);
         return [];
@@ -895,8 +958,12 @@ export async function deleteTheme(themeId: string) {
             where: { id: themeId },
         });
 
-        // Trigger update
-        await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+        // Trigger update (fail-safe)
+        try {
+            await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+        } catch (pusherError) {
+            console.error('Pusher trigger failed (deleteTheme):', pusherError);
+        }
 
         return { success: true };
     } catch (error) {
@@ -905,30 +972,7 @@ export async function deleteTheme(themeId: string) {
     }
 }
 
-/**
- * Reorder themes (host only)
- */
-export async function reorderThemes(jamId: string, themeIds: string[]) {
-    const session = await auth();
-    if (!session?.user?.id) {
-        return { success: false, error: 'No autenticado' };
-    }
 
-    try {
-        // Check if user is host
-        const jam = await prisma.jam.findUnique({ where: { id: jamId } });
-        if (!jam || jam.hostId !== session.user.id) {
-            return { success: false, error: 'Solo el anfitrión puede reordenar temas' };
-        }
-
-        // Note: This requires adding an 'order' field to Theme model
-        // For now, we'll just return success - implement order field later
-        return { success: true };
-    } catch (error) {
-        console.error('Error reordering themes:', error);
-        return { success: false, error: 'Error al reordenar temas' };
-    }
-}
 
 /**
  * Search venues for autocomplete
