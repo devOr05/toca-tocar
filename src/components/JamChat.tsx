@@ -115,12 +115,19 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
         // ... (keep existing isCommentMode return but update textarea onChange)
         // Note: I will need to update the textarea onChange in isCommentMode block too if needed, but for now focusing on main chat
         return (
-            // ... existing code ...
             <textarea
+                className="w-full h-full bg-transparent text-white p-4 resize-none focus:outline-none custom-scrollbar"
+                placeholder="Escribe un comentario..."
                 value={newMessage}
                 onChange={handleInputChange}
-             // ...
-         );
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend(e);
+                    }
+                }}
+            />
+        );
     }
 
     return (
