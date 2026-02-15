@@ -132,7 +132,7 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                             <div className="flex items-center gap-1">
                                 <button
                                     onClick={() => toast.success(`Invitación enviada a ${user.name}`)}
-                                    className="hidden group-hover:block text-jazz-gold hover:text-white p-1 text-[10px] font-bold uppercase border border-jazz-gold/30 rounded px-2 hover:bg-jazz-gold/20 transition-all"
+                                    className="text-jazz-gold hover:text-white p-1 text-[10px] font-bold uppercase border border-jazz-gold/30 rounded px-2 hover:bg-jazz-gold/20 transition-all"
                                     title="Invitar a la Jam"
                                 >
                                     Invitar
