@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { INSTRUMENT_MAP } from './InstrumentIcon';
 import { Participation, User } from '../types'; // Adjust path if needed
 import { Plus } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface InstrumentSelectorProps {
     participations: Participation[];
@@ -78,12 +79,15 @@ export default function InstrumentSelector({
                         onClick={() => {
                             if (isMyInstrument) {
                                 onLeave();
+                                toast.success('Ya no tocas este instrumento');
                             } else if (!myParticipation) {
                                 onJoin(instId);
+                                toast.success(`¡Te uniste con ${config.label}!`);
                             } else {
                                 // Switch instrument
                                 onLeave();
                                 onJoin(instId);
+                                toast.success(`Cambiando a ${config.label}...`);
                             }
                         }}
                         className={`
@@ -122,7 +126,7 @@ export default function InstrumentSelector({
                     {isOpen && (
                         <>
                             <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-                            <div className="absolute top-full left-0 mt-2 w-48 bg-jazz-surface border border-white/10 rounded-xl shadow-xl p-2 z-50 grid grid-cols-2 gap-1 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="absolute top-full right-0 mt-2 w-56 bg-jazz-surface border border-white/20 rounded-xl shadow-2xl p-2 z-50 grid grid-cols-2 gap-1 animate-in fade-in slide-in-from-top-2 duration-200 backdrop-blur-md max-h-[300px] overflow-y-auto custom-scrollbar">
                                 {allInstruments.map(instId => {
                                     const config = INSTRUMENT_MAP[instId];
                                     return (
@@ -131,6 +135,8 @@ export default function InstrumentSelector({
                                             onClick={() => {
                                                 onJoin(instId);
                                                 setIsOpen(false);
+                                                const config = INSTRUMENT_MAP[instId];
+                                                toast.success(`¡Te uniste con ${config?.label || 'instrumento'}!`);
                                             }}
                                             className="flex items-center gap-2 p-2 hover:bg-white/10 rounded-lg text-left transition-colors"
                                         >

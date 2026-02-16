@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Jam, Theme } from '../types';
-import { Play, Square, CheckCircle2, ListOrdered, Settings2, Loader, Trash2 } from 'lucide-react';
+import { Play, Square, CheckCircle2, ListOrdered, Settings2, Loader, Trash2, GripVertical } from 'lucide-react';
 import { updateJamOpening, updateJamStatus, updateThemeStatus, reorderThemes } from '@/app/actions';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -263,8 +263,9 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
 
                 {/* Queue Summary */}
                 <div className="pt-4 border-t border-white/5">
-                    <h3 className="text-xs font-bold text-jazz-muted uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <ListOrdered size={14} /> Cola de Espera ({queuedThemes.length})
+                    <h3 className="text-xs font-bold text-jazz-muted uppercase tracking-widest mb-4 flex items-center justify-between">
+                        <span className="flex items-center gap-2"><ListOrdered size={14} /> Cola de Espera ({queuedThemes.length})</span>
+                        <span className="text-[10px] font-normal opacity-50 lowercase tracking-normal italic">Arrastra para reordenar</span>
                     </h3>
                     <div className="space-y-2">
                         <DndContext
@@ -327,6 +328,7 @@ function SortableThemeItem(props: any) {
         setNodeRef,
         transform,
         transition,
+        isDragging,
     } = useSortable({ id: props.id });
 
     const style = {
@@ -338,16 +340,23 @@ function SortableThemeItem(props: any) {
         <div
             ref={setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
-            className="flex items-center justify-between text-sm bg-black/20 rounded-lg p-2 border border-white/5 hover:border-jazz-gold/30 transition-colors cursor-move"
+            className={`
+                flex items-center justify-between text-sm bg-black/20 rounded-lg p-2 border transition-all
+                ${isDragging ? 'border-jazz-gold z-50 shadow-2xl scale-[1.02] bg-jazz-surface' : 'border-white/5 hover:border-white/20'}
+            `}
         >
-            <div className="flex items-center gap-3 truncate">
-                <span className="text-jazz-muted font-mono text-[10px] flex items-center gap-1">
-                    <ListOrdered size={12} className="opacity-50" />
+            <div className="flex items-center gap-2 truncate flex-1">
+                <button
+                    {...attributes}
+                    {...listeners}
+                    className="p-1 hover:bg-white/10 rounded cursor-grab active:cursor-grabbing text-white/20 hover:text-white transition-colors"
+                >
+                    <GripVertical size={14} />
+                </button>
+                <span className="text-jazz-muted font-mono text-[10px] w-4">
                     {props.index + 1}
                 </span>
-                <span className="text-white/80 truncate">{props.theme.name}</span>
+                <span className="text-white/80 truncate font-medium">{props.theme.name}</span>
             </div>
             <div className="flex gap-1 on-no-drag" onPointerDown={(e) => e.stopPropagation()}>
                 <button
