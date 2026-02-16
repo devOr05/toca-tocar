@@ -31,6 +31,12 @@ interface HostControlPanelProps {
 
 export default function HostControlPanel({ jam, themes }: HostControlPanelProps) {
     const router = useRouter();
+    const [jamData, setJamData] = useState({
+        description: jam.description || '',
+        location: jam.location || '',
+        city: jam.city || ''
+    });
+    const [isEditingJam, setIsEditingJam] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isEditingOpening, setIsEditingOpening] = useState(false);
     const [openingData, setOpeningData] = useState({
@@ -95,9 +101,24 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
         );
         if (result.success) {
             setIsEditingOpening(false);
+            toast.success('Información de apertura actualizada');
             router.refresh();
         } else {
-            alert(result.error);
+            toast.error(result.error || 'Error al guardar');
+        }
+        setIsLoading(false);
+    };
+
+    const handleSaveJamInfo = async () => {
+        setIsLoading(true);
+        const { updateJamInfo } = await import('@/app/actions');
+        const result = await updateJamInfo(jam.id, jamData.description, jamData.location, jamData.city);
+        if (result.success) {
+            setIsEditingJam(false);
+            toast.success('Información de la jam actualizada');
+            router.refresh();
+        } else {
+            toast.error(result.error || 'Error al guardar');
         }
         setIsLoading(false);
     };
@@ -110,9 +131,10 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
         setIsLoading(true);
         const result = await updateJamStatus(jam.id, newStatus);
         if (result.success) {
+            toast.success('Estado de la Jam actualizado');
             router.refresh();
         } else {
-            alert(result.error);
+            toast.error(result.error || 'Error al cambiar estado');
         }
         setIsLoading(false);
     };
@@ -121,9 +143,10 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
         setIsLoading(true);
         const result = await updateThemeStatus(themeId, newStatus);
         if (result.success) {
+            toast.success('Estado del tema actualizado');
             router.refresh();
         } else {
-            alert(result.error);
+            toast.error(result.error || 'Error al cambiar estado');
         }
         setIsLoading(false);
     };
@@ -158,6 +181,68 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
             </div>
 
             <div className="p-6 space-y-6">
+                {/* Jam Info Section */}
+                <div className="pb-6 border-b border-white/5">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
+                            Información General
+                        </h3>
+                        <button
+                            onClick={() => setIsEditingJam(!isEditingJam)}
+                            className="text-[10px] text-jazz-gold hover:underline font-bold"
+                        >
+                            {isEditingJam ? 'Cancelar' : 'Editar Jam'}
+                        </button>
+                    </div>
+
+                    {isEditingJam ? (
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-[10px] text-white/40 mb-1 uppercase">Descripción / Bio</label>
+                                <textarea
+                                    value={jamData.description}
+                                    onChange={(e) => setJamData({ ...jamData, description: e.target.value })}
+                                    rows={2}
+                                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-[10px] text-white/40 mb-1 uppercase">Lugar / Establecimiento</label>
+                                    <input
+                                        type="text"
+                                        value={jamData.location}
+                                        onChange={(e) => setJamData({ ...jamData, location: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] text-white/40 mb-1 uppercase">Ciudad</label>
+                                    <input
+                                        type="text"
+                                        value={jamData.city}
+                                        onChange={(e) => setJamData({ ...jamData, city: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white"
+                                    />
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleSaveJamInfo}
+                                disabled={isLoading}
+                                className="w-full bg-jazz-gold text-black font-bold py-2 rounded-lg text-xs hover:scale-[1.02] transition-all disabled:opacity-50"
+                            >
+                                {isLoading ? 'Guardando...' : 'Guardar Datos de Jam'}
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="bg-black/20 rounded-xl p-3 border border-white/5">
+                            <div className="text-white font-bold text-sm">{jam.name}</div>
+                            <div className="text-[10px] text-white/60 mt-1">{jam.location} • {jam.city}</div>
+                            {jam.description && <p className="text-[10px] text-white/40 mt-1 line-clamp-2">{jam.description}</p>}
+                        </div>
+                    )}
+                </div>
+
                 {/* Opening Info Section for Host */}
                 <div className="pb-6 border-b border-white/5">
                     <div className="flex items-center justify-between mb-4">
@@ -299,9 +384,10 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
                                 const { deleteJam } = await import('@/app/actions');
                                 const res = await deleteJam(jam.code);
                                 if (res.success) {
+                                    toast.success('Jam eliminada');
                                     router.push('/dashboard');
                                 } else {
-                                    alert(res.error);
+                                    toast.error(res.error || 'Error al eliminar jam');
                                     setIsLoading(false);
                                 }
                             }
@@ -349,9 +435,22 @@ function SortableThemeItem(props: any) {
                 <button
                     {...attributes}
                     {...listeners}
-                    className="p-1 hover:bg-white/10 rounded cursor-grab active:cursor-grabbing text-white/20 hover:text-white transition-colors"
+                    className="p-1 hover:bg-white/10 rounded cursor-grab active:cursor-grabbing text-white/10 hover:text-white/40 transition-colors"
                 >
-                    <GripVertical size={14} />
+                    <div className="flex flex-col gap-0.5">
+                        <div className="flex gap-0.5">
+                            <div className="w-1 h-1 rounded-full bg-current" />
+                            <div className="w-1 h-1 rounded-full bg-current" />
+                        </div>
+                        <div className="flex gap-0.5">
+                            <div className="w-1 h-1 rounded-full bg-current" />
+                            <div className="w-1 h-1 rounded-full bg-current" />
+                        </div>
+                        <div className="flex gap-0.5">
+                            <div className="w-1 h-1 rounded-full bg-current" />
+                            <div className="w-1 h-1 rounded-full bg-current" />
+                        </div>
+                    </div>
                 </button>
                 <span className="text-jazz-muted font-mono text-[10px] w-4">
                     {props.index + 1}

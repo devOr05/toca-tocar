@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'react-hot-toast';
 import { Jam, Theme, Participation, User } from '../types';
 import { MOCK_JAM, MOCK_THEMES, MOCK_PARTICIPATIONS } from '../lib/mock-data';
 
@@ -43,7 +44,7 @@ export const useJamStore = create<JamState>((set, get) => ({
 
         if (!currentUser) {
             console.error('No current user found in store');
-            alert('Error: No se encontró usuario activo. Intenta recargar.');
+            toast.error('Error: No se encontró usuario activo. Intenta recargar.');
             return;
         }
 
@@ -77,7 +78,7 @@ export const useJamStore = create<JamState>((set, get) => ({
                 set({ participations: get().participations.filter(p => p.id !== newParticipation.id) });
                 // Don't alert if it's just a duplicate/race condition that we handled gracefully
                 if (result.error !== 'Already joined') {
-                    alert(result.error);
+                    toast.error(result.error || 'Error al unirse');
                 }
             }
         } catch (err) {
@@ -104,7 +105,9 @@ export const useJamStore = create<JamState>((set, get) => ({
             const result = await leaveTheme(themeId);
             if (!result.success) {
                 set({ participations: previousParticipations });
-                alert(result.error);
+                toast.error(result.error || 'Error al salir del tema');
+            } else {
+                toast.success('Has salido del tema');
             }
         } catch (err) {
             console.error(err);

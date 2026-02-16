@@ -101,6 +101,18 @@ export async function leaveTheme(themeId: string) {
     }
 
     try {
+        // First check if participation exists
+        const count = await prisma.participation.count({
+            where: {
+                themeId,
+                userId: session.user.id,
+            }
+        });
+
+        if (count === 0) {
+            return { success: true }; // Already left, or never joined
+        }
+
         await prisma.participation.deleteMany({
             where: {
                 themeId,
@@ -111,12 +123,64 @@ export async function leaveTheme(themeId: string) {
         // Trigger update
         const theme = await prisma.theme.findUnique({ where: { id: themeId }, select: { jam: { select: { id: true } } } });
         if (theme?.jam?.id) {
-            await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+            try {
+                await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+            } catch (e) {
+                console.warn('Pusher failed in leaveTheme:', e);
+            }
         }
         return { success: true };
     } catch (error) {
         console.error('Error leaving theme:', error);
         return { success: false, error: 'Error al salir del tema' };
+    }
+}
+
+export async function updateJamInfo(jamId: string, description: string, location: string, city: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        const jam = await prisma.jam.findUnique({
+            where: { id: jamId },
+            select: { hostId: true }
+        });
+
+        if (!jam) return { success: false, error: 'Jam no encontrada' };
+
+        // Admin check
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true, email: true }
+        });
+
+        const isAdmin = user?.role === 'ADMIN' || user?.email === 'kavay86@gmail.com' || user?.email === 'orostizagamario@gmail.com' || user?.email === 'kavay.86@gmail.com';
+
+        if (jam.hostId !== session.user.id && !isAdmin) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        await prisma.jam.update({
+            where: { id: jamId },
+            data: {
+                description,
+                location,
+                city
+            },
+        });
+
+        try {
+            await pusherServer.trigger(`jam-${jamId}`, 'update-jam', {});
+        } catch (e) {
+            console.warn('Pusher failed in updateJamInfo:', e);
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating jam info:', error);
+        return { success: false, error: 'Error al actualizar información' };
     }
 }
 
@@ -409,7 +473,12 @@ export async function updateThemeStatus(themeId: string, status: string) {
     try {
         const theme = await prisma.theme.findUnique({
             where: { id: themeId },
-            include: { jam: true }
+            include: {
+                jam: true,
+                participations: {
+                    include: { user: true }
+                }
+            }
         });
 
         const isAdmin = session.user.role === 'ADMIN' || session.user.email?.toLowerCase() === 'orostizagamario@gmail.com';
@@ -422,10 +491,48 @@ export async function updateThemeStatus(themeId: string, status: string) {
             data: { status },
         });
 
+        // Notifications logic
+        if (status === 'PLAYING') {
+            // Create notifications for all participants
+            const notifications = theme.participations.map((p: any) => ({
+                type: 'SYSTEM',
+                message: `¡Es tu turno en el escenario! Tema: ${theme.name}`,
+                link: `/jam/${theme.jam.code}`,
+                userId: p.userId,
+                actorId: session.user.id
+            }));
+
+            if (notifications.length > 0) {
+                await prisma.notification.createMany({
+                    data: notifications
+                });
+
+                // Trigger real-time notifications via Pusher
+                for (const notif of notifications) {
+                    try {
+                        await pusherServer.trigger(`user-${notif.userId}`, 'new-notification', {
+                            message: notif.message,
+                            link: notif.link,
+                            createdAt: new Date(),
+                            type: notif.type,
+                            actorName: session.user.name || 'Sistema',
+                            actorImage: session.user.image
+                        });
+                    } catch (e) {
+                        console.warn(`Pusher notification failed for user ${notif.userId}:`, e);
+                    }
+                }
+            }
+        }
+
         revalidatePath(`/jam/${theme.jam.code}`);
 
         // Trigger update
-        await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+        try {
+            await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+        } catch (e) {
+            console.warn('Pusher update-jam failed:', e);
+        }
 
         return { success: true };
     } catch (error) {

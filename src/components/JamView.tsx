@@ -37,6 +37,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const [activeTab, setActiveTab] = useState<'THEMES' | 'FORUM' | 'SUGGESTED' | 'GALLERY' | 'CHAT' | 'MUSICIANS'>('THEMES');
     const [createType, setCreateType] = useState<'SONG' | 'TOPIC'>('SONG');
     const [refreshMedia, setRefreshMedia] = useState(0);
+    const [isChatExpanded, setIsChatExpanded] = useState(false);
 
     const openCreateModal = (type: 'SONG' | 'TOPIC') => {
         setCreateType(type);
@@ -387,12 +388,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                     >
                         <Share2 size={14} /> Foro
                     </button>
-                    <button
-                        onClick={() => setActiveTab('CHAT')}
-                        className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'CHAT' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40'}`}
-                    >
-                        <MessageSquare size={14} /> Chat
-                    </button>
+
                     <button
                         onClick={() => setActiveTab('GALLERY')}
                         className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'GALLERY' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40'}`}
@@ -488,21 +484,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         </>
                     )}
 
-                    {/* CHAT TAB */}
-                    {activeTab === 'CHAT' && (
-                        <div className="h-[calc(100vh-180px)]">
-                            {currentUser ? (
-                                <JamChat
-                                    jamId={initialJam.id}
-                                    currentUser={currentUser}
-                                    hostId={initialJam.hostId}
-                                    users={uniqueMusicians}
-                                />
-                            ) : (
-                                <div className="flex items-center justify-center h-full text-white/20">Login to Chat</div>
-                            )}
-                        </div>
-                    )}
+
 
                     {/* MUSICIANS TAB */}
                     {activeTab === 'MUSICIANS' && (
@@ -536,16 +518,45 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                     )}
                 </div>
 
-                {/* FAB */}
                 {activeTab === 'THEMES' && (
                     <button
                         onClick={() => openCreateModal('SONG')}
-                        className="fixed bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] z-50 flex items-center justify-center active:scale-95 transition-transform"
+                        className={`fixed ${isChatExpanded ? 'bottom-[62vh]' : 'bottom-[80px]'} right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] z-50 flex items-center justify-center active:scale-95 transition-all`}
                     >
                         <Plus className="w-7 h-7" />
                     </button>
                 )}
             </div>
+
+            {/* STICKY MOBILE CHAT */}
+            {currentUser && (
+                <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-[60] transition-all duration-300 ${isChatExpanded ? 'h-[60vh]' : 'h-[64px]'} bg-jazz-surface border-t border-white/20 shadow-[-20px_0_40px_rgba(0,0,0,0.4)] flex flex-col`}>
+                    <button
+                        onClick={() => setIsChatExpanded(!isChatExpanded)}
+                        className="h-[64px] shrink-0 w-full px-4 flex items-center justify-between border-b border-white/5 bg-black/20"
+                    >
+                        <div className="flex items-center gap-2">
+                            <MessageSquare size={18} className="text-jazz-gold" />
+                            <span className="text-xs font-bold text-white uppercase tracking-wider">Chat de la Jam</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {/* Mini message preview could go here */}
+                            <div className={`p-1.5 rounded-full bg-white/5 transition-transform ${isChatExpanded ? 'rotate-180' : ''}`}>
+                                <Plus size={16} className={isChatExpanded ? 'rotate-45' : ''} />
+                            </div>
+                        </div>
+                    </button>
+
+                    <div className="flex-1 overflow-hidden">
+                        <JamChat
+                            jamId={initialJam.id}
+                            currentUser={currentUser}
+                            hostId={initialJam.hostId}
+                            users={uniqueMusicians}
+                        />
+                    </div>
+                </div>
+            )}
 
             <CreateThemeModal
                 isOpen={isCreateThemeOpen}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Theme, Participation, User } from '../types';
 import { Info, Pencil, Trash2, MessageSquare, FileMusic } from 'lucide-react';
 import { deleteTheme } from '@/app/actions';
@@ -81,7 +82,12 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                                 if (confirm('¿Eliminar tema?')) {
                                     removeTheme(theme.id);
                                     const result = await deleteTheme(theme.id);
-                                    if (!result.success) { addTheme(theme); alert(result.error); }
+                                    if (!result.success) {
+                                        addTheme(theme);
+                                        toast.error(result.error || 'Error al eliminar tema');
+                                    } else {
+                                        toast.success('Tema eliminado');
+                                    }
                                 }
                             }}
                             className="text-white/40 hover:text-red-500 p-1" title="Eliminar"
@@ -143,7 +149,10 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                             currentUser={currentUser}
                             myParticipation={myParticipation}
                             onJoin={async (inst) => {
-                                if (!currentUser) return alert('Debes iniciar sesión para anotarte.');
+                                if (!currentUser) {
+                                    toast.error('Debes iniciar sesión para anotarte.');
+                                    return;
+                                }
 
                                 // Optimistic update handled by parent or revalidation, 
                                 // but we can add a local loading state if needed.

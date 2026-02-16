@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, Megaphone, Loader } from 'lucide-react';
 import { createAnnouncement } from '@/app/actions';
+import { toast } from 'react-hot-toast';
 
 interface CreateAnnouncementModalProps {
     isOpen: boolean;
@@ -35,9 +36,10 @@ export default function CreateAnnouncementModal({ isOpen, onClose }: CreateAnnou
 
         if (result.success) {
             setFormData({ title: '', content: '', tag: 'Anuncio', tagColor: 'bg-jazz-gold/20 text-jazz-gold' });
+            toast.success('Anuncio publicado');
             onClose();
         } else {
-            alert(result.error);
+            toast.error(result.error || 'Error al publicar anuncio');
         }
     };
 

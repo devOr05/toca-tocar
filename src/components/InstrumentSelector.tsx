@@ -125,8 +125,8 @@ export default function InstrumentSelector({
                     {/* Dropdown with all instruments */}
                     {isOpen && (
                         <>
-                            <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-                            <div className="absolute top-full right-0 mt-2 w-56 bg-jazz-surface border border-white/20 rounded-xl shadow-2xl p-2 z-50 grid grid-cols-2 gap-1 animate-in fade-in slide-in-from-top-2 duration-200 backdrop-blur-md max-h-[300px] overflow-y-auto custom-scrollbar">
+                            <div className="fixed inset-0 z-[60]" onClick={() => setIsOpen(false)} />
+                            <div className="absolute top-1/2 left-0 sm:top-full sm:right-0 mt-2 w-56 bg-[#1a1a1a] border border-white/20 rounded-xl shadow-2xl p-2 z-[70] grid grid-cols-2 gap-1 animate-in fade-in slide-in-from-top-2 duration-200 backdrop-blur-md max-h-[300px] overflow-y-auto custom-scrollbar">
                                 {allInstruments.map(instId => {
                                     const config = INSTRUMENT_MAP[instId];
                                     return (
