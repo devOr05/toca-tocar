@@ -72,22 +72,22 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                     {isPlaying && <span className="animate-pulse text-jazz-accent font-bold text-xs uppercase tracking-widest bg-jazz-accent/10 px-2 py-1 rounded">En Escenario</span>}
                     {isQueued && <span className="text-jazz-gold font-bold text-xs uppercase tracking-widest bg-jazz-gold/10 px-2 py-1 rounded">Siguiente</span>}
 
-                    {isHost && (
-                        <>
-                            <button onClick={() => setShowEdit(true)} className="text-white/40 hover:text-white p-1" title="Editar"><Pencil size={16} /></button>
-                            <button
-                                onClick={async () => {
-                                    if (confirm('¿Eliminar tema?')) {
-                                        removeTheme(theme.id);
-                                        const result = await deleteTheme(theme.id);
-                                        if (!result.success) { addTheme(theme); alert(result.error); }
-                                    }
-                                }}
-                                className="text-white/40 hover:text-red-500 p-1" title="Eliminar"
-                            >
-                                <Trash2 size={16} />
-                            </button>
-                        </>
+                    {(isHost || currentUser?.role === 'ADMIN' || (currentUser && theme.proposedById === currentUser.id)) && (
+                        <button onClick={() => setShowEdit(true)} className="text-white/40 hover:text-white p-1" title="Editar"><Pencil size={16} /></button>
+                    )}
+                    {(isHost || currentUser?.role === 'ADMIN') && (
+                        <button
+                            onClick={async () => {
+                                if (confirm('¿Eliminar tema?')) {
+                                    removeTheme(theme.id);
+                                    const result = await deleteTheme(theme.id);
+                                    if (!result.success) { addTheme(theme); alert(result.error); }
+                                }
+                            }}
+                            className="text-white/40 hover:text-red-500 p-1" title="Eliminar"
+                        >
+                            <Trash2 size={16} />
+                        </button>
                     )}
                 </div>
             </div>

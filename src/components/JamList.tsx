@@ -11,9 +11,10 @@ interface JamWithCount extends Jam {
     _count?: { themes: number };
 }
 
-export default function JamList({ jams, currentUserId, title = 'Jams Activas', isHistory = false }: {
+export default function JamList({ jams, currentUserId, isAdmin = false, title = 'Jams Activas', isHistory = false }: {
     jams: JamWithCount[],
     currentUserId?: string,
+    isAdmin?: boolean,
     title?: string,
     isHistory?: boolean
 }) {
@@ -85,8 +86,8 @@ export default function JamList({ jams, currentUserId, title = 'Jams Activas', i
                                                 </span>
                                             )}
 
-                                            {/* Edit Button (Host Only) */}
-                                            {currentUserId?.trim() === jam.hostId?.trim() && (
+                                            {/* Edit Button (Host Only or Admin) */}
+                                            {(currentUserId?.trim() === jam.hostId?.trim() || isAdmin) && (
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
@@ -100,8 +101,8 @@ export default function JamList({ jams, currentUserId, title = 'Jams Activas', i
                                                 </button>
                                             )}
 
-                                            {/* Delete Button (Host Only or 5J1E override) */}
-                                            {(currentUserId?.trim() === jam.hostId?.trim() || jam.code === '5J1E') && (
+                                            {/* Delete Button (Host Only or 5J1E override or Admin) */}
+                                            {(currentUserId?.trim() === jam.hostId?.trim() || jam.code === '5J1E' || isAdmin) && (
                                                 <button
                                                     onClick={async (e) => {
                                                         e.preventDefault();

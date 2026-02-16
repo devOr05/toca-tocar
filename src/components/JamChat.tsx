@@ -168,7 +168,23 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                 </div>
             )}
 
-            {/* ... (keep message list) ... */}
+            <form onSubmit={handleSend} className="p-3 bg-white/5 border-b border-white/5 flex gap-2">
+                <input
+                    type="text"
+                    value={newMessage}
+                    onChange={handleInputChange}
+                    placeholder={isCommentMode ? "Escribe un comentario..." : "Escribe un mensaje..."}
+                    className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-jazz-gold outline-none"
+                    autoFocus={!isCommentMode}
+                />
+                <button
+                    type="submit"
+                    disabled={!newMessage.trim()}
+                    className="bg-jazz-gold text-black p-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                    <Send size={18} />
+                </button>
+            </form>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {messages.length === 0 && (
@@ -206,22 +222,6 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                 <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleSend} className="p-3 bg-white/5 border-t border-white/5 flex gap-2">
-                <input
-                    type="text"
-                    value={newMessage}
-                    onChange={handleInputChange}
-                    placeholder={isCommentMode ? "Escribe un comentario..." : "Escribe un mensaje... (@ para mencionar)"}
-                    className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-jazz-gold outline-none"
-                />
-                <button
-                    type="submit"
-                    disabled={!newMessage.trim()}
-                    className="bg-jazz-gold text-black p-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
-                >
-                    <Send size={18} />
-                </button>
-            </form>
         </div>
     );
 }

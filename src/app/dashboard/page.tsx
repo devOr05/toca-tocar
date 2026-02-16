@@ -12,9 +12,15 @@ export default async function Dashboard() {
     const session = await auth();
     if (!session?.user) redirect("/");
 
+    // Fetch user from DB to get latest metadata (city, role, etc)
+    const dbUser = await prisma.user.findUnique({
+        where: { id: session.user.id }
+    });
+    const isAdmin = dbUser?.role === 'ADMIN' || dbUser?.email === 'kavay86@gmail.com' || dbUser?.email === 'orostizagamario@gmail.com' || dbUser?.email === 'kavay.86@gmail.com';
+
     // Fetch all relevant jams
     const allJams = await prisma.jam.findMany({
-        where: {
+        where: isAdmin ? {} : {
             OR: [
                 { isPrivate: false },
                 { hostId: session.user.id }
@@ -36,13 +42,6 @@ export default async function Dashboard() {
         jam.status === 'FINISHED' ||
         (jam.startTime && jam.startTime <= threshold)
     ).slice(0, 3); // Limit history
-
-    // Fetch user from DB to get latest metadata (city, etc)
-    const dbUser = await prisma.user.findUnique({
-        where: { id: session.user.id }
-    });
-
-    const isAdmin = dbUser?.email === 'kavay86@gmail.com' || dbUser?.role === 'ADMIN';
 
     // Fetch musicians for sidebar
     const userCity = dbUser?.city || '';
@@ -77,6 +76,7 @@ export default async function Dashboard() {
                     <JamList
                         jams={activeJams.map((j: any) => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
                         currentUserId={session.user.id}
+                        isAdmin={isAdmin}
                         title="Jams Activas"
                     />
 
@@ -84,6 +84,7 @@ export default async function Dashboard() {
                         <JamList
                             jams={pastJams.map((j: any) => ({ ...j, status: j.status as 'SCHEDULED' | 'ACTIVE' | 'FINISHED' }))}
                             currentUserId={session.user.id}
+                            isAdmin={isAdmin}
                             title="Historial de Jams"
                             isHistory
                         />

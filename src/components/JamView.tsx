@@ -278,6 +278,18 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
                         {activeTab === 'THEMES' && (
                             <div className="pb-24">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <Music2 size={20} className="text-jazz-gold" />
+                                        Repertorio
+                                    </h3>
+                                    <button
+                                        onClick={() => openCreateModal('SONG')}
+                                        className="bg-jazz-gold text-black px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-jazz-gold/10"
+                                    >
+                                        <Plus size={16} /> Proponer Tema
+                                    </button>
+                                </div>
                                 <ThemeList type="SONG" />
                             </div>
                         )}
@@ -327,15 +339,6 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         )}
                     </div>
 
-                    {/* FAB */}
-                    {activeTab === 'THEMES' && (
-                        <button
-                            onClick={() => openCreateModal('SONG')}
-                            className="absolute bottom-6 right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
-                        >
-                            <Plus className="w-7 h-7" />
-                        </button>
-                    )}
                 </main>
 
                 {/* RIGHT: CHAT */}

@@ -621,9 +621,10 @@ export async function updateJam(jamId: string, formData: FormData) {
         return { success: false, error: 'No autenticado' };
     }
 
-    // Check if user is host
+    // Check if user is host or admin
     const jam = await prisma.jam.findUnique({ where: { id: jamId } });
-    if (!jam || jam.hostId !== session.user.id) {
+    const isAdmin = session.user.role === 'ADMIN' || session.user.email?.toLowerCase() === 'orostizagamario@gmail.com';
+    if (!jam || (jam.hostId !== session.user.id && !isAdmin)) {
         return { success: false, error: 'No tienes permisos para editar esta jam' };
     }
 
@@ -667,6 +668,15 @@ export async function updateTheme(themeId: string, formData: FormData) {
     const sheetMusicUrl = formData.get('sheetMusicUrl') as string;
 
     try {
+        const theme = await prisma.theme.findUnique({
+            where: { id: themeId },
+            include: { jam: true }
+        });
+
+        const isAdmin = session.user.role === 'ADMIN' || session.user.email?.toLowerCase() === 'orostizagamario@gmail.com';
+        if (!theme || (theme.jam.hostId !== session.user.id && theme.proposedById !== session.user.id && !isAdmin)) {
+            return { success: false, error: 'No autorizado' };
+        }
         await prisma.theme.update({
             where: { id: themeId },
             data: {
