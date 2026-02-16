@@ -108,22 +108,27 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     // MERGED ATTENDANCE: Real attendance + Theme participants (including guests)
     const attendanceMap = new Map();
 
-    // 1. Add people from official attendance
+    // 1. Add people from official attendance (with their profile instrument)
     (initialJam.attendance || []).forEach(att => {
         attendanceMap.set(att.userId, {
             userId: att.userId,
-            instrument: att.instrument,
+            instruments: new Set([att.instrument]), // Use Set to avoid duplicates
             user: att.user
         });
     });
 
-    // 2. Add people from participations (especially guests/unregistered)
+    // 2. Add instruments from participations (accumulate, don't replace)
     participations.forEach(p => {
         const id = p.userId || `guest-${p.userName}`;
-        if (!attendanceMap.has(id)) {
+        if (attendanceMap.has(id)) {
+            // User already in attendance, add their theme instrument if different
+            const existing = attendanceMap.get(id)!;
+            existing.instruments.add(p.instrument);
+        } else {
+            // New user (guest or not checked in), add them
             attendanceMap.set(id, {
                 userId: id,
-                instrument: p.instrument,
+                instruments: new Set([p.instrument]),
                 user: p.user || { name: p.userName, image: null, id: null } // Guest fallback
             });
         }
@@ -133,12 +138,17 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     if (!attendanceMap.has(initialJam.hostId)) {
         attendanceMap.set(initialJam.hostId, {
             userId: initialJam.hostId,
-            instrument: 'Anfitrión',
+            instruments: new Set(['Anfitrión']),
             user: (initialJam as any).host
         });
     }
 
-    const mergedAttendance = Array.from(attendanceMap.values());
+    // Convert Sets to comma-separated strings for display
+    const mergedAttendance = Array.from(attendanceMap.values()).map(att => ({
+        userId: att.userId,
+        instrument: Array.from(att.instruments).join(', '),
+        user: att.user
+    }));
 
     // Filter unique users for musician list (carrusel/mentions)
     const uniqueMusicians = mergedAttendance.map(a => a.user).filter(Boolean) as User[];
