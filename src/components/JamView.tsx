@@ -120,14 +120,21 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         });
     }
 
-    // Convert Sets to comma-separated strings for display
+    // Convert Sets to comma-separated strings for display, fallback to profile instrument
     const mergedAttendance = Array.from(attendanceMap.values())
         .filter(att => att.user) // Filter out entries with undefined users
-        .map(att => ({
-            userId: att.userId,
-            instrument: Array.from(att.instruments).join(', '),
-            user: att.user
-        }));
+        .map(att => {
+            const validInstruments = Array.from(att.instruments).filter(i => i && i.trim() !== '');
+            const displayInstrument = validInstruments.length > 0
+                ? validInstruments.join(', ')
+                : (att.user?.mainInstrument || 'Músico');
+
+            return {
+                userId: att.userId,
+                instrument: displayInstrument,
+                user: att.user
+            };
+        });
 
     // Filter unique users for musician list (carrusel/mentions)
     const uniqueMusicians = mergedAttendance.map(a => a.user).filter(Boolean) as User[];

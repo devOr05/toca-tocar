@@ -64,15 +64,34 @@ export default function MusicianProfileModal({ userId, isOpen, onClose }: Musici
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 text-xs">
-                                <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center gap-1">
-                                    <span className="text-jazz-gold font-bold text-lg">{profile._count?.participations || 0}</span>
-                                    <span className="text-white/50 uppercase tracking-wider text-[10px]">Temas Tocados</span>
+                            <div className="space-y-4">
+                                {/* STATS & FAVORITE */}
+                                <div className="grid grid-cols-2 gap-3 text-xs">
+                                    <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center gap-1">
+                                        <span className="text-jazz-gold font-bold text-lg">{profile._count?.participations || 0}</span>
+                                        <span className="text-white/50 uppercase tracking-wider text-[10px]">Temas Tocados</span>
+                                    </div>
+                                    <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center gap-1">
+                                        <span className="text-jazz-accent font-bold text-lg truncate w-full px-1">{profile.favoriteTheme || '-'}</span>
+                                        <span className="text-white/50 uppercase tracking-wider text-[10px]">Tema Preferido</span>
+                                    </div>
                                 </div>
-                                <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center gap-1">
-                                    <span className="text-jazz-gold font-bold text-lg">{profile._count?.jamAttendance || 0}</span>
-                                    <span className="text-white/50 uppercase tracking-wider text-[10px]">Jams Asistidas</span>
-                                </div>
+
+                                {/* THEMES LIST */}
+                                {profile.participations && profile.participations.length > 0 && (
+                                    <div className="bg-white/5 rounded-xl border border-white/5 p-3">
+                                        <h3 className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                            <Music size={12} /> Últimos Temas
+                                        </h3>
+                                        <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar">
+                                            {profile.participations.map((p: any, i: number) => (
+                                                <span key={i} className="text-[10px] bg-black/40 text-white/80 px-2 py-1 rounded border border-white/5 hover:border-jazz-gold/30 transition-colors">
+                                                    {p.theme.name}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex items-center justify-center gap-4 text-xs text-white/40 pt-2 border-t border-white/5">

@@ -191,6 +191,7 @@ export async function createJam(prevState: any, formData: FormData) {
     const openingBand = formData.get('openingBand') as string;
     const openingInfo = formData.get('openingInfo') as string;
     const openingThemes = formData.get('openingThemes') as string;
+    const openingMusiciansStr = formData.get('openingMusicians') as string;
 
     // Simple validation
     if (!name || !location || !city || !startTimeStr) {
@@ -217,6 +218,7 @@ export async function createJam(prevState: any, formData: FormData) {
                 openingBand,
                 openingInfo,
                 openingThemes,
+                openingMusicians: openingMusiciansStr ? JSON.parse(openingMusiciansStr) : undefined,
                 status: 'SCHEDULED',
             },
         });
@@ -1510,11 +1512,25 @@ export async function getMusicianProfile(userId: string) {
                 image: true,
                 city: true,
                 mainInstrument: true,
+                favoriteTheme: true,
                 createdAt: true,
                 _count: {
                     select: {
                         participations: true,
                         jamAttendance: true
+                    }
+                },
+                participations: {
+                    take: 20, // Limit to last 20 themes
+                    select: {
+                        theme: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
                     }
                 }
             }

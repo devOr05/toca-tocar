@@ -288,6 +288,49 @@ export default function CreateJamForm({ user }: { user: any }) {
                                 placeholder="Buscar y agregar músico..."
                                 existingMusicians={openingMusicians.map(m => m.userId)}
                             />
+
+                            {/* Manual Add */}
+                            <div className="mt-2 flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="O agregar nombre manualmente"
+                                    className="flex-1 bg-white/5 border border-white/10 rounded-xl p-2 text-sm text-white focus:outline-none focus:border-jazz-gold"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            const val = (e.target as HTMLInputElement).value.trim();
+                                            if (val) {
+                                                handleAddMusician({
+                                                    userId: `manual-${Date.now()}`,
+                                                    name: val,
+                                                    image: null,
+                                                    mainInstrument: 'Invitado'
+                                                } as any);
+                                                (e.target as HTMLInputElement).value = '';
+                                            }
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                                        const val = input.value.trim();
+                                        if (val) {
+                                            handleAddMusician({
+                                                userId: `manual-${Date.now()}`,
+                                                name: val,
+                                                image: null,
+                                                mainInstrument: 'Invitado'
+                                            } as any);
+                                            input.value = '';
+                                        }
+                                    }}
+                                    className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 rounded-xl transition-colors"
+                                >
+                                    Agregar
+                                </button>
+                            </div>
                         </div>
                     </div>
 
