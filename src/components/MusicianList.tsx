@@ -14,10 +14,11 @@ interface MusicianListProps {
     currentUser?: User | null;
     attendance: JamAttendance[];
     cityMusicians: Partial<User>[];
+    isHost?: boolean;
     title?: string;
 }
 
-export default function MusicianList({ jamId, currentUser, attendance, cityMusicians, title }: MusicianListProps) {
+export default function MusicianList({ jamId, currentUser, attendance, cityMusicians, isHost, title }: MusicianListProps) {
     const [isCheckingIn, setIsCheckingIn] = useState(false);
 
     const isCheckedIn = currentUser && attendance.some(a => a.userId === currentUser.id);
@@ -90,13 +91,22 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                                 {att.userId === currentUser?.id && (
                                     <div className="ml-auto w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
                                 )}
-                                {currentUser?.role === 'ADMIN' && att.userId !== currentUser.id && (
+                                {(currentUser?.role === 'ADMIN' || isHost) && att.userId !== currentUser?.id && (
                                     <button
                                         onClick={async () => {
-                                            if (confirm('¿Admin: Eliminar usuario ' + att.user.name + '?')) {
-                                                const { deleteUser } = await import('@/app/actions');
-                                                await deleteUser(att.userId);
-                                                window.location.reload();
+                                            const name = att.user?.name || 'este usuario';
+                                            if (confirm(`¿Eliminar ${isHost ? 'invitado' : 'usuario'} ${name}?`)) {
+                                                const { deleteUser, checkInToJam } = await import('@/app/actions');
+
+                                                if (att.userId.startsWith('guest-')) {
+                                                    // Guests are only in the UI/Store, they can't be "deleted" from DB in the same way 
+                                                    // unless we add a leaveJam action that removes from Store/Pusher trigger.
+                                                    // For now, if they are guests, we just reload or toast.
+                                                    toast.info('Los invitados se eliminan al reiniciar o salir.');
+                                                } else {
+                                                    await deleteUser(att.userId);
+                                                    window.location.reload();
+                                                }
                                             }
                                         }}
                                         className="ml-2 text-red-500 hover:text-red-400 p-1"

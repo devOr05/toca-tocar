@@ -105,32 +105,44 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         }
     }, [initialJam, initialThemes, initialParticipations, setJamState, initialUser, currentUser, setUser, setAuthenticatedUser, router]);
 
-    // Filter unique users for musician list
-    // Include Host, Attendance list, Participants and Current User
-    const allMusicianIds = Array.from(new Set([
-        initialJam.hostId,
-        ...(initialJam.attendance || []).map(a => a.userId),
-        ...participations.map(p => p.userId),
-        ...(currentUser?.id ? [currentUser.id] : [])
-    ]));
+    // MERGED ATTENDANCE: Real attendance + Theme participants (including guests)
+    const attendanceMap = new Map();
 
-    const uniqueMusicians = allMusicianIds.map(id => {
-        // 1. Try from attendance (often has user data)
-        const fromAttendance = (initialJam as any).attendance?.find((a: any) => a.userId === id)?.user;
-        if (fromAttendance) return fromAttendance;
+    // 1. Add people from official attendance
+    (initialJam.attendance || []).forEach(att => {
+        attendanceMap.set(att.userId, {
+            userId: att.userId,
+            instrument: att.instrument,
+            user: att.user
+        });
+    });
 
-        // 2. Try from participations (has instrument info)
-        const fromParticipations = participations.find(p => p.userId === id)?.user;
-        if (fromParticipations) return fromParticipations;
+    // 2. Add people from participations (especially guests/unregistered)
+    participations.forEach(p => {
+        const id = p.userId || `guest-${p.userName}`;
+        if (!attendanceMap.has(id)) {
+            attendanceMap.set(id, {
+                userId: id,
+                instrument: p.instrument,
+                user: p.user || { name: p.userName, image: null, id: null } // Guest fallback
+            });
+        }
+    });
 
-        // 3. Try from initial jam host data
-        if (id === initialJam.hostId && (initialJam as any).host) return (initialJam as any).host;
+    // 3. Ensure host is there if not already
+    if (!attendanceMap.has(initialJam.hostId)) {
+        attendanceMap.set(initialJam.hostId, {
+            userId: initialJam.hostId,
+            instrument: 'Anfitrión',
+            user: (initialJam as any).host
+        });
+    }
 
-        // 4. Try current user
-        if (currentUser && id === currentUser.id) return currentUser;
+    const mergedAttendance = Array.from(attendanceMap.values());
 
-        return null;
-    }).filter(Boolean) as User[];
+    // Filter unique users for musician list (carrusel/mentions)
+    const uniqueMusicians = mergedAttendance.map(a => a.user).filter(Boolean) as User[];
+
 
     if (!mounted) return null;
 
@@ -139,10 +151,10 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const isHost = currentUser?.id === initialJam.hostId || isSuperAdmin;
 
     return (
-        <div className="min-h-screen bg-black pb-24 lg:pb-32 font-sans flex flex-col relative">
+        <div className="h-[100dvh] bg-black font-sans flex flex-col overflow-hidden relative">
 
             {/* HEADER */}
-            <header className="sticky top-0 z-50 bg-jazz-surface/80 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center justify-between shrink-0 shadow-lg transition-all">
+            <header className="shrink-0 bg-jazz-surface/80 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center justify-between z-50 shadow-lg">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => router.push('/dashboard')}
@@ -176,22 +188,22 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </div>
             </header>
 
-            {/* DESKTOP LAYOUT (3 Cols) */}
-            <div className="hidden lg:flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
-
-                {/* LEFT: MUSICIANS */}
-                <aside className="w-64 bg-jazz-surface/60 backdrop-blur-md border-r border-white/5 flex flex-col">
-                    <div className="p-4 border-b border-white/5 bg-black/20">
-                        <h2 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
-                            <Users className="w-4 h-4" /> Músicos
-                        </h2>
+            {/* MAIN CONTAINER */}
+            <div className="flex flex-1 min-h-0 overflow-hidden relative">
+                {/* LEFT SIDEBAR: MUSICIANS */}
+                <aside className="hidden lg:flex w-[280px] bg-jazz-surface/40 border-r border-white/5 flex-col overflow-hidden">
+                    <div className="p-4 border-b border-white/5 bg-black/20 shrink-0">
+                        <h3 className="text-[10px] font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
+                            <Users size={14} /> Músicos
+                        </h3>
                     </div>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                         <MusicianList
                             jamId={initialJam.id}
                             currentUser={currentUser}
-                            attendance={initialJam.attendance || []}
+                            attendance={mergedAttendance as any}
                             cityMusicians={initialCityMusicians}
+                            isHost={isHost}
                         />
                     </div>
                 </aside>
@@ -500,8 +512,9 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         <MusicianList
                             jamId={initialJam.id}
                             currentUser={currentUser}
-                            attendance={initialJam.attendance || []}
+                            attendance={mergedAttendance as any}
                             cityMusicians={initialCityMusicians}
+                            isHost={isHost}
                         />
                     )}
 

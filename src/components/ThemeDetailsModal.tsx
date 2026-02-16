@@ -42,7 +42,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                 </div>
 
                 {/* Content - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
                     {/* Notes */}
                     {theme.description && (
                         <div className="bg-black/30 p-4 rounded-xl border border-white/5">
@@ -58,8 +58,6 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                     {/* Sheet Music */}
                     {theme.sheetMusicUrl && (
                         <div className="bg-black/30 p-4 rounded-xl border border-white/5">
-                            <h3 className="text-xs font-bold text-jazz-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                            </h3>
                             {(theme.sheetMusicUrl.match(/\.(jpg|jpeg|png|webp)$/i) || (theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf'))) ? (
                                 <div className="space-y-3">
                                     <img
@@ -68,16 +66,15 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                                         className="w-full rounded-lg border border-white/10 bg-white/5"
                                         onError={(e) => {
                                             e.currentTarget.style.display = 'none';
-                                            // If failed, we should probably show the link prominently
                                         }}
                                     />
                                     <a
                                         href={theme.sheetMusicUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center justify-center gap-2 text-jazz-gold hover:text-white text-sm py-2 border border-jazz-gold/30 rounded-lg hover:bg-jazz-gold/10 transition-all"
+                                        className="flex items-center justify-center gap-2 text-jazz-gold hover:text-white text-sm py-2 border border-jazz-gold/30 rounded-lg hover:bg-jazz-gold/10 transition-all font-bold"
                                     >
-                                        <ExternalLink size={16} /> Abrir Archivo Original
+                                        <ExternalLink size={16} /> Abrir Archivo
                                     </a>
                                 </div>
                             ) : (
@@ -101,19 +98,19 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                     )}
 
                     {/* Chat Section */}
-                    <div className="pt-4 border-t border-white/5">
+                    <div className="pt-4 border-t border-white/5 flex flex-col h-full min-h-[400px]">
                         <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2 uppercase tracking-wider">
                             <MessageSquare size={14} className="text-jazz-gold" />
                             {theme.type === 'TOPIC' ? 'Comentarios' : 'Chat del Tema'}
                         </h3>
                         {currentUser ? (
-                            <div className="h-[250px] min-h-[250px] shrink-0">
+                            <div className="flex-1 min-h-0 bg-black/20 rounded-xl overflow-hidden border border-white/5">
                                 <JamChat
                                     jamId={theme.jamId}
                                     currentUser={currentUser}
                                     themeId={theme.id}
                                     isCommentMode={theme.type === 'TOPIC'}
-                                    title={theme.type === 'TOPIC' ? 'Comentarios del Tópico' : 'Chat del Tema'}
+                                    title=""
                                 />
                             </div>
                         ) : (
@@ -122,7 +119,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-white/5 shrink-0 bg-[#0a0a0a] flex gap-3">
+                <div className="p-4 border-t border-white/5 shrink-0 bg-[#0a0a0a] flex gap-3 sticky bottom-0 z-10">
                     {(isHost || (currentUser && theme.proposedById === currentUser.id)) && theme.status !== 'QUEUED' && theme.type !== 'TOPIC' && (
                         <button
                             onClick={async () => {
