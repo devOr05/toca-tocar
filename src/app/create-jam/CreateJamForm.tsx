@@ -259,7 +259,7 @@ export default function CreateJamForm({ user }: { user: any }) {
                 </button>
                 <button
                     type="button"
-                    onClick={() => alert(`Debug User: ${user?.id} - ${user?.name}`)}
+                    onClick={() => console.log(`Debug User: ${user?.id} - ${user?.name}`)}
                     className="w-full mt-2 text-[10px] text-white/20 hover:text-white/50"
                 >
                     Ver Sesión (Debug)

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Download, Trash2 } from 'lucide-react';
 import { getJamMedia, deleteMedia } from '@/app/actions';
+import { toast } from 'react-hot-toast';
 
 interface Media {
     id: string;
@@ -49,10 +50,11 @@ export default function MediaGallery({ jamId, currentUserId, isHost, refreshTrig
 
         const result = await deleteMedia(mediaId);
         if (result.success) {
+            toast.success('Archivo eliminado');
             setMedia(prev => prev.filter(m => m.id !== mediaId));
             setSelectedMedia(null);
         } else {
-            alert(result.error || 'Error al eliminar');
+            toast.error(result.error || 'Error al eliminar');
         }
     };
 

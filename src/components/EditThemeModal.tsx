@@ -5,6 +5,7 @@ import { X, Save, Loader2 } from 'lucide-react';
 import { updateTheme } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 import { Theme } from '@/types';
+import { toast } from 'react-hot-toast';
 
 interface EditThemeModalProps {
     isOpen: boolean;
@@ -40,10 +41,11 @@ export default function EditThemeModal({ isOpen, onClose, theme }: EditThemeModa
         setIsLoading(false);
 
         if (result.success) {
+            toast.success('Tema actualizado');
             router.refresh();
             onClose();
         } else {
-            alert(result.error || 'Error al actualizar tema');
+            toast.error(result.error || 'Error al actualizar tema');
         }
     };
 

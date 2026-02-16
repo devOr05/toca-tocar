@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
-import { Toaster } from 'sonner';
+import { Toaster as SonnerToaster } from 'sonner';
+import { Toaster as HotToaster } from 'react-hot-toast';
 import OnboardingGuard from "@/components/OnboardingGuard";
 
 
@@ -65,7 +66,8 @@ export default function RootLayout({
           <OnboardingGuard>
             {children}
           </OnboardingGuard>
-          <Toaster richColors position="top-center" />
+          <SonnerToaster richColors position="top-center" />
+          <HotToaster position="top-center" reverseOrder={false} />
         </Providers>
       </body>
     </html>

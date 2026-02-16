@@ -7,6 +7,7 @@ import { Jam } from '@/types';
 // Assuming updateJam exists for now to keep flow, or I'll add it in next step.
 import { updateJam } from '@/app/actions';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 interface EditJamModalProps {
     isOpen: boolean;
@@ -46,10 +47,11 @@ export default function EditJamModal({ isOpen, onClose, jam }: EditJamModalProps
         setIsLoading(false);
 
         if (result.success) {
+            toast.success('Jam actualizada');
             router.refresh();
             onClose();
         } else {
-            alert(result.error || 'Error al actualizar la Jam');
+            toast.error(result.error || 'Error al actualizar la Jam');
         }
     };
 

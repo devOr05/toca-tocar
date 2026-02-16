@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Megaphone, Music, Loader, Trash2 } from 'lucide-react';
 import { getAnnouncements } from '@/app/actions';
+import { toast } from 'react-hot-toast';
 import CreateAnnouncementModal from './CreateAnnouncementModal';
 
 interface NewsItem {
@@ -34,8 +35,12 @@ export default function NewsSection({ isAdmin = false, currentUserId }: { isAdmi
         if (confirm('¿Eliminar este anuncio?')) {
             const { deleteAnnouncement } = await import('@/app/actions');
             const result = await deleteAnnouncement(id);
-            if (result.success) fetchNews();
-            else alert(result.error);
+            if (result.success) {
+                toast.success('Anuncio eliminado');
+                fetchNews();
+            } else {
+                toast.error(result.error || 'Error al eliminar');
+            }
         }
     };
 

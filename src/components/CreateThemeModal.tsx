@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X, Music, FileText, Link as LinkIcon, MessageSquare, Loader } from 'lucide-react';
 import { createTheme } from '@/app/actions';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 import { JAZZ_STANDARDS } from '../data/jazzStandards';
 
@@ -118,14 +119,15 @@ export default function CreateThemeModal({ isOpen, onClose, jamCode, type = 'SON
             if (result.success) {
                 setFormData({ name: '', tonality: '', description: '', sheetMusicUrl: '' });
                 setPdfFileName(null);
+                toast.success('Tema propuesto con éxito');
                 router.refresh();
                 onClose();
             } else {
-                alert(result.error || 'Error al crear el tema');
+                toast.error(result.error || 'Error al crear el tema');
             }
         } catch (error: any) {
             console.error('Submit error:', error);
-            alert(error.message || 'Error al procesar la solicitud');
+            toast.error(error.message || 'Error al procesar la solicitud');
         } finally {
             setIsLoading(false);
         }

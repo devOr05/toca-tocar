@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Upload, X, Image as ImageIcon, Video } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface MediaUploadButtonProps {
     jamId: string;
@@ -21,13 +22,13 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
         const isVideo = file.type.startsWith('video/');
 
         if (!isImage && !isVideo) {
-            alert('Solo se permiten imágenes y videos');
+            toast.error('Solo se permiten imágenes y videos');
             return;
         }
 
         // Validate file size (max 10MB)
         if (file.size > 10 * 1024 * 1024) {
-            alert('El archivo es demasiado grande. Máximo 10MB');
+            toast.error('El archivo es demasiado grande. Máximo 10MB');
             return;
         }
 
@@ -46,7 +47,7 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
 
             // Upload to Cloudinary
             if (!cloudName || cloudName === 'your-cloud-name') {
-                alert('Cloudinary no está configurado correctamente (Cloud Name ausente).');
+                toast.error('Cloudinary no está configurado correctamente (Cloud Name ausente).');
                 setIsUploading(false);
                 return;
             }
@@ -93,9 +94,9 @@ export default function MediaUploadButton({ jamId, onUploadComplete }: MediaUplo
 
             onUploadComplete?.();
             setPreview(null);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error uploading:', error);
-            alert('Error al subir el archivo. Intenta de nuevo.');
+            toast.error(error.message || 'Error al subir el archivo. Intenta de nuevo.');
         } finally {
             setIsUploading(false);
         }
