@@ -144,11 +144,13 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     }
 
     // Convert Sets to comma-separated strings for display
-    const mergedAttendance = Array.from(attendanceMap.values()).map(att => ({
-        userId: att.userId,
-        instrument: Array.from(att.instruments).join(', '),
-        user: att.user
-    }));
+    const mergedAttendance = Array.from(attendanceMap.values())
+        .filter(att => att.user) // Filter out entries with undefined users
+        .map(att => ({
+            userId: att.userId,
+            instrument: Array.from(att.instruments).join(', '),
+            user: att.user
+        }));
 
     // Filter unique users for musician list (carrusel/mentions)
     const uniqueMusicians = mergedAttendance.map(a => a.user).filter(Boolean) as User[];
