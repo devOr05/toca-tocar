@@ -1430,3 +1430,98 @@ export async function deleteUser(userId: string) {
     }
 }
 
+// Search musicians by name
+export async function searchMusicians(query: string) {
+    if (!query || query.length < 2) return [];
+
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                name: {
+                    contains: query,
+                    mode: 'insensitive',
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                image: true,
+                mainInstrument: true,
+                city: true,
+            },
+            take: 10,
+        });
+
+        return users;
+    } catch (error) {
+        console.error('Error searching musicians:', error);
+        return [];
+    }
+}
+
+// Update opening band musicians
+export async function updateOpeningMusicians(jamId: string, musicians: any[]) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: 'No autenticado' };
+    }
+
+    try {
+        // Verify host/admin permissions
+        const jam = await prisma.jam.findUnique({
+            where: { id: jamId },
+            select: { hostId: true }
+        });
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true }
+        });
+
+        const isSuperAdmin = session.user.email?.toLowerCase() === 'orostizagamario@gmail.com';
+
+        if (jam?.hostId !== session.user.id && user?.role !== 'ADMIN' && !isSuperAdmin) {
+            return { success: false, error: 'No tienes permiso' };
+        }
+
+        await prisma.jam.update({
+            where: { id: jamId },
+            data: {
+                openingMusicians: musicians
+            }
+        });
+
+        revalidatePath(`/jam/${jamId}`); // Revalidate logic if needed
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating opening musicians:', error);
+        return { success: false, error: 'Error al actualizar' };
+    }
+}
+
+// Get full musician profile
+export async function getMusicianProfile(userId: string) {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                name: true,
+                image: true,
+                city: true,
+                mainInstrument: true,
+                createdAt: true,
+                _count: {
+                    select: {
+                        participations: true,
+                        jamAttendance: true
+                    }
+                }
+            }
+        });
+        return { success: true, user };
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        return { success: false, error: 'Error al obtener perfil' };
+    }
+}

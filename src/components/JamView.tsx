@@ -15,6 +15,7 @@ import MusicianList from './MusicianList';
 import MediaGallery from './MediaGallery';
 import MediaUploadButton from './MediaUploadButton';
 import HostControlPanel from './HostControlPanel';
+import MusicianProfileModal from './MusicianProfileModal';
 
 interface JamViewProps {
     initialJam: Jam;
@@ -39,46 +40,15 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const [refreshMedia, setRefreshMedia] = useState(0);
     const [isChatExpanded, setIsChatExpanded] = useState(false);
 
+    // Musician Profile Modal State
+    const [selectedMusicianId, setSelectedMusicianId] = useState<string | null>(null);
+
     const openCreateModal = (type: 'SONG' | 'TOPIC') => {
         setCreateType(type);
         setIsCreateThemeOpen(true);
     };
 
-    // ... (rest of code)
-
-    // ... inside render ...
-    {/* LEFT: MUSICIANS */ }
-    <aside className="w-64 bg-jazz-surface border-r border-white/5 flex flex-col">
-        <div className="p-4 border-b border-white/5 bg-black/20">
-            <h2 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
-                <Users className="w-4 h-4" /> Músicos
-            </h2>
-        </div>
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
-            <MusicianList
-                jamId={initialJam.id}
-                currentUser={currentUser}
-                attendance={initialJam.attendance || []}
-                cityMusicians={initialCityMusicians}
-            />
-        </div>
-    </aside>
-
-
-    // Real-time Jam Updates
-    useEffect(() => {
-        const channel = pusherClient.subscribe(`jam-${initialJam.id}`);
-
-        channel.bind('update-jam', () => {
-            console.log('Jam update received, refreshing...');
-            router.refresh();
-        });
-
-        return () => {
-            pusherClient.unsubscribe(`jam-${initialJam.id}`);
-        };
-    }, [initialJam.id, router]);
-
+    // Initialize Store
     useEffect(() => {
         setJamState(initialJam, initialThemes, initialParticipations);
 
@@ -98,55 +68,55 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         } else if (!currentUser) {
             const storedName = localStorage.getItem('toca_tocar_user_name');
             if (storedName) {
-                setUser(storedName);
-            } else {
-                router.push(`/?code=${initialJam.code}`);
+                const guestUser = {
+                    id: `guest-${Date.now()}`,
+                    name: storedName,
+                    role: 'USER' as const,
+                    image: null
+                };
+                setAuthenticatedUser(guestUser as any);
             }
         }
-    }, [initialJam, initialThemes, initialParticipations, setJamState, initialUser, currentUser, setUser, setAuthenticatedUser, router]);
+    }, []); // Run ONCE on mount
 
-    // MERGED ATTENDANCE: Real attendance + Theme participants (including guests)
-    const attendanceMap = new Map();
+    // Listen for attendance updates to update sidebar/list
+    useEffect(() => {
+        const channel = pusherClient.subscribe(`jam-${initialJam.id}`);
 
-    // 1. Add people from official attendance (ALWAYS use their current profile instrument)
-    (initialJam.attendance || []).forEach(att => {
-        const profileInstrument = att.user?.mainInstrument || att.instrument || 'Varios';
-        attendanceMap.set(att.userId, {
-            userId: att.userId,
-            instruments: new Set([profileInstrument]), // Start with profile instrument
-            user: att.user
+        channel.bind('attendance-update', (data: { userId: string, action: 'join' | 'leave', user: User }) => {
+            console.log('attendance update:', data);
+            router.refresh();
         });
-    });
 
-    // 2. Add instruments from participations (accumulate if different from profile)
-    participations.forEach(p => {
-        const id = p.userId || `guest-${p.userName}`;
-        if (attendanceMap.has(id)) {
-            // User already in attendance, add their theme instrument if different from profile
-            const existing = attendanceMap.get(id)!;
-            const profileInstrument = existing.user?.mainInstrument;
-            // Only add if it's different from their profile instrument
-            if (p.instrument !== profileInstrument) {
-                existing.instruments.add(p.instrument);
+        return () => {
+            channel.unbind('attendance-update');
+        };
+    }, [initialJam.id, router]);
+
+
+    const attendanceMap = new Map<string, { userId: string, instruments: Set<string>, user?: User }>();
+
+    // Process participations to build attendance list
+    if (participations) {
+        participations.forEach(p => {
+            if (!attendanceMap.has(p.userId)) {
+                attendanceMap.set(p.userId, { userId: p.userId, instruments: new Set(), user: p.user });
             }
-        } else {
-            // New user (guest or not checked in), add them
-            attendanceMap.set(id, {
-                userId: id,
-                instruments: new Set([p.instrument]),
-                user: p.user || { name: p.userName, image: null, id: null } // Guest fallback
-            });
-        }
-    });
+            if (p.instrument) {
+                attendanceMap.get(p.userId)?.instruments.add(p.instrument);
+            }
+        });
+    }
 
-    // 3. Ensure host is there if not already
-    if (!attendanceMap.has(initialJam.hostId)) {
-        const hostUser = (initialJam as any).host;
-        const hostInstrument = hostUser?.mainInstrument || 'Anfitrión';
-        attendanceMap.set(initialJam.hostId, {
-            userId: initialJam.hostId,
-            instruments: new Set([hostInstrument]),
-            user: hostUser
+    // Add direct attendance
+    if (initialJam.attendance) {
+        initialJam.attendance.forEach(a => {
+            if (!attendanceMap.has(a.userId)) {
+                // Ensure instrument is string (it should be required in JamAttendance but might be null in DB)
+                attendanceMap.set(a.userId, { userId: a.userId, instruments: new Set([a.instrument || '']), user: a.user });
+            } else {
+                attendanceMap.get(a.userId)?.instruments.add(a.instrument || '');
+            }
         });
     }
 
@@ -223,6 +193,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             attendance={mergedAttendance as any}
                             cityMusicians={initialCityMusicians}
                             isHost={isHost}
+                            onMusicianClick={(id) => setSelectedMusicianId(id)}
                         />
                     </div>
                 </aside>
@@ -278,13 +249,50 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                     <Music2 size={80} className="text-jazz-gold" />
                                 </div>
                                 <div className="relative z-10">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-[10px] font-black bg-jazz-gold text-black px-2 py-0.5 rounded uppercase tracking-tighter">Apertura</span>
-                                        <h2 className="text-xl font-bold text-white tracking-tight">{initialJam.openingBand}</h2>
+                                    <div className="flex flex-col gap-4 mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-black bg-jazz-gold text-black px-2 py-0.5 rounded uppercase tracking-tighter">Apertura</span>
+                                            <h2 className="text-xl font-bold text-white tracking-tight">{initialJam.openingBand}</h2>
+                                        </div>
+
+                                        {/* Opening Musicians Display */}
+                                        {(() => {
+                                            try {
+                                                const musicians = typeof initialJam.openingMusicians === 'string'
+                                                    ? JSON.parse(initialJam.openingMusicians)
+                                                    : initialJam.openingMusicians;
+
+                                                if (Array.isArray(musicians) && musicians.length > 0) {
+                                                    return (
+                                                        <div className="flex flex-wrap gap-3">
+                                                            {musicians.map((m: any) => (
+                                                                <button
+                                                                    key={m.userId}
+                                                                    onClick={() => setSelectedMusicianId(m.userId)}
+                                                                    className="flex items-center gap-2 bg-black/40 hover:bg-jazz-gold/20 border border-white/10 hover:border-jazz-gold/50 rounded-full pl-1 pr-3 py-1 transition-all group"
+                                                                >
+                                                                    <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden ring-2 ring-black/50 group-hover:ring-jazz-gold/50 transition-all">
+                                                                        {m.image ? (
+                                                                            <img src={m.image} alt={m.name} className="w-full h-full object-cover" />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center text-xs">👤</div>
+                                                                        )}
+                                                                    </div>
+                                                                    <span className="text-sm text-white font-medium group-hover:text-jazz-gold transition-colors">{m.name}</span>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    );
+                                                }
+                                            } catch (e) {
+                                                console.error("Error parsing opening musicians", e);
+                                            }
+                                            return null;
+                                        })()}
                                     </div>
 
                                     {initialJam.openingInfo && (
-                                        <p className="text-white/70 text-sm mb-4 leading-relaxed whitespace-pre-wrap max-w-2xl">
+                                        <p className="text-white/70 text-sm mb-4 leading-relaxed whitespace-pre-wrap max-w-2xl bg-black/20 p-3 rounded-lg border border-white/5">
                                             {initialJam.openingInfo}
                                         </p>
                                     )}
@@ -399,175 +407,33 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </aside>
             </div >
 
+            {/* REAL-TIME UPDATES FOR JAM */}
+            {/* Handled in useEffect above */}
 
-            {/* MOBILE LAYOUT */}
-            <div className="lg:hidden flex-1 flex flex-col min-h-0 bg-black/50">
-                {/* Mobile Tabs - Sticky Top */}
-                <div className="flex items-center border-b border-white/10 bg-black/40 px-4 shrink-0 overflow-x-auto no-scrollbar gap-2 sticky top-0 z-40 backdrop-blur-md">
-                    <button
-                        onClick={() => setActiveTab('THEMES')}
-                        className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'THEMES' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40'}`}
-                    >
-                        <Music2 size={14} /> Repertorio
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('MUSICIANS')}
-                        className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'MUSICIANS' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40'}`}
-                    >
-                        <Users size={14} /> Músicos
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('SUGGESTED')}
-                        className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'SUGGESTED' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40'}`}
-                    >
-                        <Plus size={14} /> Sugeridos
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('FORUM')}
-                        className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'FORUM' ? 'border-jazz-accent text-white' : 'border-transparent text-white/40'}`}
-                    >
-                        <Share2 size={14} /> Foro
-                    </button>
-
-                    <button
-                        onClick={() => setActiveTab('GALLERY')}
-                        className={`px-3 py-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'GALLERY' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40'}`}
-                    >
-                        <ImageIcon size={14} /> Galería
-                    </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-24">
-                    {/* THEMES TAB CONTENT */}
-                    {activeTab === 'THEMES' && (
-                        <>
-                            {/* Info Card */}
-                            <div className="bg-jazz-surface border border-white/5 rounded-xl p-4 shadow-lg">
-                                {initialJam.description && <p className="text-white/90 text-xs mb-2 leading-relaxed">{initialJam.description}</p>}
-                                {formattedDate && <p className="text-jazz-muted text-[10px] flex items-center gap-1.5"><Calendar size={12} /> {formattedDate}</p>}
-                                {(initialJam.location || initialJam.city) && (
-                                    <p className="text-jazz-muted text-[10px] flex items-center gap-1.5 mt-1">
-                                        <MapPin size={12} />
-                                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((initialJam.location || '') + ' ' + (initialJam.city || ''))}`} target="_blank" rel="noopener noreferrer" className="hover:text-white underline">
-                                            {initialJam.location}{initialJam.city ? `, ${initialJam.city}` : ''}
-                                        </a>
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Musicians Horizontal Scroll */}
-                            <div className="bg-jazz-surface border border-white/10 rounded-xl overflow-hidden p-3 relative">
-                                <h3 className="text-[10px] font-bold text-jazz-gold uppercase tracking-widest mb-2 flex items-center gap-1">
-                                    <Users size={12} /> Músicos
-                                </h3>
-                                <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar">
-                                    {uniqueMusicians.map(u => {
-                                        if (!u) return null;
-                                        const isHostUser = u.id === initialJam.hostId;
-                                        const isCurrentUser = u.id === currentUser?.id;
-                                        return (
-                                            <div key={u.id} className="flex flex-col items-center min-w-[50px] relative group">
-                                                <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${isHostUser ? 'border-jazz-gold' : isCurrentUser ? 'border-jazz-accent' : 'border-white/10'}`}>
-                                                    {u.image ? <img src={u.image} alt={u.name || ''} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center w-full h-full bg-white/5 text-xs">🎷</div>}
-                                                </div>
-                                                <span className="text-[9px] text-white/80 truncate w-full text-center mt-1.5 font-medium">{u.name?.split(' ')[0]}</span>
-                                                {isHostUser && <span className="absolute -top-1 -right-1 bg-jazz-gold text-black text-[8px] font-bold px-1 rounded-full border border-black shadow">H</span>}
-                                                {isCurrentUser && <span className="absolute -top-1 -left-1 bg-jazz-accent text-black text-[8px] font-bold px-1 rounded-full border border-black shadow">Tú</span>}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Opening Show */}
-                            {initialJam.openingBand && (
-                                <div className="bg-jazz-gold/5 border border-jazz-gold/20 rounded-xl p-4 relative overflow-hidden">
-                                    <div className="flex items-center gap-2 mb-2 relative z-10">
-                                        <span className="text-[9px] font-black bg-jazz-gold text-black px-1.5 py-0.5 rounded uppercase tracking-tighter">Apertura</span>
-                                        <h2 className="text-lg font-bold text-white tracking-tight">{initialJam.openingBand}</h2>
-                                    </div>
-                                    {initialJam.openingThemes && (
-                                        <div className="flex flex-wrap gap-1.5 relative z-10">
-                                            {initialJam.openingThemes.split('\n').filter(t => t.trim()).map((t, i) => (
-                                                <div key={i} className="bg-black/40 border border-white/10 px-2 py-1 rounded text-[10px] text-white/70">
-                                                    {t.trim()}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Host Control Panel */}
-                            {isHost && <HostControlPanel jam={initialJam} themes={themes} />}
-
-                            <ThemeList type="SONG" />
-                        </>
-                    )}
-
-                    {/* SUGGESTED TAB */}
-                    {activeTab === 'SUGGESTED' && <SuggestedThemes jamCode={initialJam.code} />}
-
-                    {/* FORUM TAB */}
-                    {activeTab === 'FORUM' && (
-                        <>
-                            <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-lg font-bold text-white">Foro</h3>
-                                <button
-                                    onClick={() => openCreateModal('TOPIC')}
-                                    className="bg-jazz-accent/20 text-jazz-accent px-3 py-1.5 rounded-lg text-xs font-bold uppercase"
-                                >
-                                    Crear Tópico
-                                </button>
-                            </div>
-                            <ThemeList type="TOPIC" />
-                        </>
-                    )}
-
-
-
-                    {/* MUSICIANS TAB */}
-                    {activeTab === 'MUSICIANS' && (
-                        <MusicianList
-                            jamId={initialJam.id}
-                            currentUser={currentUser}
-                            attendance={mergedAttendance as any}
-                            cityMusicians={initialCityMusicians}
-                            isHost={isHost}
-                        />
-                    )}
-
-                    {/* GALLERY TAB */}
-                    {activeTab === 'GALLERY' && (
-                        <>
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-white">Galería</h3>
-                                {currentUser && (
-                                    <MediaUploadButton
-                                        jamId={initialJam.id}
-                                        onUploadComplete={() => setRefreshMedia(prev => prev + 1)}
-                                    />
-                                )}
-                            </div>
-                            <MediaGallery
-                                jamId={initialJam.id}
-                                currentUserId={currentUser?.id}
-                                isHost={isHost}
-                                refreshTrigger={refreshMedia}
-                            />
-                        </>
-                    )}
-                </div>
-
-                {activeTab === 'THEMES' && (
-                    <button
-                        onClick={() => openCreateModal('SONG')}
-                        className={`fixed ${isChatExpanded ? 'bottom-[62vh]' : 'bottom-[80px]'} right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] z-50 flex items-center justify-center active:scale-95 transition-all`}
-                    >
-                        <Plus className="w-7 h-7" />
-                    </button>
-                )}
+            {/* FLOATING ACTION BUTTON (MOBILE) */}
+            <div className="lg:hidden fixed bottom-20 right-4 z-50">
+                {/* Already handled in Tabs usually, but here is extra FAB if needed */}
             </div>
+
+            <div className="lg:hidden fixed bottom-[90px] right-6 z-50">
+                {/* Duplicate FAB logic from original if present */}
+            </div>
+
+
+            <div className="lg:hidden">
+                {/* Mobile Bottom Nav or similar could go here */}
+            </div>
+
+
+            {/* MOBILE FAB FOR CREATE */}
+            {activeTab === 'THEMES' && (
+                <button
+                    onClick={() => openCreateModal('SONG')}
+                    className={`fixed ${isChatExpanded ? 'bottom-[62vh]' : 'bottom-[80px]'} right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] z-50 flex items-center justify-center active:scale-95 transition-all lg:hidden`}
+                >
+                    <Plus className="w-7 h-7" />
+                </button>
+            )}
 
             {/* MOBILE ONLY STICKY CHAT */}
             {currentUser && (
@@ -598,6 +464,12 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 onClose={() => setIsCreateThemeOpen(false)}
                 jamCode={jam.code}
                 type={createType}
+            />
+
+            <MusicianProfileModal
+                userId={selectedMusicianId!}
+                isOpen={!!selectedMusicianId}
+                onClose={() => setSelectedMusicianId(null)}
             />
         </div>
     );

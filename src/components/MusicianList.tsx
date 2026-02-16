@@ -16,9 +16,10 @@ interface MusicianListProps {
     cityMusicians: Partial<User>[];
     isHost?: boolean;
     title?: string;
+    onMusicianClick?: (userId: string) => void;
 }
 
-export default function MusicianList({ jamId, currentUser, attendance, cityMusicians, isHost, title }: MusicianListProps) {
+export default function MusicianList({ jamId, currentUser, attendance, cityMusicians, isHost, title, onMusicianClick }: MusicianListProps) {
     const [isCheckingIn, setIsCheckingIn] = useState(false);
 
     const isCheckedIn = currentUser && attendance.some(a => a.userId === currentUser.id);
@@ -76,7 +77,11 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                 ) : (
                     <div className="grid grid-cols-1 gap-2">
                         {attendance.map((att) => (
-                            <div key={att.userId} className="flex items-center gap-3 p-2 bg-white/5 rounded-xl border border-white/5">
+                            <div
+                                key={att.userId}
+                                onClick={() => onMusicianClick?.(att.userId)}
+                                className={`flex items-center gap-3 p-2 bg-white/5 rounded-xl border border-white/5 ${onMusicianClick ? 'cursor-pointer hover:bg-white/10 active:scale-[0.98] transition-all' : ''}`}
+                            >
                                 <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden shrink-0">
                                     {att.user.image ? (
                                         <img src={att.user.image} alt={att.user.name} className="w-full h-full object-cover" />

@@ -27,6 +27,7 @@ export interface Jam {
     openingBand?: string | null;
     openingInfo?: string | null;
     openingThemes?: string | null;
+    openingMusicians?: any; // JSON or Array
     createdAt: Date;
     attendance?: JamAttendance[];
 }

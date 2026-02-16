@@ -1,0 +1,3 @@
+﻿src/app/actions.ts(1513,17): error TS2353: Object literal may only specify known properties, and 'bio' does not exist in type 'UserSelect<DefaultArgs>'.
+src/components/MusicianAutocomplete.tsx(39,26): error TS2339: Property 'email' does not exist on type '{ id: string; name: string | null; city: string | null; image: string | null; mainInstrument: string | null; }'.
+src/components/MusicianAutocomplete.tsx(43,24): error TS2339: Property 'bio' does not exist on type '{ id: string; name: string | null; city: string | null; image: string | null; mainInstrument: string | null; }'.

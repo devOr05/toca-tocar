@@ -4,8 +4,9 @@ import { useActionState, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { createJam, createOrUpdateVenue, getJamTemplates, getJamTemplateDetails } from '@/app/actions';
-import { MapPin, Calendar, Music, Info, Sparkles } from 'lucide-react';
+import { MapPin, Calendar, Music, Info, Sparkles, X } from 'lucide-react';
 import VenueAutocomplete from '@/components/VenueAutocomplete';
+import MusicianAutocomplete from '@/components/MusicianAutocomplete';
 
 const initialState = {
     error: '',
@@ -14,11 +15,16 @@ const initialState = {
 
 export default function CreateJamForm({ user }: { user: any }) {
     const [state, formAction, isPending] = useActionState(createJam, initialState);
+
+    // Existing state
     const [selectedVenue, setSelectedVenue] = useState<any>(null);
     const [locationInput, setLocationInput] = useState('');
     const [jamName, setJamName] = useState(`${user.name}'s Jam`);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [isAutoFilling, setIsAutoFilling] = useState(false);
+
+    // New state for opening musicians
+    const [openingMusicians, setOpeningMusicians] = useState<{ userId: string; name: string; image?: string | null }[]>([]);
 
     const router = useRouter();
 
@@ -50,42 +56,20 @@ export default function CreateJamForm({ user }: { user: any }) {
         return () => clearTimeout(timer);
     }, [jamName]);
 
-    const handleAutoFill = async (name: string) => {
-        setIsAutoFilling(true);
-        const details = await getJamTemplateDetails(name);
-        if (details) {
-            // Fill normal inputs via state if we had them as state, but since they are mostly uncontrolled or via refs...
-            // Let's use form selectors for simple ones or state for name
-            setJamName(name);
-
-            // For other fields, we can set values directly if we use refs or just DOM selection for simplicity in this specific component
-            const setVal = (selector: string, val: string | null) => {
-                const el = document.querySelector(selector) as HTMLInputElement | HTMLTextAreaElement;
-                if (el && val) el.value = val;
-            };
-
-            setVal('input[name="city"]', details.city);
-            setVal('textarea[name="description"]', details.description);
-            // setVal('input[name="openingBand"]', details.openingBand);
-            // setVal('textarea[name="openingInfo"]', details.openingInfo);
-            // setVal('textarea[name="openingThemes"]', details.openingThemes);
-            setVal('input[name="flyerUrl"]', details.flyerUrl);
-
-            if (details.location) {
-                setLocationInput(details.location);
-                setVal('input[name="location"]', details.location);
-            }
-            if (details.lat) setVal('input[name="lat"]', details.lat.toString());
-            if (details.lng) setVal('input[name="lng"]', details.lng.toString());
+    const handleAddMusician = (musician: { userId: string; name: string; image?: string | null }) => {
+        if (!openingMusicians.some(m => m.userId === musician.userId)) {
+            setOpeningMusicians(prev => [...prev, musician]);
         }
-        setIsAutoFilling(false);
+    };
+
+    const handleRemoveMusician = (userId: string) => {
+        setOpeningMusicians(prev => prev.filter(m => m.userId !== userId));
     };
 
     const handleVenueSelect = (venue: any) => {
         setSelectedVenue(venue);
         setLocationInput(venue.name);
 
-        // Auto-fill hidden fields
         if (venue.address) {
             (document.querySelector('input[name="location"]') as HTMLInputElement).value = venue.name;
         }
@@ -96,6 +80,43 @@ export default function CreateJamForm({ user }: { user: any }) {
             (document.getElementById('lat') as HTMLInputElement).value = venue.lat.toString();
             (document.getElementById('lng') as HTMLInputElement).value = venue.lng.toString();
         }
+    };
+
+    const handleAutoFill = async (name: string) => {
+        setIsAutoFilling(true);
+        const detailsRaw = await getJamTemplateDetails(name);
+        if (detailsRaw) {
+            const details = detailsRaw as any;
+            setJamName(name);
+
+            const setVal = (selector: string, val: string | null) => {
+                const el = document.querySelector(selector) as HTMLInputElement | HTMLTextAreaElement;
+                if (el && val) el.value = val;
+            };
+
+            setVal('input[name="city"]', details.city);
+            setVal('textarea[name="description"]', details.description);
+            setVal('input[name="flyerUrl"]', details.flyerUrl);
+
+            if (details.openingMusicians) {
+                try {
+                    const musicians = typeof details.openingMusicians === 'string'
+                        ? JSON.parse(details.openingMusicians)
+                        : details.openingMusicians;
+                    setOpeningMusicians(Array.isArray(musicians) ? musicians : []);
+                } catch (e) {
+                    console.error("Error parsing opening musicians", e);
+                }
+            }
+
+            if (details.location) {
+                setLocationInput(details.location);
+                setVal('input[name="location"]', details.location);
+            }
+            if (details.lat) setVal('input[name="lat"]', details.lat.toString());
+            if (details.lng) setVal('input[name="lng"]', details.lng.toString());
+        }
+        setIsAutoFilling(false);
     };
 
     return (
@@ -233,7 +254,45 @@ export default function CreateJamForm({ user }: { user: any }) {
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-bold text-white/40 mb-1 uppercase tracking-widest">¿Quién hace la apertura?</label>
+                        <label className="block text-xs font-bold text-white/40 mb-2 uppercase tracking-widest flex items-center gap-2">
+                            Músicos de Apertura
+                        </label>
+
+                        {/* Hidden input to submit JSON */}
+                        <input type="hidden" name="openingMusicians" value={JSON.stringify(openingMusicians)} />
+
+                        <div className="mb-3">
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {openingMusicians.map(m => (
+                                    <div key={m.userId} className="flex items-center gap-2 bg-white/10 rounded-full pl-1 pr-3 py-1 border border-white/10">
+                                        <div className="w-6 h-6 rounded-full bg-white/20 overflow-hidden">
+                                            {m.image ? (
+                                                <img src={m.image} alt={m.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-[10px]">👤</div>
+                                            )}
+                                        </div>
+                                        <span className="text-sm text-white">{m.name}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveMusician(m.userId)}
+                                            className="w-4 h-4 rounded-full bg-white/10 hover:bg-red-500/50 flex items-center justify-center transition-colors ml-1"
+                                        >
+                                            <X size={10} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <MusicianAutocomplete
+                                onSelect={handleAddMusician}
+                                placeholder="Buscar y agregar músico..."
+                                existingMusicians={openingMusicians.map(m => m.userId)}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-white/40 mb-1 uppercase tracking-widest">Nombre del Grupo / Banda</label>
                         <input type="text" id="openingBand" name="openingBand" placeholder="Ej: Mario Oro Trio"
                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-jazz-gold transition-all" />
                     </div>

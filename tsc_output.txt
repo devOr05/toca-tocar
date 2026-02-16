@@ -1,0 +1,18 @@
+﻿src/app/actions.ts(1518,25): error TS2561: Object literal may only specify known properties, but 'attendance' does not exist in type 'UserCountOutputTypeSelect<DefaultArgs>'. Did you mean to write 'jamAttendance'?
+src/app/create-jam/CreateJamForm.tsx(100,25): error TS2339: Property 'openingMusicians' does not exist on type '{ description: string | null; location: string | null; lat: number | null; lng: number | null; city: string | null; flyerUrl: string | null; openingBand: string | null; openingInfo: string | null; openingThemes: string | null; }'.
+src/app/create-jam/CreateJamForm.tsx(102,54): error TS2339: Property 'openingMusicians' does not exist on type '{ description: string | null; location: string | null; lat: number | null; lng: number | null; city: string | null; flyerUrl: string | null; openingBand: string | null; openingInfo: string | null; openingThemes: string | null; }'.
+src/app/create-jam/CreateJamForm.tsx(103,46): error TS2339: Property 'openingMusicians' does not exist on type '{ description: string | null; location: string | null; lat: number | null; lng: number | null; city: string | null; flyerUrl: string | null; openingBand: string | null; openingInfo: string | null; openingThemes: string | null; }'.
+src/app/create-jam/CreateJamForm.tsx(104,35): error TS2339: Property 'openingMusicians' does not exist on type '{ description: string | null; location: string | null; lat: number | null; lng: number | null; city: string | null; flyerUrl: string | null; openingBand: string | null; openingInfo: string | null; openingThemes: string | null; }'.
+src/components/JamView.tsx(77,25): error TS2345: Argument of type '{ id: string; name: string; role: "USER"; image: null; }' is not assignable to parameter of type 'string'.
+src/components/JamView.tsx(115,65): error TS2322: Type 'Set<string | null | undefined>' is not assignable to type 'Set<string>'.
+  Type 'string | null | undefined' is not assignable to type 'string'.
+    Type 'undefined' is not assignable to type 'string'.
+src/components/JamView.tsx(117,62): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/MusicianAutocomplete.tsx(7,29): error TS2307: Cannot find module 'use-debounce' or its corresponding type declarations.
+src/components/MusicianAutocomplete.tsx(34,24): error TS2345: Argument of type '{ id: string; name: string | null; city: string | null; image: string | null; mainInstrument: string | null; }[]' is not assignable to parameter of type 'SetStateAction<Partial<User>[]>'.
+  Type '{ id: string; name: string | null; city: string | null; image: string | null; mainInstrument: string | null; }[]' is not assignable to type 'Partial<User>[]'.
+    Type '{ id: string; name: string | null; city: string | null; image: string | null; mainInstrument: string | null; }' is not assignable to type 'Partial<User>'.
+      Types of property 'name' are incompatible.
+        Type 'string | null' is not assignable to type 'string | undefined'.
+          Type 'null' is not assignable to type 'string | undefined'.
