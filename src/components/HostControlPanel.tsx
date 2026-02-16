@@ -311,28 +311,41 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
                             <div>
                                 <label className="block text-[10px] text-white/40 mb-2 uppercase">Músicos de Apertura</label>
                                 <div className="mb-3">
-                                    <div className="flex flex-wrap gap-2 mb-2">
-                                        {openingMusicians.map(m => (
-                                            <div key={m.userId} className="flex items-center gap-2 bg-white/10 rounded-full pl-1 pr-3 py-1 border border-white/10">
-                                                <div className="w-6 h-6 rounded-full bg-white/20 overflow-hidden">
+                                    <div className="flex flex-col gap-2 mb-3">
+                                        {openingMusicians.map((m, idx) => (
+                                            <div key={m.userId} className="flex items-center gap-3 bg-white/5 rounded-xl p-2 border border-white/5">
+                                                <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden shrink-0">
                                                     {m.image ? (
                                                         <img src={m.image} alt={m.name} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-[10px]">👤</div>
                                                     )}
                                                 </div>
-                                                <span className="text-sm text-white">{m.name}</span>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm text-white font-medium truncate">{m.name}</div>
+                                                    <input
+                                                        type="text"
+                                                        value={m.mainInstrument || ''}
+                                                        onChange={(e) => {
+                                                            const newMusicians = [...openingMusicians];
+                                                            newMusicians[idx] = { ...newMusicians[idx], mainInstrument: e.target.value };
+                                                            setOpeningMusicians(newMusicians);
+                                                        }}
+                                                        placeholder="Instrumento (ej. Saxo)"
+                                                        className="bg-transparent text-[11px] text-jazz-gold placeholder:text-white/20 w-full focus:outline-none focus:border-b focus:border-jazz-gold/50"
+                                                    />
+                                                </div>
                                                 <button
                                                     onClick={() => handleRemoveMusician(m.userId)}
-                                                    className="w-4 h-4 rounded-full bg-white/10 hover:bg-red-500/50 flex items-center justify-center transition-colors ml-1"
+                                                    className="w-6 h-6 rounded-full bg-white/5 hover:bg-red-500/20 text-white/40 hover:text-red-400 flex items-center justify-center transition-colors"
                                                 >
-                                                    <X size={10} />
+                                                    <X size={14} />
                                                 </button>
                                             </div>
                                         ))}
                                     </div>
                                     <MusicianAutocomplete
-                                        onSelect={handleAddMusician}
+                                        onSelect={(m) => handleAddMusician({ ...m, mainInstrument: m.mainInstrument || 'Invitado' } as any)}
                                         placeholder="Buscar y agregar músico..."
                                         existingMusicians={openingMusicians.map(m => m.userId)}
                                     />
@@ -341,35 +354,53 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
                                     <div className="mt-2 flex gap-2">
                                         <input
                                             type="text"
-                                            placeholder="O agregar nombre manualmente"
+                                            placeholder="Nombre (Manual)"
+                                            className="flex-[2] bg-white/5 border border-white/10 rounded-xl p-2 text-sm text-white focus:outline-none focus:border-jazz-gold"
+                                            id="manual-name-input"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Instrumento"
                                             className="flex-1 bg-white/5 border border-white/10 rounded-xl p-2 text-sm text-white focus:outline-none focus:border-jazz-gold"
+                                            id="manual-instrument-input"
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter') {
-                                                    const val = (e.target as HTMLInputElement).value.trim();
-                                                    if (val) {
+                                                    const nameInput = document.getElementById('manual-name-input') as HTMLInputElement;
+                                                    const instrumentInput = e.currentTarget;
+                                                    const name = nameInput.value.trim();
+                                                    const instrument = instrumentInput.value.trim() || 'Invitado';
+
+                                                    if (name) {
                                                         handleAddMusician({
                                                             userId: `manual-${Date.now()}`,
-                                                            name: val,
+                                                            name: name,
                                                             image: null,
-                                                            mainInstrument: 'Invitado'
+                                                            mainInstrument: instrument
                                                         } as any);
-                                                        (e.target as HTMLInputElement).value = '';
+                                                        nameInput.value = '';
+                                                        instrumentInput.value = '';
+                                                        nameInput.focus();
                                                     }
                                                 }
                                             }}
                                         />
                                         <button
-                                            onClick={(e) => {
-                                                const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                                                const val = input.value.trim();
-                                                if (val) {
+                                            onClick={() => {
+                                                const nameInput = document.getElementById('manual-name-input') as HTMLInputElement;
+                                                const instrumentInput = document.getElementById('manual-instrument-input') as HTMLInputElement;
+                                                const name = nameInput.value.trim();
+                                                const instrument = instrumentInput.value.trim() || 'Invitado';
+
+                                                if (name) {
                                                     handleAddMusician({
                                                         userId: `manual-${Date.now()}`,
-                                                        name: val,
+                                                        name: name,
                                                         image: null,
-                                                        mainInstrument: 'Invitado'
+                                                        mainInstrument: instrument
                                                     } as any);
-                                                    input.value = '';
+                                                    nameInput.value = '';
+                                                    instrumentInput.value = '';
+                                                    nameInput.focus();
                                                 }
                                             }}
                                             className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 rounded-xl transition-colors"
