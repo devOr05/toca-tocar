@@ -224,7 +224,9 @@ export async function updateJamOpening(jamId: string, openingBand: string, openi
     try {
         const jam = await prisma.jam.findUnique({ where: { id: jamId } });
         if (!jam) return { success: false, error: 'Jam no encontrada' };
-        if (jam.hostId !== session.user.id) return { success: false, error: 'No autorizado' };
+
+        const isAdmin = session.user.role === 'ADMIN' || session.user.email?.toLowerCase() === 'orostizagamario@gmail.com';
+        if (jam.hostId !== session.user.id && !isAdmin) return { success: false, error: 'No autorizado' };
 
         await prisma.jam.update({
             where: { id: jamId },
@@ -410,7 +412,8 @@ export async function updateThemeStatus(themeId: string, status: string) {
             include: { jam: true }
         });
 
-        if (!theme || (theme.jam.hostId !== session.user.id && theme.proposedById !== session.user.id)) {
+        const isAdmin = session.user.role === 'ADMIN' || session.user.email?.toLowerCase() === 'orostizagamario@gmail.com';
+        if (!theme || (theme.jam.hostId !== session.user.id && theme.proposedById !== session.user.id && !isAdmin)) {
             return { success: false, error: 'No autorizado' };
         }
 
@@ -437,7 +440,8 @@ export async function reorderThemes(jamId: string, themes: { id: string; order: 
 
     try {
         const jam = await prisma.jam.findUnique({ where: { id: jamId } });
-        if (!jam || jam.hostId !== session.user.id) {
+        const isAdmin = session.user.role === 'ADMIN' || session.user.email?.toLowerCase() === 'orostizagamario@gmail.com';
+        if (!jam || (jam.hostId !== session.user.id && !isAdmin)) {
             return { success: false, error: 'No autorizado' };
         }
 
