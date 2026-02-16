@@ -134,7 +134,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const isHost = currentUser?.id === initialJam.hostId || isSuperAdmin;
 
     return (
-        <div className="min-h-screen bg-black pb-20 lg:pb-0 font-sans flex flex-col relative">
+        <div className="min-h-screen bg-black pb-24 lg:pb-32 font-sans flex flex-col relative">
 
             {/* HEADER */}
             <header className="sticky top-0 z-50 bg-jazz-surface/80 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center justify-between shrink-0 shadow-lg transition-all">
@@ -342,19 +342,21 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
                 </main>
 
-                {/* RIGHT: CHAT */}
-                <aside className="w-80 bg-jazz-surface/60 backdrop-blur-md border-l border-white/5 flex flex-col">
-                    <div className="flex-1 flex flex-col min-h-0">
-                        {currentUser ? (
-                            <JamChat
-                                jamId={initialJam.id}
-                                currentUser={currentUser}
-                                hostId={initialJam.hostId}
-                                users={uniqueMusicians}
-                            />
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-white/20">Login to Chat</div>
-                        )}
+                {/* RIGHT SIDEBAR: CHAT */}
+                <aside className="hidden xl:flex w-[350px] bg-jazz-surface/40 border-l border-white/5 flex-col">
+                    <div className="p-4 border-b border-white/5 bg-black/20 shrink-0">
+                        <h3 className="text-[10px] font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
+                            <MessageSquare size={14} /> Chat de la Jam
+                        </h3>
+                    </div>
+                    <div className="flex-1 min-h-0">
+                        <JamChat
+                            jamId={initialJam.id}
+                            currentUser={currentUser}
+                            hostId={initialJam.hostId}
+                            users={uniqueMusicians}
+                            title=""
+                        />
                     </div>
                 </aside>
             </div >
@@ -528,31 +530,23 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 )}
             </div>
 
-            {/* STICKY MOBILE CHAT */}
+            {/* MOBILE ONLY STICKY CHAT */}
             {currentUser && (
-                <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-[60] transition-all duration-300 ${isChatExpanded ? 'h-[60vh]' : 'h-[64px]'} bg-jazz-surface border-t border-white/20 shadow-[-20px_0_40px_rgba(0,0,0,0.4)] flex flex-col`}>
-                    <button
-                        onClick={() => setIsChatExpanded(!isChatExpanded)}
-                        className="h-[64px] shrink-0 w-full px-4 flex items-center justify-between border-b border-white/5 bg-black/20"
-                    >
+                <div className="fixed bottom-0 left-0 right-0 z-[120] bg-jazz-surface border-t border-white/20 shadow-[0_-10px_40px_rgba(0,0,0,0.6)] flex flex-col h-[74px] sm:h-auto max-h-[40vh] transition-all lg:hidden">
+                    <div className="h-[48px] sm:h-auto shrink-0 w-full px-4 flex items-center justify-between bg-black/40 border-b border-white/5 sm:hidden">
                         <div className="flex items-center gap-2">
-                            <MessageSquare size={18} className="text-jazz-gold" />
-                            <span className="text-xs font-bold text-white uppercase tracking-wider">Chat de la Jam</span>
+                            <MessageSquare size={16} className="text-jazz-gold" />
+                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">Chat en vivo</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                            {/* Mini message preview could go here */}
-                            <div className={`p-1.5 rounded-full bg-white/5 transition-transform ${isChatExpanded ? 'rotate-180' : ''}`}>
-                                <Plus size={16} className={isChatExpanded ? 'rotate-45' : ''} />
-                            </div>
-                        </div>
-                    </button>
+                    </div>
 
-                    <div className="flex-1 overflow-hidden">
+                    <div className="h-[74px] sm:h-[80px]">
                         <JamChat
                             jamId={initialJam.id}
                             currentUser={currentUser}
                             hostId={initialJam.hostId}
                             users={uniqueMusicians}
+                            title=""
                         />
                     </div>
                 </div>

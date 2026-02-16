@@ -606,6 +606,29 @@ export async function joinTheme(themeId: string, instrument: string) {
             include: { theme: true }
         });
 
+        // AUTO-CHECKIN: If the user is joining a theme, they are clearly at the jam.
+        // We check them in to the JamAttendance list if not already there.
+        try {
+            await prisma.jamAttendance.upsert({
+                where: {
+                    userId_jamId: {
+                        userId: session.user.id,
+                        jamId: participation.theme.jamId
+                    }
+                },
+                update: {
+                    instrument: instrument // Update current instrument preference
+                },
+                create: {
+                    userId: session.user.id,
+                    jamId: participation.theme.jamId,
+                    instrument: instrument
+                }
+            });
+        } catch (checkInErr) {
+            console.error('Auto-checkin failed (joinTheme):', checkInErr);
+        }
+
         // Trigger update
         try {
             await pusherServer.trigger(`jam-${participation.theme.jamId}`, 'update-jam', {});

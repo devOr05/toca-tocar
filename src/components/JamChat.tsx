@@ -161,8 +161,8 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                 </div>
             )}
 
-            {!isCommentMode && (
-                <div className="p-3 bg-white/5 border-b border-white/5 flex items-center gap-2">
+            {title && (
+                <div className="p-3 bg-white/5 border-b border-white/5 flex items-center gap-2 shrink-0">
                     <MessageSquare size={16} className="text-jazz-gold" />
                     <h3 className="font-bold text-sm text-white">{title}</h3>
                 </div>

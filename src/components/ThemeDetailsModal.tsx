@@ -14,8 +14,8 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-[#121212] border border-white/10 rounded-2xl w-full max-w-md h-[80vh] flex flex-col overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto" onClick={onClose}>
+            <div className="bg-[#121212] border border-white/10 rounded-2xl w-full max-w-md h-auto max-h-[85vh] my-8 flex flex-col overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200 mb-24" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
                 <div className="p-6 pb-4 border-b border-white/5 shrink-0">
@@ -107,7 +107,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                             {theme.type === 'TOPIC' ? 'Comentarios' : 'Chat del Tema'}
                         </h3>
                         {currentUser ? (
-                            <div className="h-[300px]">
+                            <div className="h-[250px] min-h-[250px] shrink-0">
                                 <JamChat
                                     jamId={theme.jamId}
                                     currentUser={currentUser}
@@ -123,7 +123,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                 </div>
 
                 <div className="p-4 border-t border-white/5 shrink-0 bg-[#0a0a0a] flex gap-3">
-                    {(isHost || (currentUser && theme.proposedById === currentUser.id)) && theme.status !== 'QUEUED' && (
+                    {(isHost || (currentUser && theme.proposedById === currentUser.id)) && theme.status !== 'QUEUED' && theme.type !== 'TOPIC' && (
                         <button
                             onClick={async () => {
                                 const { updateThemeStatus } = await import('@/app/actions');
