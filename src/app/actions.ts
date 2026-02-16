@@ -901,14 +901,19 @@ export async function checkInToJam(jamId: string, instrument: string) {
             }
         });
 
-        const { pusherServer } = await import('@/lib/pusher-server');
-        await pusherServer.trigger(`jam-${jamId}`, 'update-jam', {});
+        try {
+            const { pusherServer } = await import('@/lib/pusher-server');
+            await pusherServer.trigger(`jam-${jamId}`, 'update-jam', {});
+            revalidatePath(`/jam/${jamId}`);
+        } catch (triggerError) {
+            console.error('Pusher/Revalidate failed (checkInToJam), but DB succeeded:', triggerError);
+            // We still return true because the user IS in the DB
+        }
 
-        revalidatePath(`/jam/${jamId}`);
         return { success: true };
     } catch (error) {
         console.error('Error checking in:', error);
-        return { success: false, error: 'Failed to check in' };
+        return { success: false, error: 'Hubo un error al marcar disponibilidad. Intenta nuevamente.' };
     }
 }
 

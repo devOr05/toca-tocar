@@ -17,10 +17,10 @@ interface ThemeCardProps {
     isHost: boolean;
     onJoin: (instrument: string) => void;
     onLeave: () => void;
+    onShowDetails: () => void;
 }
 
-export default function ThemeCard({ theme, participations, currentUser, isHost, onJoin, onLeave }: ThemeCardProps) {
-    const [showDetails, setShowDetails] = useState(false);
+export default function ThemeCard({ theme, participations, currentUser, isHost, onJoin, onLeave, onShowDetails }: ThemeCardProps) {
     const [showEdit, setShowEdit] = useState(false);
     const { removeTheme, addTheme } = useJamStore();
 
@@ -49,7 +49,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                         <h3 className="font-bold text-lg text-white leading-tight truncate">{theme.name}</h3>
                         {hasInfo && theme.type !== 'TOPIC' && (
                             <button
-                                onClick={() => setShowDetails(true)}
+                                onClick={onShowDetails}
                                 className="text-jazz-gold hover:text-white transition-colors"
                                 title="Ver información del tema"
                             >
@@ -102,7 +102,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                 <div className="mb-4">
                     {/* 1. If it's an image (jpg/png) or a Cloudinary PDF we can convert */}
                     {(theme.sheetMusicUrl.match(/\.(jpg|jpeg|png|webp)$/i) || (theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf'))) ? (
-                        <div className="relative group cursor-pointer overflow-hidden rounded-lg border border-white/10" onClick={() => setShowDetails(true)}>
+                        <div className="relative group cursor-pointer overflow-hidden rounded-lg border border-white/10" onClick={onShowDetails}>
                             <img
                                 src={theme.sheetMusicUrl.endsWith('.pdf') ? theme.sheetMusicUrl.replace('.pdf', '.jpg') : theme.sheetMusicUrl}
                                 alt="Partitura Preview"
@@ -165,7 +165,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                         <div className="flex gap-2">
                             {/* Direct Chat Button for Songs */}
                             <button
-                                onClick={() => setShowDetails(true)}
+                                onClick={onShowDetails}
                                 className={`py-2.5 px-4 bg-jazz-accent/10 hover:bg-jazz-accent/20 text-jazz-accent rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2 ${myParticipation ? 'w-full' : 'w-full'}`}
                                 title="Abrir Chat"
                             >
@@ -181,7 +181,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
             {
                 theme.type === 'TOPIC' && (
                     <button
-                        onClick={() => setShowDetails(true)}
+                        onClick={onShowDetails}
                         className="w-full py-2.5 bg-jazz-accent/10 hover:bg-jazz-accent/40 text-jazz-accent text-sm font-bold rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2"
                     >
                         <MessageSquare size={16} />
@@ -190,13 +190,6 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                 )
             }
 
-            <ThemeDetailsModal
-                isOpen={showDetails}
-                onClose={() => setShowDetails(false)}
-                theme={theme}
-                currentUser={currentUser}
-                isHost={isHost}
-            />
 
             <EditThemeModal
                 isOpen={showEdit}

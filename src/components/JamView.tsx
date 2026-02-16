@@ -106,22 +106,27 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     }, [initialJam, initialThemes, initialParticipations, setJamState, initialUser, currentUser, setUser, setAuthenticatedUser, router]);
 
     // Filter unique users for musician list
-    // Include Host and Current User even if they haven't joined a theme yet
+    // Include Host, Attendance list, Participants and Current User
     const allMusicianIds = Array.from(new Set([
         initialJam.hostId,
+        ...(initialJam.attendance || []).map(a => a.userId),
         ...participations.map(p => p.userId),
         ...(currentUser?.id ? [currentUser.id] : [])
     ]));
 
     const uniqueMusicians = allMusicianIds.map(id => {
-        // 1. Try from participations (has instrument info)
+        // 1. Try from attendance (often has user data)
+        const fromAttendance = (initialJam as any).attendance?.find((a: any) => a.userId === id)?.user;
+        if (fromAttendance) return fromAttendance;
+
+        // 2. Try from participations (has instrument info)
         const fromParticipations = participations.find(p => p.userId === id)?.user;
         if (fromParticipations) return fromParticipations;
 
-        // 2. Try from initial jam host data
+        // 3. Try from initial jam host data
         if (id === initialJam.hostId && (initialJam as any).host) return (initialJam as any).host;
 
-        // 3. Try current user
+        // 4. Try current user
         if (currentUser && id === currentUser.id) return currentUser;
 
         return null;

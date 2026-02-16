@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import ThemeCard from './ThemeCard';
+import ThemeDetailsModal from './ThemeDetailsModal';
 import { useJamStore } from '../store/jamStore';
 
 interface ThemeListProps {
@@ -9,6 +11,9 @@ interface ThemeListProps {
 
 export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
     const { themes, participations, currentUser, jam, joinTheme, leaveTheme } = useJamStore();
+    const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
+
+    const selectedTheme = themes.find(t => t.id === selectedThemeId);
 
     const filteredThemes = themes.filter(t => (t.type || 'SONG') === type);
 
@@ -41,6 +46,7 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
                                 isHost={isHost}
                                 onJoin={(inst) => joinTheme(theme.id, inst)}
                                 onLeave={() => leaveTheme(theme.id)}
+                                onShowDetails={() => setSelectedThemeId(theme.id)}
                             />
                         ))}
                     </div>
@@ -63,6 +69,7 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
                                 isHost={isHost}
                                 onJoin={(inst) => joinTheme(theme.id, inst)}
                                 onLeave={() => leaveTheme(theme.id)}
+                                onShowDetails={() => setSelectedThemeId(theme.id)}
                             />
                         ))}
                     </div>
@@ -85,6 +92,7 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
                                 isHost={isHost}
                                 onJoin={(inst) => joinTheme(theme.id, inst)}
                                 onLeave={() => leaveTheme(theme.id)}
+                                onShowDetails={() => setSelectedThemeId(theme.id)}
                             />
                         ))
                         : open.map(theme => (
@@ -96,11 +104,22 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
                                 isHost={isHost}
                                 onJoin={(inst) => joinTheme(theme.id, inst)}
                                 onLeave={() => leaveTheme(theme.id)}
+                                onShowDetails={() => setSelectedThemeId(theme.id)}
                             />
                         ))
                     }
                 </div>
             </section>
+
+            {selectedTheme && (
+                <ThemeDetailsModal
+                    isOpen={!!selectedTheme}
+                    onClose={() => setSelectedThemeId(null)}
+                    theme={selectedTheme}
+                    currentUser={currentUser}
+                    isHost={isHost}
+                />
+            )}
         </div>
     );
 }
