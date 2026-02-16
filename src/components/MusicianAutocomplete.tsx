@@ -7,7 +7,7 @@ import { User } from '@/types';
 import { useDebounce } from 'use-debounce';
 
 interface MusicianAutocompleteProps {
-    onSelect: (musician: { userId: string; name: string; image?: string | null }) => void;
+    onSelect: (musician: { userId: string; name: string; image?: string | null; mainInstrument?: string }) => void;
     placeholder?: string;
     existingMusicians?: string[]; // IDs to exclude
 }
@@ -66,7 +66,8 @@ export default function MusicianAutocomplete({ onSelect, placeholder = 'Buscar m
         onSelect({
             userId: user.id,
             name: user.name,
-            image: user.image || null
+            image: user.image || null,
+            mainInstrument: user.mainInstrument || undefined
         });
         setQuery('');
         setResults([]);
