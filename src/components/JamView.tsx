@@ -350,13 +350,15 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         </h3>
                     </div>
                     <div className="flex-1 min-h-0">
-                        <JamChat
-                            jamId={initialJam.id}
-                            currentUser={currentUser}
-                            hostId={initialJam.hostId}
-                            users={uniqueMusicians}
-                            title=""
-                        />
+                        {currentUser && (
+                            <JamChat
+                                jamId={initialJam.id}
+                                currentUser={currentUser}
+                                hostId={initialJam.hostId}
+                                users={uniqueMusicians}
+                                title=""
+                            />
+                        )}
                     </div>
                 </aside>
             </div >
@@ -541,13 +543,15 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                     </div>
 
                     <div className="h-[74px] sm:h-[80px]">
-                        <JamChat
-                            jamId={initialJam.id}
-                            currentUser={currentUser}
-                            hostId={initialJam.hostId}
-                            users={uniqueMusicians}
-                            title=""
-                        />
+                        {currentUser && (
+                            <JamChat
+                                jamId={initialJam.id}
+                                currentUser={currentUser}
+                                hostId={initialJam.hostId}
+                                users={uniqueMusicians}
+                                title=""
+                            />
+                        )}
                     </div>
                 </div>
             )}
