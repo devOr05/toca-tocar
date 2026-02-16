@@ -66,31 +66,7 @@ export async function deleteJam(jamCode: string) {
 
 // Join theme action
 export async function joinThemeAction(themeId: string, instrument: string) {
-    const session = await auth();
-    if (!session?.user?.id) {
-        return { success: false, error: 'No autenticado' };
-    }
-
-    try {
-        await prisma.participation.create({
-            data: {
-                themeId,
-                userId: session.user.id,
-                instrument,
-            },
-        });
-
-        // Trigger update
-        const theme = await prisma.theme.findUnique({ where: { id: themeId }, select: { jam: { select: { id: true } } } });
-        if (theme?.jam?.id) {
-            await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
-        }
-
-        return { success: true };
-    } catch (error) {
-        console.error('Error joining theme:', error);
-        return { success: false, error: 'Error al unirse al tema' };
-    }
+    return joinTheme(themeId, instrument);
 }
 
 // Leave theme action

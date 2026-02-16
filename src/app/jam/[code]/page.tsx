@@ -123,14 +123,20 @@ export default async function JamPage({ params }: PageProps) {
     // Fetch other musicians in the same city (if jam has city)
     let cityMusicians = [];
     if (jamData.city) {
-        // This should theoretically be a separate action/cached
+        // Robust city search: split by commas/spaces and search for any significant term
+        const cityTerms = jamData.city.split(/[\s,]+/).filter((t: string) => t.length > 2);
+
         const { prisma } = await import('@/lib/prisma');
         const usersInCity = await prisma.user.findMany({
             where: {
-                city: {
-                    contains: jamData.city,
-                    mode: 'insensitive'
-                },
+                OR: cityTerms.length > 0
+                    ? cityTerms.map((term: string) => ({
+                        city: {
+                            contains: term,
+                            mode: 'insensitive'
+                        }
+                    })) as any
+                    : [{ city: { contains: jamData.city, mode: 'insensitive' } }] as any,
                 NOT: { id: session?.user?.id } // Exclude current user
             },
             take: 20,

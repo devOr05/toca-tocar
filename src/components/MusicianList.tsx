@@ -119,46 +119,33 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                     <MapPin size={12} /> Otros en la Ciudad
                 </h3>
                 <ul className="space-y-2 opacity-60 hover:opacity-100 transition-opacity">
-                    {filteredCityMusicians.map((user) => (
-                        <li key={user.id} className="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-lg transition-colors group">
-                            <div className="w-6 h-6 rounded-full bg-white/10 overflow-hidden shrink-0 grayscale hover:grayscale-0 transition-all">
-                                {user.image ? (
-                                    <img src={user.image} alt={user.name || ''} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-[10px]">user</div>
-                                )}
-                            </div>
-                            <span className="text-xs text-white truncate flex-1">{user.name}</span>
-                            <div className="flex items-center gap-1">
-                                <button
-                                    onClick={() => toast.success(`Invitación enviada a ${user.name}`)}
-                                    className="text-jazz-gold hover:text-white p-1 text-[10px] font-bold uppercase border border-jazz-gold/30 rounded px-2 hover:bg-jazz-gold/20 transition-all"
-                                    title="Invitar a la Jam"
-                                >
-                                    Invitar
-                                </button>
-                                {/* Debugger to check what's going on */}
-                                {/* Debugger to check what's going on */}
-                                <div className="fixed bottom-0 left-0 text-[10px] text-white/5 opacity-0 hover:opacity-100 whitespace-pre">
-                                    {JSON.stringify({ role: currentUser?.role, email: currentUser?.email }, null, 2)}
+                    {filteredCityMusicians.length === 0 ? (
+                        <p className="text-[10px] text-white/20 italic p-2 border border-white/5 rounded-lg border-dashed">
+                            No hay otros músicos en {currentUser?.city || 'tu ciudad'} para invitar.
+                        </p>
+                    ) : (
+                        filteredCityMusicians.map((user) => (
+                            <li key={user.id} className="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-lg transition-colors group">
+                                <div className="w-6 h-6 rounded-full bg-white/10 overflow-hidden shrink-0 grayscale hover:grayscale-0 transition-all">
+                                    {user.image ? (
+                                        <img src={user.image} alt={user.name || ''} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-[10px]">user</div>
+                                    )}
                                 </div>
-                                {(currentUser?.role === 'ADMIN' || currentUser?.email?.toLowerCase() === 'orostizagamario@gmail.com') && (
+                                <span className="text-xs text-white truncate flex-1">{user.name}</span>
+                                <div className="flex items-center gap-1">
                                     <button
-                                        onClick={async () => {
-                                            if (confirm('¿Admin: Eliminar usuario ' + user.name + '?')) {
-                                                const { deleteUser } = await import('@/app/actions');
-                                                await deleteUser(user.id!); // user.id can be undef in partial
-                                                window.location.reload();
-                                            }
-                                        }}
-                                        className="hidden group-hover:block text-red-500 hover:text-red-400 p-1"
+                                        onClick={() => toast.success(`Invitación enviada a ${user.name}`)}
+                                        className="text-jazz-gold hover:text-white p-1 text-[10px] font-bold uppercase border border-jazz-gold/30 rounded px-2 hover:bg-jazz-gold/20 transition-all"
+                                        title="Invitar a la Jam"
                                     >
-                                        <Trash2 size={12} />
+                                        Invitar
                                     </button>
-                                )}
-                            </div>
-                        </li>
-                    ))}
+                                </div>
+                            </li>
+                        ))
+                    )}
                 </ul>
             </div>
         </div>
