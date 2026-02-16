@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { Jam, Theme } from '../types';
-import { Play, Square, CheckCircle2, ListOrdered, Settings2, Loader, Trash2, GripVertical } from 'lucide-react';
+import { Play, Square, CheckCircle2, ListOrdered, Settings2, Loader, Trash2, GripVertical, X } from 'lucide-react';
 import { updateJamOpening, updateJamStatus, updateThemeStatus, reorderThemes } from '@/app/actions';
+import MusicianAutocomplete from '@/components/MusicianAutocomplete';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import {
@@ -44,6 +45,26 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
         openingInfo: jam.openingInfo || '',
         openingThemes: jam.openingThemes || ''
     });
+
+    // Parse initial musicians
+    const [openingMusicians, setOpeningMusicians] = useState<{ userId: string; name: string; image?: string | null }[]>(() => {
+        try {
+            if (!jam.openingMusicians) return [];
+            return typeof jam.openingMusicians === 'string' ? JSON.parse(jam.openingMusicians) : jam.openingMusicians;
+        } catch (e) {
+            return [];
+        }
+    });
+
+    const handleAddMusician = (musician: { userId: string; name: string; image?: string | null }) => {
+        if (!openingMusicians.some(m => m.userId === musician.userId)) {
+            setOpeningMusicians(prev => [...prev, musician]);
+        }
+    };
+
+    const handleRemoveMusician = (userId: string) => {
+        setOpeningMusicians(prev => prev.filter(m => m.userId !== userId));
+    };
 
     // Dnd-kit sensors
     const sensors = useSensors(
@@ -97,7 +118,8 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
             jam.id,
             openingData.openingBand,
             openingData.openingInfo,
-            openingData.openingThemes
+            openingData.openingThemes,
+            openingMusicians
         );
         if (result.success) {
             setIsEditingOpening(false);
@@ -286,6 +308,78 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
                                     className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-[10px] text-white/40 mb-2 uppercase">Músicos de Apertura</label>
+                                <div className="mb-3">
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                        {openingMusicians.map(m => (
+                                            <div key={m.userId} className="flex items-center gap-2 bg-white/10 rounded-full pl-1 pr-3 py-1 border border-white/10">
+                                                <div className="w-6 h-6 rounded-full bg-white/20 overflow-hidden">
+                                                    {m.image ? (
+                                                        <img src={m.image} alt={m.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-[10px]">👤</div>
+                                                    )}
+                                                </div>
+                                                <span className="text-sm text-white">{m.name}</span>
+                                                <button
+                                                    onClick={() => handleRemoveMusician(m.userId)}
+                                                    className="w-4 h-4 rounded-full bg-white/10 hover:bg-red-500/50 flex items-center justify-center transition-colors ml-1"
+                                                >
+                                                    <X size={10} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <MusicianAutocomplete
+                                        onSelect={handleAddMusician}
+                                        placeholder="Buscar y agregar músico..."
+                                        existingMusicians={openingMusicians.map(m => m.userId)}
+                                    />
+
+                                    {/* Manual Add */}
+                                    <div className="mt-2 flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="O agregar nombre manualmente"
+                                            className="flex-1 bg-white/5 border border-white/10 rounded-xl p-2 text-sm text-white focus:outline-none focus:border-jazz-gold"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    const val = (e.target as HTMLInputElement).value.trim();
+                                                    if (val) {
+                                                        handleAddMusician({
+                                                            userId: `manual-${Date.now()}`,
+                                                            name: val,
+                                                            image: null,
+                                                            mainInstrument: 'Invitado'
+                                                        } as any);
+                                                        (e.target as HTMLInputElement).value = '';
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <button
+                                            onClick={(e) => {
+                                                const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                                                const val = input.value.trim();
+                                                if (val) {
+                                                    handleAddMusician({
+                                                        userId: `manual-${Date.now()}`,
+                                                        name: val,
+                                                        image: null,
+                                                        mainInstrument: 'Invitado'
+                                                    } as any);
+                                                    input.value = '';
+                                                }
+                                            }}
+                                            className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 rounded-xl transition-colors"
+                                        >
+                                            Agregar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <button
                                 onClick={handleSaveOpening}
                                 disabled={isLoading}

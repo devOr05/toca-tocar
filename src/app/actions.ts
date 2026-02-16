@@ -259,7 +259,7 @@ export async function getJam(code: string) {
     }
 }
 
-export async function updateJamOpening(jamId: string, openingBand: string, openingInfo: string, openingThemes: string) {
+export async function updateJamOpening(jamId: string, openingBand: string, openingInfo: string, openingThemes: string, openingMusicians: any[]) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: 'No autenticado' };
 
@@ -272,7 +272,7 @@ export async function updateJamOpening(jamId: string, openingBand: string, openi
 
         await prisma.jam.update({
             where: { id: jamId },
-            data: { openingBand, openingInfo, openingThemes }
+            data: { openingBand, openingInfo, openingThemes, openingMusicians }
         });
 
         revalidatePath(`/jam/${jam.code}`);
