@@ -28,9 +28,10 @@ export const metadata: Metadata = {
     siteName: "Toca Tocar",
     images: [
       {
-        url: "/logo.png",
+        url: "/og-image.png",
         width: 512,
         height: 512,
+        alt: "Toca Tocar - Jazz Jam Organizer",
       },
     ],
     locale: "es_ES",
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Toca Tocar | Jazz Jam Organizer",
     description: "Organiza tu jam de jazz en tiempo real.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 
