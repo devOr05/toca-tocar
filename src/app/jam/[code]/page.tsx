@@ -89,6 +89,7 @@ export default async function JamPage({ params }: PageProps) {
         openingBand: jamData.openingBand,
         openingInfo: jamData.openingInfo,
         openingThemes: jamData.openingThemes,
+        openingMusicians: jamData.openingMusicians,
         createdAt: jamData.createdAt,
         isPrivate: jamData.isPrivate,
         attendance: attendance
