@@ -47,7 +47,8 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
     });
 
     // Parse initial musicians
-    const [openingMusicians, setOpeningMusicians] = useState<{ userId: string; name: string; image?: string | null }[]>(() => {
+    // Parse initial musicians
+    const [openingMusicians, setOpeningMusicians] = useState<{ userId: string; name: string; image?: string | null; mainInstrument?: string }[]>(() => {
         try {
             if (!jam.openingMusicians) return [];
             return typeof jam.openingMusicians === 'string' ? JSON.parse(jam.openingMusicians) : jam.openingMusicians;
@@ -56,7 +57,7 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
         }
     });
 
-    const handleAddMusician = (musician: { userId: string; name: string; image?: string | null }) => {
+    const handleAddMusician = (musician: { userId: string; name: string; image?: string | null; mainInstrument?: string }) => {
         if (!openingMusicians.some(m => m.userId === musician.userId)) {
             setOpeningMusicians(prev => [...prev, musician]);
         }
