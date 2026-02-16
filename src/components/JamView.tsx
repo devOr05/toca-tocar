@@ -108,22 +108,27 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     // MERGED ATTENDANCE: Real attendance + Theme participants (including guests)
     const attendanceMap = new Map();
 
-    // 1. Add people from official attendance (with their profile instrument)
+    // 1. Add people from official attendance (ALWAYS use their current profile instrument)
     (initialJam.attendance || []).forEach(att => {
+        const profileInstrument = att.user?.mainInstrument || att.instrument || 'Varios';
         attendanceMap.set(att.userId, {
             userId: att.userId,
-            instruments: new Set([att.instrument]), // Use Set to avoid duplicates
+            instruments: new Set([profileInstrument]), // Start with profile instrument
             user: att.user
         });
     });
 
-    // 2. Add instruments from participations (accumulate, don't replace)
+    // 2. Add instruments from participations (accumulate if different from profile)
     participations.forEach(p => {
         const id = p.userId || `guest-${p.userName}`;
         if (attendanceMap.has(id)) {
-            // User already in attendance, add their theme instrument if different
+            // User already in attendance, add their theme instrument if different from profile
             const existing = attendanceMap.get(id)!;
-            existing.instruments.add(p.instrument);
+            const profileInstrument = existing.user?.mainInstrument;
+            // Only add if it's different from their profile instrument
+            if (p.instrument !== profileInstrument) {
+                existing.instruments.add(p.instrument);
+            }
         } else {
             // New user (guest or not checked in), add them
             attendanceMap.set(id, {
@@ -136,10 +141,12 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
     // 3. Ensure host is there if not already
     if (!attendanceMap.has(initialJam.hostId)) {
+        const hostUser = (initialJam as any).host;
+        const hostInstrument = hostUser?.mainInstrument || 'Anfitrión';
         attendanceMap.set(initialJam.hostId, {
             userId: initialJam.hostId,
-            instruments: new Set(['Anfitrión']),
-            user: (initialJam as any).host
+            instruments: new Set([hostInstrument]),
+            user: hostUser
         });
     }
 
