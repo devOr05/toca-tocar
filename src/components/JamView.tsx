@@ -125,9 +125,21 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         .filter(att => att.user) // Filter out entries with undefined users
         .map(att => {
             const validInstruments = Array.from(att.instruments).filter(i => i && i.trim() !== '');
-            const displayInstrument = validInstruments.length > 0
-                ? validInstruments.join(', ')
-                : (att.user?.mainInstrument || 'Músico');
+
+            // Merge with profile instrument
+            if (att.user?.mainInstrument) {
+                att.user.mainInstrument.split(',').forEach(i => {
+                    const trimmed = i.trim();
+                    if (trimmed) validInstruments.push(trimmed);
+                });
+            }
+
+            // Deduplicate
+            const uniqueInstruments = Array.from(new Set(validInstruments));
+
+            const displayInstrument = uniqueInstruments.length > 0
+                ? uniqueInstruments.join(', ')
+                : 'Músico';
 
             return {
                 userId: att.userId,
