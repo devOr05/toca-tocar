@@ -904,15 +904,14 @@ export async function sendMessage(jamId: string, content: string, themeId?: stri
                 content,
                 userId: session.user.id,
                 jamId,
-                themeId: themeId || undefined,
+                themeId: themeId || null,
             },
             include: {
-                user: true // Include user for the real-time payload
+                user: true
             }
         });
 
         // Trigger update
-        const { pusherServer } = await import('@/lib/pusher-server');
         await pusherServer.trigger(`jam-${jamId}`, 'new-message', {
             id: message.id,
             content: message.content,

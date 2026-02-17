@@ -60,21 +60,9 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
         if (initialUser) {
             setAuthenticatedUser(initialUser);
-        } else if (!currentUser) {
-            const storedName = localStorage.getItem('toca_tocar_user_name');
-            if (storedName) {
-                const guestUser = {
-                    id: `guest-${Date.now()}`,
-                    name: storedName,
-                    role: 'USER' as const,
-                    image: null
-                };
-                setAuthenticatedUser(guestUser as any);
-            }
         }
-
         setMounted(true);
-    }, [initialJam, initialThemes, initialParticipations, setJamState, initialUser, currentUser, setAuthenticatedUser]);
+    }, [initialJam, initialThemes, initialParticipations, setJamState, initialUser, setAuthenticatedUser]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
