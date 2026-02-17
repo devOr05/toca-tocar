@@ -159,7 +159,7 @@ model Participation {
   userId     String
   user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   themeId    String
-  theme      Theme  @relation(fields: [themeId], references: [id])
+  theme      Theme  @relation(fields: [themeId], references: [id], onDelete: Cascade)
   instrument String
   status     String @default("WAITING") // WAITING, SELECTED
 
@@ -176,7 +176,7 @@ model Message {
   jamId   String
   jam     Jam     @relation(fields: [jamId], references: [id], onDelete: Cascade)
   themeId String?
-  theme   Theme?  @relation(fields: [themeId], references: [id])
+  theme   Theme?  @relation(fields: [themeId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }

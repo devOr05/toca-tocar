@@ -108,9 +108,22 @@ export default function JamList({ jams, currentUserId, isAdmin = false, title = 
                                                         e.preventDefault();
                                                         e.stopPropagation();
                                                         if (confirm('¿Eliminar esta Jam?')) {
-                                                            const { deleteJam } = await import('@/app/actions');
-                                                            await deleteJam(jam.code);
-                                                            window.location.reload();
+                                                            try {
+                                                                const { deleteJam } = await import('@/app/actions');
+                                                                const { toast } = await import('react-hot-toast');
+                                                                const res = await deleteJam(jam.code);
+                                                                if (res.success) {
+                                                                    toast.success('Jam eliminada');
+                                                                    // We could use router.refresh() but if it's the dashboard it might need a re-fetch
+                                                                    window.location.reload(); 
+                                                                } else {
+                                                                    toast.error(res.error || 'Error al eliminar jam');
+                                                                }
+                                                            } catch (err) {
+                                                                console.error(err);
+                                                                const { toast } = await import('react-hot-toast');
+                                                                toast.error('Error de conexión');
+                                                            }
                                                         }
                                                     }}
                                                     className="flex items-center gap-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-red-500/20 transition-all z-20"
