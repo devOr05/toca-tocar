@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 import { JamAttendance } from '@/types';
 
 import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 
 interface MusicianListProps {
     jamId: string;
@@ -23,6 +24,7 @@ interface MusicianListProps {
 
 export default function MusicianList({ jamId, currentUser, attendance, cityMusicians, isHost, title, onMusicianClick }: MusicianListProps) {
     const [isCheckingIn, setIsCheckingIn] = useState(false);
+    const [isPending, startTransition] = useTransition();
     const router = useRouter();
 
     const isCheckedIn = currentUser && attendance.some(a => a.userId === currentUser.id);
@@ -31,13 +33,14 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
         if (!currentUser) return;
         setIsCheckingIn(true);
 
-        // Use user's profile instrument or ask (for now auto-use profile)
         const instrument = currentUser.mainInstrument || 'Varios';
 
         const result = await checkInToJam(jamId, instrument);
         if (result.success) {
             toast.success('¡Te has unido a la Jam!');
-            router.refresh(); // Force server components to re-run
+            startTransition(() => {
+                router.refresh();
+            });
         } else {
             toast.error('Error al unirse');
         }

@@ -5,6 +5,7 @@ import { Send, User as UserIcon, MessageSquare } from 'lucide-react';
 import { Message, User } from '@/types';
 import { sendMessage, getMessages } from '@/app/actions';
 import { pusherClient } from '@/lib/pusher';
+import { toast } from 'sonner';
 
 interface JamChatProps {
     jamId: string;
@@ -48,15 +49,26 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
         const channel = pusherClient.subscribe(channelName);
 
         // Listen for new messages
-        channel.bind('new-message', (data: Message) => {
+        channel.bind('new-message', (data: Message & { clientMsgId?: string }) => {
             // Filter by theme if we are in a specific theme chat
             if (themeId && data.themeId !== themeId) return;
-            if (!themeId && data.themeId) return; // Main chat shouldn't receive theme msgs if separated
+            if (!themeId && data.themeId) return;
 
             setMessages((prev) => {
-                // Prevent duplicates if optimistic update already added it
+                // 1. If we already have this real ID, ignore
                 if (prev.some(m => m.id === data.id)) return prev;
-                // Remove temporary optimistic message if it matches content/user (simple dedup)
+
+                // 2. If it's ours (has clientMsgId), find and replace the optimistic one
+                if (data.clientMsgId) {
+                    const index = prev.findIndex(m => m.id === data.clientMsgId);
+                    if (index !== -1) {
+                        const newMessages = [...prev];
+                        newMessages[index] = data; // Replace with server version
+                        return newMessages;
+                    }
+                }
+
+                // 3. Fallback: filter out by content if it's a very old optimistic one or from another tab
                 const filtered = prev.filter(m => !m.id.startsWith('temp-') || m.content !== data.content);
                 return [...filtered, data];
             });
@@ -117,10 +129,10 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim()) return;
+        if (!newMessage.trim() || isLoading) return;
 
         const content = newMessage;
-        const tempId = `temp-${Date.now()}`;
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
         // Optimistic update
         const tempMsg: Message = {
@@ -135,21 +147,22 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
 
         setMessages(prev => [...prev, tempMsg]);
         setNewMessage('');
-        // No longer using isLoading to block input, allowing faster consecutive messages
+        setIsLoading(true);
 
         try {
-            const result = await sendMessage(jamId, content, themeId);
+            const result = await sendMessage(jamId, content, themeId, tempId);
             if (!result.success) {
-                console.error('Error sending message:', result.error);
-                // Remove optimistic message if failed
+                // Only restore if we haven't received the Pusher event for it yet?
+                // Actually, if it failed, we MUST remove it.
                 setMessages(prev => prev.filter(m => m.id !== tempId));
-                setNewMessage(content); // Restore message
+                setNewMessage(content);
+                toast.error('Error al enviar mensaje');
             }
         } catch (error) {
-            console.error('Failed to send message:', error);
             setMessages(prev => prev.filter(m => m.id !== tempId));
             setNewMessage(content);
         } finally {
+            setIsLoading(false);
             setMentionQuery(null);
         }
     };

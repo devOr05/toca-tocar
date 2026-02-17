@@ -893,7 +893,7 @@ export async function updateTheme(themeId: string, formData: FormData) {
 
 import { pusherClient } from '@/lib/pusher';
 
-export async function sendMessage(jamId: string, content: string, themeId?: string) {
+export async function sendMessage(jamId: string, content: string, themeId?: string, clientMsgId?: string) {
     const session = await auth();
     if (!session?.user?.id) {
         return { success: false, error: 'No autenticado' };
@@ -913,14 +913,16 @@ export async function sendMessage(jamId: string, content: string, themeId?: stri
         });
 
         // Trigger update
+        const { pusherServer } = await import('@/lib/pusher-server');
         await pusherServer.trigger(`jam-${jamId}`, 'new-message', {
             id: message.id,
             content: message.content,
             userId: message.userId,
-            userName: message.user.name || 'Usuario', // Flatten for client
+            userName: session.user.name || 'Usuario',
             jamId: message.jamId,
             themeId: message.themeId,
             createdAt: message.createdAt,
+            clientMsgId // Pass back for deduplication
         });
 
         // ---------------------------------------------------------
