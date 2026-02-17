@@ -81,7 +81,7 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
             {/* Open / Regular */}
             <section>
                 <h2 className="text-jazz-muted text-xs font-bold uppercase tracking-widest mb-3">
-                    {type === 'TOPIC' ? 'Discusiones Abiertas' : 'Temas Abiertos'}
+                    {type === 'TOPIC' ? '' : 'Temas Abiertos'}
                 </h2>
                 <div className="grid gap-4">
                     {type === 'TOPIC'
