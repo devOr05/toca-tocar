@@ -15,7 +15,6 @@ import MusicianList from './MusicianList';
 import MediaGallery from './MediaGallery';
 import MediaUploadButton from './MediaUploadButton';
 import HostControlPanel from './HostControlPanel';
-import MusicianProfileModal from './MusicianProfileModal';
 
 interface JamViewProps {
     initialJam: Jam;
@@ -495,11 +494,6 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 type={createType}
             />
 
-            <MusicianProfileModal
-                userId={selectedMusicianId!}
-                isOpen={!!selectedMusicianId}
-                onClose={() => setSelectedMusicianId(null)}
-            />
         </div>
     );
 }
