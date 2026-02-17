@@ -1078,26 +1078,31 @@ export async function sendDirectMessage(receiverId: string, content: string) {
             }
         });
 
-        // Trigger Real-time Pusher event
-        const { pusherServer } = await import('@/lib/pusher-server');
-        await pusherServer.trigger(`user-${receiverId}`, 'new-dm', {
-            id: message.id,
-            content: message.content,
-            senderId: message.senderId,
-            senderName: message.sender.name,
-            senderImage: message.sender.image,
-            createdAt: message.createdAt
-        });
+        // SECONDARY LOGIC (Don't let it crash the main response)
+        try {
+            // Trigger Real-time Pusher event
+            const { pusherServer } = await import('@/lib/pusher-server');
+            await pusherServer.trigger(`user-${receiverId}`, 'new-dm', {
+                id: message.id,
+                content: message.content,
+                senderId: message.senderId,
+                senderName: message.sender.name,
+                senderImage: message.sender.image,
+                createdAt: message.createdAt
+            });
 
-        // Create Notification for the receiver
-        const { createNotification } = await import('@/lib/notifications');
-        await createNotification(
-            receiverId,
-            'MENTION',
-            `${session.user.name} te ha enviado un mensaje privado`,
-            `/dashboard?chat=${session.user.id}`, // Placeholder or specific link
-            session.user.id
-        );
+            // Create Notification for the receiver
+            const { createNotification } = await import('@/lib/notifications');
+            await createNotification(
+                receiverId,
+                'MENTION',
+                `${session.user.name} te ha enviado un mensaje privado`,
+                `/dashboard?chat=${session.user.id}`, // Placeholder or specific link
+                session.user.id
+            );
+        } catch (pusherError) {
+            console.error('Secondary logic error (DM):', pusherError);
+        }
 
         return { success: true, message };
     } catch (error) {
