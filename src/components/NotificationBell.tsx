@@ -25,6 +25,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [showBadge, setShowBadge] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -32,7 +33,9 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
         const fetchNotifications = async () => {
             const data = await getNotifications();
             setNotifications(data as any);
-            setUnreadCount(data.filter(n => !n.read).length);
+            const initialUnread = data.filter(n => !n.read).length;
+            setUnreadCount(initialUnread);
+            if (initialUnread > 0) setShowBadge(true);
         };
         fetchNotifications();
 
@@ -49,6 +52,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
             setNotifications((prev) => [newNotification, ...prev]);
             if (!newNotification.read) {
                 setUnreadCount((prev) => prev + 1);
+                setShowBadge(true);
             }
         });
 
@@ -56,6 +60,13 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
             pusherClient.unsubscribe(channelName);
         };
     }, [userId]);
+
+    const handleBellClick = () => {
+        setIsOpen(!isOpen);
+        if (!isOpen) {
+            setShowBadge(false);
+        }
+    };
 
     const handleNotificationClick = async (notification: Notification) => {
         // Mark as read (optimistic)
@@ -74,11 +85,11 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
     return (
         <div className="relative">
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={handleBellClick}
                 className="relative p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
             >
                 <Bell size={20} />
-                {unreadCount > 0 && (
+                {showBadge && unreadCount > 0 && (
                     <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-black animate-pulse">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
