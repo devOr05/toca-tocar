@@ -297,7 +297,12 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                                                             <div className="w-full h-full flex items-center justify-center text-xs">👤</div>
                                                                         )}
                                                                     </div>
-                                                                    <span className="text-sm text-white font-medium group-hover:text-jazz-gold transition-colors">{m.name}</span>
+                                                                    <div className="flex flex-col items-start leading-tight">
+                                                                        <span className="text-sm text-white font-medium group-hover:text-jazz-gold transition-colors line-clamp-1">{m.name}</span>
+                                                                        {m.mainInstrument && (
+                                                                            <span className="text-[10px] text-jazz-gold font-bold uppercase tracking-tighter opacity-80">{m.mainInstrument}</span>
+                                                                        )}
+                                                                    </div>
                                                                 </button>
                                                             ))}
                                                         </div>

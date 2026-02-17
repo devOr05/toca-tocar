@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { pusherClient } from '@/lib/pusher';
 import { useRouter } from 'next/navigation';
+import { getNotifications, markNotificationsRead, markSingleNotificationRead } from '@/app/actions';
 
 interface Notification {
     id: string;
@@ -27,6 +28,14 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
     const router = useRouter();
 
     useEffect(() => {
+        // Fetch initial notifications
+        const fetchNotifications = async () => {
+            const data = await getNotifications();
+            setNotifications(data as any);
+            setUnreadCount(data.filter(n => !n.read).length);
+        };
+        fetchNotifications();
+
         // Subscribe to user's private channel
         const channelName = `user-${userId}`;
         const channel = pusherClient.subscribe(channelName);
@@ -48,12 +57,12 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
         };
     }, [userId]);
 
-    const handleNotificationClick = (notification: Notification) => {
+    const handleNotificationClick = async (notification: Notification) => {
         // Mark as read (optimistic)
         if (!notification.read) {
             setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, read: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
-            // TODO: Call API to mark as read in DB
+            await markSingleNotificationRead(notification.id);
         }
 
         if (notification.link) {
@@ -82,9 +91,10 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                         <h3 className="text-xs font-bold text-white uppercase tracking-wider">Notificaciones</h3>
                         {unreadCount > 0 && (
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
                                     setUnreadCount(0);
+                                    await markNotificationsRead();
                                 }}
                                 className="text-[10px] text-jazz-gold hover:underline"
                             >

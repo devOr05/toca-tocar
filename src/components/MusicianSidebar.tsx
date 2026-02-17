@@ -1,9 +1,12 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Trash2, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import DMChatModal from './DMChatModal';
 
 export default function MusicianSidebar({ musicians, currentUser, userCity }: { musicians: any[], currentUser: any, userCity: string }) {
+    const [selectedMusician, setSelectedMusician] = useState<any>(null);
 
     // Hardcoded Super Admin check
     const isSuperAdmin = currentUser?.email?.toLowerCase() === 'orostizagamario@gmail.com' || currentUser?.role === 'ADMIN';
@@ -50,21 +53,44 @@ export default function MusicianSidebar({ musicians, currentUser, userCity }: { 
                                 </div>
                             </div>
 
-                            {/* Admin Actions */}
-                            {isSuperAdmin && (
-                                <button
-                                    onClick={() => handleDelete(musician.id, musician.name)}
-                                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                    title="Eliminar usuario"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            )}
+                            <div className="flex gap-1">
+                                {/* Message Action */}
+                                {currentUser && currentUser.id !== musician.id && (
+                                    <button
+                                        onClick={() => setSelectedMusician(musician)}
+                                        className="p-2 text-jazz-gold hover:bg-jazz-gold/10 rounded-lg transition-colors"
+                                        title="Enviar mensaje directo"
+                                    >
+                                        <MessageSquare size={16} />
+                                    </button>
+                                )}
+
+                                {/* Admin Actions */}
+                                {isSuperAdmin && (
+                                    <button
+                                        onClick={() => handleDelete(musician.id, musician.name)}
+                                        className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                        title="Eliminar usuario"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                )}
+                            </div>
                         </li>
                     ))}
                 </ul>
             ) : (
                 <p className="text-white/30 text-sm italic">No hay músicos en tu zona aún.</p>
+            )}
+
+            {/* Chat Modal */}
+            {selectedMusician && (
+                <DMChatModal
+                    isOpen={!!selectedMusician}
+                    onClose={() => setSelectedMusician(null)}
+                    currentUser={currentUser}
+                    receiver={selectedMusician}
+                />
             )}
         </div>
     );

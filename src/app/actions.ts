@@ -275,6 +275,20 @@ export async function updateJamOpening(jamId: string, openingBand: string, openi
             data: { openingBand, openingInfo, openingThemes, openingMusicians }
         });
 
+        // Notify new registered musicians added to opening
+        const { createNotification } = await import('@/lib/notifications');
+        for (const m of openingMusicians) {
+            if (m.userId && !m.userId.startsWith('manual-')) {
+                await createNotification(
+                    m.userId,
+                    'JAM_INVITE',
+                    `Has sido invitado a tocar en la apertura de: ${jam.name}`,
+                    `/jam/${jam.code}`,
+                    session.user.id
+                );
+            }
+        }
+
         revalidatePath(`/jam/${jam.code}`);
         return { success: true };
     } catch (error) {
@@ -987,14 +1001,39 @@ export async function sendDirectMessage(receiverId: string, content: string) {
     }
 
     try {
-        await prisma.directMessage.create({
+        const message = await prisma.directMessage.create({
             data: {
                 content,
                 senderId: session.user.id,
                 receiverId,
             },
+            include: {
+                sender: { select: { name: true, image: true } }
+            }
         });
-        return { success: true };
+
+        // Trigger Real-time Pusher event
+        const { pusherServer } = await import('@/lib/pusher-server');
+        await pusherServer.trigger(`user-${receiverId}`, 'new-dm', {
+            id: message.id,
+            content: message.content,
+            senderId: message.senderId,
+            senderName: message.sender.name,
+            senderImage: message.sender.image,
+            createdAt: message.createdAt
+        });
+
+        // Create Notification for the receiver
+        const { createNotification } = await import('@/lib/notifications');
+        await createNotification(
+            receiverId,
+            'MENTION',
+            `${session.user.name} te ha enviado un mensaje privado`,
+            `/dashboard?chat=${session.user.id}`, // Placeholder or specific link
+            session.user.id
+        );
+
+        return { success: true, message };
     } catch (error) {
         console.error('Error sending DM:', error);
         return { success: false, error: 'Error al enviar el mensaje' };
@@ -1539,5 +1578,67 @@ export async function getMusicianProfile(userId: string) {
     } catch (error) {
         console.error('Error fetching profile:', error);
         return { success: false, error: 'Error al obtener perfil' };
+    }
+}
+
+export async function getNotifications() {
+    const session = await auth();
+    if (!session?.user?.id) return [];
+
+    try {
+        const notifications = await prisma.notification.findMany({
+            where: { userId: session.user.id },
+            orderBy: { createdAt: 'desc' },
+            take: 20,
+            include: {
+                actor: { select: { name: true, image: true } }
+            }
+        });
+
+        return notifications.map(n => ({
+            id: n.id,
+            message: n.message,
+            link: n.link,
+            read: n.read,
+            createdAt: n.createdAt,
+            type: n.type,
+            actorName: n.actor?.name,
+            actorImage: n.actor?.image
+        }));
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        return [];
+    }
+}
+
+export async function markNotificationsRead() {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false };
+
+    try {
+        await prisma.notification.updateMany({
+            where: { userId: session.user.id, read: false },
+            data: { read: true }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error marking notifications as read:', error);
+        return { success: false };
+    }
+}
+
+export async function markSingleNotificationRead(id: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false };
+
+    try {
+        await prisma.notification.update({
+            where: { id, userId: session.user.id },
+            data: { read: true }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        return { success: false };
     }
 }

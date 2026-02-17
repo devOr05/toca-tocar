@@ -98,13 +98,13 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                     )}
 
                     {/* Chat Section */}
-                    <div className="pt-4 border-t border-white/5 flex flex-col h-full min-h-[400px]">
+                    <div className="pt-4 border-t border-white/5 flex flex-col h-[450px]">
                         <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2 uppercase tracking-wider">
                             <MessageSquare size={14} className="text-jazz-gold" />
                             {theme.type === 'TOPIC' ? 'Comentarios' : 'Chat del Tema'}
                         </h3>
                         {currentUser ? (
-                            <div className="flex-1 min-h-0 bg-black/20 rounded-xl overflow-hidden border border-white/5">
+                            <div className="h-full bg-black/20 rounded-xl overflow-hidden border border-white/5">
                                 <JamChat
                                     jamId={theme.jamId}
                                     currentUser={currentUser}
