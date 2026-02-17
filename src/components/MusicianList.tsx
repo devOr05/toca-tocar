@@ -105,8 +105,7 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                         {attendance.map((att) => (
                             <div
                                 key={att.userId}
-                                onClick={() => onMusicianClick?.(att.userId)}
-                                className={`flex items-center gap-3 p-2 bg-white/5 rounded-xl border border-white/5 ${onMusicianClick ? 'cursor-pointer hover:bg-white/10 active:scale-[0.98] transition-all' : ''}`}
+                                className={`flex items-center gap-3 p-2 bg-white/5 rounded-xl border border-white/5 transition-all`}
                             >
                                 <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden shrink-0">
                                     {att.user.image ? (
