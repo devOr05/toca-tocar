@@ -70,7 +70,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                 <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
 
                     {/* INFO SIDE (Scrollable) */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-black/20">
+                    <div className="flex-1 md:flex-[1.5] overflow-y-auto p-6 space-y-6 custom-scrollbar bg-black/20 min-h-[30%] max-h-[50%] md:max-h-none">
                         {/* Description */}
                         {theme.description && (
                             <div className="space-y-3">
@@ -147,7 +147,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                                 </button>
 
                                 {isInviting && (
-                                    <div className="mt-4 space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                                    <div className="mt-4 space-y-2 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
                                         {availableMusicians.length === 0 ? (
                                             <p className="text-[10px] text-white/30 italic text-center py-4">No hay más músicos disponibles en la Jam.</p>
                                         ) : (
@@ -175,8 +175,8 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                         )}
                     </div>
 
-                    {/* CHAT/COMMENTS SIDE (Fixed Height Mobile, Flex-1 Desktop) */}
-                    <div className="w-full md:w-[320px] lg:w-[380px] border-l border-white/5 flex flex-col h-full bg-[#0d0d0d]">
+                    {/* CHAT/COMMENTS SIDE (Flexible Height Mobile, Fixed Width Desktop) */}
+                    <div className="flex-1 border-t md:border-t-0 md:border-l border-white/5 flex flex-col bg-[#0d0d0d] overflow-hidden">
                         <div className="flex-1 min-h-0">
                             {currentUser ? (
                                 <JamChat

@@ -117,7 +117,7 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || isLoading) return;
+        if (!newMessage.trim()) return;
 
         const content = newMessage;
         const tempId = `temp-${Date.now()}`;
@@ -135,7 +135,7 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
 
         setMessages(prev => [...prev, tempMsg]);
         setNewMessage('');
-        setIsLoading(true);
+        // No longer using isLoading to block input, allowing faster consecutive messages
 
         try {
             const result = await sendMessage(jamId, content, themeId);
@@ -150,7 +150,6 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
             setMessages(prev => prev.filter(m => m.id !== tempId));
             setNewMessage(content);
         } finally {
-            setIsLoading(false);
             setMentionQuery(null);
         }
     };

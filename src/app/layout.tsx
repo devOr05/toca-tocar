@@ -21,6 +21,10 @@ export const metadata: Metadata = {
   title: "Toca Tocar | Jazz Jam Organizer",
   description: "Organiza tu jam de jazz en tiempo real. Intención, ensamble y música.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     title: "Toca Tocar | Jazz Jam Organizer",
     description: "Organiza tu jam de jazz en tiempo real.",
@@ -29,8 +33,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/og-image.png",
-        width: 512,
-        height: 512,
+        width: 1200,
+        height: 630,
         alt: "Toca Tocar - Jazz Jam Organizer",
       },
     ],
