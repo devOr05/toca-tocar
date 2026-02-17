@@ -113,16 +113,6 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
                 </div>
             </section>
 
-            {selectedTheme && (
-                <ThemeDetailsModal
-                    isOpen={!!selectedTheme}
-                    onClose={() => setSelectedThemeId(null)}
-                    theme={selectedTheme}
-                    currentUser={currentUser}
-                    isHost={isHost}
-                    cityMusicians={cityMusicians}
-                />
-            )}
         </div>
     );
 }

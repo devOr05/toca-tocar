@@ -458,7 +458,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </main>
 
                 {/* RIGHT SIDEBAR: CHAT (DESKTOP) */}
-                <aside className="hidden xl:flex w-[350px] bg-jazz-surface/40 border-l border-white/5 flex-col overflow-hidden">
+                <aside className="hidden xl:flex w-[450px] bg-jazz-surface/40 border-l border-white/5 flex-col overflow-hidden">
                     <div className="p-4 border-b border-white/5 bg-black/20 shrink-0">
                         <h3 className="text-[10px] font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
                             <MessageSquare size={14} /> Chat de la Jam
