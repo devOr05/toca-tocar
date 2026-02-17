@@ -12,6 +12,7 @@ import SuggestedThemes from './SuggestedThemes';
 import JamChat from './JamChat';
 import NotificationBell from './NotificationBell';
 import MusicianList from './MusicianList';
+import MusicianProfileModal from './MusicianProfileModal';
 import MediaGallery from './MediaGallery';
 import MediaUploadButton from './MediaUploadButton';
 import HostControlPanel from './HostControlPanel';
@@ -38,6 +39,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const [createType, setCreateType] = useState<'SONG' | 'TOPIC'>('SONG');
     const [refreshMedia, setRefreshMedia] = useState(0);
     const [isChatExpanded, setIsChatExpanded] = useState(false);
+    const [selectedMusicianId, setSelectedMusicianId] = useState<string | null>(null);
 
 
     const openCreateModal = (type: 'SONG' | 'TOPIC') => {
@@ -217,6 +219,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             attendance={mergedAttendance as any}
                             cityMusicians={initialCityMusicians}
                             isHost={isHost}
+                            onMusicianClick={(id) => setSelectedMusicianId(id)}
                         />
                     </div>
                 </aside>
@@ -302,8 +305,9 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                                     return (
                                                         <div className="flex flex-wrap gap-3">
                                                             {musicians.map((m: any) => (
-                                                                <div
+                                                                <button
                                                                     key={m.userId}
+                                                                    onClick={() => setSelectedMusicianId(m.userId)}
                                                                     className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-full pl-1 pr-3 py-1 transition-all group"
                                                                 >
                                                                     <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden ring-2 ring-black/50 transition-all">
@@ -319,7 +323,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                                                             <span className="text-[10px] text-jazz-gold font-bold uppercase tracking-tighter opacity-80">{m.mainInstrument}</span>
                                                                         )}
                                                                     </div>
-                                                                </div>
+                                                                </button>
                                                             ))}
                                                         </div>
                                                     );
@@ -445,6 +449,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                     attendance={mergedAttendance as any}
                                     cityMusicians={initialCityMusicians}
                                     isHost={isHost}
+                                    onMusicianClick={(id) => setSelectedMusicianId(id)}
                                 />
                             </div>
                         )}
@@ -472,6 +477,12 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </aside>
             </div>
 
+
+            <MusicianProfileModal
+                userId={selectedMusicianId || ''}
+                isOpen={!!selectedMusicianId}
+                onClose={() => setSelectedMusicianId(null)}
+            />
 
             <CreateThemeModal
                 isOpen={isCreateThemeOpen}
