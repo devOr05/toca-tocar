@@ -73,8 +73,8 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
         });
 
         return () => {
+            channel.unbind_all();
             pusherClient.unsubscribe(channelName);
-            pusherClient.unbind_all();
         };
     }, [jamId, themeId]);
 
@@ -120,6 +120,20 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
         if (!newMessage.trim() || isLoading) return;
 
         const content = newMessage;
+        const tempId = `temp-${Date.now()}`;
+
+        // Optimistic update
+        const tempMsg: Message = {
+            id: tempId,
+            content: content,
+            userId: currentUser.id,
+            userName: currentUser.name,
+            jamId: jamId,
+            themeId: themeId,
+            createdAt: new Date()
+        };
+
+        setMessages(prev => [...prev, tempMsg]);
         setNewMessage('');
         setIsLoading(true);
 
@@ -127,11 +141,13 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
             const result = await sendMessage(jamId, content, themeId);
             if (!result.success) {
                 console.error('Error sending message:', result.error);
-                // alert('Error al enviar el mensaje'); // Optional: show toast
+                // Remove optimistic message if failed
+                setMessages(prev => prev.filter(m => m.id !== tempId));
                 setNewMessage(content); // Restore message
             }
         } catch (error) {
             console.error('Failed to send message:', error);
+            setMessages(prev => prev.filter(m => m.id !== tempId));
             setNewMessage(content);
         } finally {
             setIsLoading(false);
