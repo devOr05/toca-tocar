@@ -81,7 +81,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                 <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
 
                     {/* INFO SIDE (Scrollable) */}
-                    <div className="flex-1 md:flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-black/20 min-h-[30%] max-h-[50%] md:max-h-none border-b md:border-b-0 md:border-r border-white/5">
+                    <div className="flex-1 md:flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-black/20 max-h-[40%] md:max-h-none border-b md:border-b-0 md:border-r border-white/5 shrink-0">
                         {/* Description */}
                         {theme.description && (
                             <div className="space-y-3">

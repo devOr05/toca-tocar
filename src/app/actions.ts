@@ -906,62 +906,53 @@ export async function sendMessage(jamId: string, content: string, themeId?: stri
                 jamId,
                 themeId: themeId || null,
             },
-            include: {
-                user: true
-            }
+            include: { user: true }
         });
 
-        // Trigger update
-        await pusherServer.trigger(`jam-${jamId}`, 'new-message', {
-            id: message.id,
-            content: message.content,
-            userId: message.userId,
-            userName: session.user.name || 'Usuario',
-            jamId: message.jamId,
-            themeId: message.themeId,
-            createdAt: message.createdAt,
-            clientMsgId // Pass back for deduplication
-        });
+        // SECONDARY LOGIC (Don't let it crash the main response)
+        try {
+            await pusherServer.trigger(`jam-${jamId}`, 'new-message', {
+                id: message.id,
+                content: message.content,
+                userId: message.userId,
+                userName: session.user.name || 'Usuario',
+                jamId: message.jamId,
+                themeId: message.themeId,
+                createdAt: message.createdAt,
+                clientMsgId
+            });
 
-        // ---------------------------------------------------------
-        // NOTIFICATIONS LOGIC (Async - don't block response)
-        // ---------------------------------------------------------
-        (async () => {
-            // 1. Check for mentions: @Name
-            const mentionRegex = /@(\w+)/g;
-            const mentions = content.match(mentionRegex);
-
-            if (mentions) {
-                for (const mention of mentions) {
-                    const mentionedName = mention.substring(1); // Remove @
-                    // Find user by name (approximate)
-                    const targetUser = await prisma.user.findFirst({
-                        where: {
-                            name: {
-                                equals: mentionedName,
-                                mode: 'insensitive'
-                            }
+            // Mentions logic
+            (async () => {
+                const mentionRegex = /@(\w+)/g;
+                const mentions = content.match(mentionRegex);
+                if (mentions) {
+                    for (const mention of mentions) {
+                        const mentionedName = mention.substring(1);
+                        const targetUser = await prisma.user.findFirst({
+                            where: { name: { equals: mentionedName, mode: 'insensitive' } }
+                        });
+                        if (targetUser && targetUser.id !== session.user.id) {
+                            const { createNotification } = await import('@/lib/notifications');
+                            await createNotification(
+                                targetUser.id,
+                                'MENTION',
+                                `${session.user.name} te mencionó en el chat`,
+                                `/jam/${jamId}`,
+                                session.user.id
+                            );
                         }
-                    });
-
-                    if (targetUser && targetUser.id !== session.user.id) {
-                        const { createNotification } = await import('@/lib/notifications');
-                        await createNotification(
-                            targetUser.id,
-                            'MENTION',
-                            `${session.user.name} te mencionó en el chat`,
-                            `/jam/${jamId}`, // Link to Jam
-                            session.user.id
-                        );
                     }
                 }
-            }
-        })();
+            })();
+        } catch (pusherError) {
+            console.error('Secondary logic error (chat):', pusherError);
+        }
 
         return { success: true };
     } catch (error) {
-        console.error('Error sending message:', error);
-        return { success: false, error: 'Failed to send message' };
+        console.error('Core sendMessage error:', error);
+        return { success: false, error: 'Failed to save message' };
     }
 }
 

@@ -414,7 +414,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
                         {/* MOBILE CHAT TAB CONTENT */}
                         {activeTab === 'CHAT' && (
-                            <div className="flex-1 h-full min-h-[400px] pb-20">
+                            <div className="flex-1 h-full min-h-[400px]">
                                 {currentUser && (
                                     <JamChat
                                         jamId={initialJam.id}
