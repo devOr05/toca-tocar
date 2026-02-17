@@ -472,15 +472,6 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 </aside>
             </div>
 
-            {/* FLOATING ACTION BUTTON (MOBILE) */}
-            {(activeTab === 'THEMES' || activeTab === 'FORUM') && (
-                <button
-                    onClick={() => openCreateModal(activeTab === 'FORUM' ? 'TOPIC' : 'SONG')}
-                    className={`fixed bottom-[80px] right-6 w-14 h-14 ${activeTab === 'FORUM' ? 'bg-jazz-accent' : 'bg-jazz-gold'} text-black rounded-full shadow-2xl z-50 flex items-center justify-center active:scale-95 transition-all lg:hidden`}
-                >
-                    <Plus className="w-7 h-7" />
-                </button>
-            )}
 
             <CreateThemeModal
                 isOpen={isCreateThemeOpen}
