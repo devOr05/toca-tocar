@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { JamAttendance } from '@/types';
 
+import { useRouter } from 'next/navigation';
+
 interface MusicianListProps {
     jamId: string;
     currentUser?: User | null;
@@ -21,6 +23,7 @@ interface MusicianListProps {
 
 export default function MusicianList({ jamId, currentUser, attendance, cityMusicians, isHost, title, onMusicianClick }: MusicianListProps) {
     const [isCheckingIn, setIsCheckingIn] = useState(false);
+    const router = useRouter();
 
     const isCheckedIn = currentUser && attendance.some(a => a.userId === currentUser.id);
 
@@ -34,6 +37,7 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
         const result = await checkInToJam(jamId, instrument);
         if (result.success) {
             toast.success('¡Te has unido a la Jam!');
+            router.refresh(); // Force server components to re-run
         } else {
             toast.error('Error al unirse');
         }

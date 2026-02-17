@@ -183,30 +183,40 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                 </div>
             )}
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 order-1">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 order-1 custom-scrollbar">
                 {messages.length === 0 && (
-                    <p className="text-center text-white/20 text-xs italic py-4">
-                        Sé el primero en escribir...
-                    </p>
+                    <div className="h-full flex flex-col items-center justify-center opacity-20 py-10">
+                        <MessageSquare size={32} className="mb-2" />
+                        <p className="text-xs italic">Aún no hay mensajes...</p>
+                    </div>
                 )}
                 {messages.map((msg) => {
                     const isMe = msg.userId === currentUser.id;
                     const isHost = msg.userId === hostId;
                     return (
-                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[85%] rounded-lg p-3 ${isMe
-                                ? 'bg-jazz-gold/10 border border-jazz-gold/20 text-white rounded-tr-none'
-                                : 'bg-white/10 border border-white/5 text-gray-200 rounded-tl-none'
+                        <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                            <div className={`max-w-[85%] px-4 py-2.5 shadow-lg ${isMe
+                                ? 'bg-jazz-gold/10 border border-jazz-gold/20 text-white rounded-2xl rounded-tr-none'
+                                : isHost
+                                    ? 'bg-jazz-accent/10 border border-jazz-accent/30 text-white rounded-2xl rounded-tl-none'
+                                    : 'bg-white/5 border border-white/5 text-gray-200 rounded-2xl rounded-tl-none'
                                 }`}>
-                                {!isMe && <span className="text-[10px] font-bold text-jazz-gold block mb-1">{msg.userName}</span>}
-                                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                                {!isMe && (
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <span className={`text-[10px] font-black uppercase tracking-wider ${isHost ? 'text-jazz-accent' : 'text-jazz-gold'}`}>
+                                            {msg.userName}
+                                        </span>
+                                        {isHost && <span className="text-[8px] bg-jazz-accent/20 text-jazz-accent px-1 rounded border border-jazz-accent/30 font-bold">HOST</span>}
+                                    </div>
+                                )}
+                                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                                     {msg.content.split(' ').map((word, i) => (
                                         word.startsWith('@') ?
-                                            <span key={i} className="bg-jazz-accent/20 text-jazz-accent font-bold px-1 rounded mx-0.5">{word}</span>
+                                            <span key={i} className="text-jazz-accent font-bold hover:underline cursor-pointer">{word}</span>
                                             : <span key={i}>{word} </span>
                                     ))}
                                 </p>
-                                <span className="text-[9px] opacity-40 block text-right mt-1">
+                                <span className="text-[8px] opacity-30 block text-right mt-1 font-mono uppercase">
                                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             </div>
@@ -216,21 +226,21 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                 <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleSend} className="p-3 bg-white/5 border-t border-white/10 flex gap-2 order-2 shrink-0">
+            <form onSubmit={handleSend} className="p-4 bg-black/40 border-t border-white/10 flex gap-2 order-2 shrink-0">
                 <input
                     type="text"
                     value={newMessage}
                     onChange={handleInputChange}
                     placeholder={isCommentMode ? "Escribe un comentario..." : "Escribe un mensaje..."}
-                    className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-jazz-gold outline-none"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-jazz-gold/50 focus:bg-white/10 outline-none transition-all"
                     autoFocus={!isCommentMode}
                 />
                 <button
                     type="submit"
                     disabled={!newMessage.trim()}
-                    className="bg-jazz-gold text-black p-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+                    className="bg-jazz-gold text-black p-2.5 rounded-xl hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 transition-all shadow-lg shadow-jazz-gold/10"
                 >
-                    <Send size={18} />
+                    <Send size={20} />
                 </button>
             </form>
 

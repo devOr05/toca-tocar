@@ -50,7 +50,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-[#121212] border border-white/10 rounded-3xl w-full max-w-xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#121212] border border-white/10 rounded-3xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
                 <div className="p-6 border-b border-white/5 shrink-0 bg-[#0a0a0a]">
@@ -81,7 +81,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                 <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
 
                     {/* INFO SIDE (Scrollable) */}
-                    <div className="flex-1 md:flex-[1.5] overflow-y-auto p-6 space-y-6 custom-scrollbar bg-black/20 min-h-[30%] max-h-[50%] md:max-h-none">
+                    <div className="flex-1 md:flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-black/20 min-h-[30%] max-h-[50%] md:max-h-none border-b md:border-b-0 md:border-r border-white/5">
                         {/* Description */}
                         {theme.description && (
                             <div className="space-y-3">
@@ -187,7 +187,7 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
                     </div>
 
                     {/* CHAT/COMMENTS SIDE (Flexible Height Mobile, Fixed Width Desktop) */}
-                    <div className="flex-1 border-t md:border-t-0 md:border-l border-white/5 flex flex-col bg-[#0d0d0d] overflow-hidden">
+                    <div className="flex-1 md:flex-[1.5] flex flex-col bg-[#0d0d0d] overflow-hidden">
                         <div className="flex-1 min-h-0">
                             {currentUser ? (
                                 <JamChat
