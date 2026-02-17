@@ -93,7 +93,7 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                 <div className="mb-4">
                     {/* 1. If it's an image (jpg/png) or a Cloudinary PDF we can convert */}
                     {(theme.sheetMusicUrl.match(/\.(jpg|jpeg|png|webp)$/i) || (theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf'))) ? (
-                        <div className="relative group cursor-pointer overflow-hidden rounded-lg border border-white/10" onClick={onShowDetails}>
+                        <div className="relative group cursor-pointer overflow-hidden rounded-lg border border-white/10" onClick={() => window.open(theme.sheetMusicUrl!, '_blank')}>
                             <img
                                 src={theme.sheetMusicUrl.endsWith('.pdf') ? theme.sheetMusicUrl.replace('.pdf', '.jpg') : theme.sheetMusicUrl}
                                 alt="Partitura Preview"
