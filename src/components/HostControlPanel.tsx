@@ -176,27 +176,27 @@ export default function HostControlPanel({ jam, themes }: HostControlPanelProps)
 
     return (
         <div className="bg-jazz-surface border border-jazz-gold/30 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="p-4 bg-jazz-gold/10 border-b border-jazz-gold/20 flex justify-between items-center">
+            <div className="p-4 bg-jazz-gold/10 border-b border-jazz-gold/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-jazz-gold font-bold flex items-center gap-2">
                     <Settings2 size={18} />
                     Panel del Organizador
                 </h2>
-                <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 gap-1">
+                <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 gap-1 w-full sm:w-auto overflow-x-auto">
                     <button
                         onClick={() => handleStatusChange('SCHEDULED')}
-                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${jam.status === 'SCHEDULED' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
+                        className={`flex-1 sm:flex-none px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all whitespace-nowrap ${jam.status === 'SCHEDULED' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
                     >
                         Programada
                     </button>
                     <button
                         onClick={() => handleStatusChange('ACTIVE')}
-                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${jam.status === 'ACTIVE' ? 'bg-jazz-accent text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+                        className={`flex-1 sm:flex-none px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all whitespace-nowrap ${jam.status === 'ACTIVE' ? 'bg-jazz-accent text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
                     >
                         Activada
                     </button>
                     <button
                         onClick={() => handleStatusChange('FINISHED')}
-                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${jam.status === 'FINISHED' ? 'bg-red-500 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+                        className={`flex-1 sm:flex-none px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all whitespace-nowrap ${jam.status === 'FINISHED' ? 'bg-red-500 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
                     >
                         Finalizada
                     </button>

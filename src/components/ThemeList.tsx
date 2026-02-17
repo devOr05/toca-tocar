@@ -30,7 +30,7 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
     const isHost = Boolean(currentUser && jam && (currentUser.id === jam.hostId || isAdmin));
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8 pb-20 max-w-full overflow-hidden">
             {/* Active / Featured */}
             {playing.length > 0 && (
                 <section>

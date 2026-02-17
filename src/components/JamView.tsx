@@ -167,7 +167,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const isHost = currentUser?.id === initialJam.hostId || isSuperAdmin;
 
     return (
-        <div className="h-[100dvh] bg-black font-sans flex flex-col overflow-hidden relative">
+        <div className="h-[100dvh] w-full bg-black font-sans flex flex-col overflow-x-hidden overflow-y-hidden relative">
 
             {/* HEADER */}
             <header className="shrink-0 bg-jazz-surface/80 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center justify-between z-50 shadow-lg">

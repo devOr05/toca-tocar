@@ -661,34 +661,42 @@ export async function inviteMusicianToTheme(themeId: string, userId: string, ins
             },
             update: {
                 status: 'SELECTED',
-                instrument
+                instrument: instrument || 'Invitado'
             },
             create: {
                 userId,
                 themeId,
-                instrument,
+                instrument: instrument || 'Invitado',
                 status: 'SELECTED',
             }
         });
 
-        // Trigger update
-        const { pusherServer } = await import('@/lib/pusher-server');
-        await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+        // Trigger update - Side effect
+        try {
+            const { pusherServer } = await import('@/lib/pusher-server');
+            await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+        } catch (pusherError) {
+            console.error('Pusher error in invitation:', pusherError);
+        }
 
-        // Notify user
-        const { createNotification } = await import('@/lib/notifications');
-        await createNotification(
-            userId,
-            'JAM_INVITE',
-            `Has sido seleccionado para tocar ${theme.name} en ${theme.jam.name}`,
-            `/jam/${theme.jam.code}`,
-            session.user.id
-        );
+        // Notify user - Side effect
+        try {
+            const { createNotification } = await import('@/lib/notifications');
+            await createNotification(
+                userId,
+                'JAM_INVITE',
+                `Has sido seleccionado para tocar ${theme.name} en ${theme.jam.name}`,
+                `/jam/${theme.jam.code}`,
+                session.user.id
+            );
+        } catch (notifError) {
+            console.error('Notification error in invitation:', notifError);
+        }
 
         return { success: true };
     } catch (error) {
-        console.error('Error inviting to theme:', error);
-        return { success: false, error: 'Error al invitar al músico' };
+        console.error('CRITICAL: Error inviting to theme:', error);
+        return { success: false, error: 'Error al procesar la invitación' };
     }
 }
 

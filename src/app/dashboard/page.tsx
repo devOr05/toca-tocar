@@ -54,7 +54,6 @@ export default async function Dashboard() {
             <header className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-white">Hola, <span className="text-jazz-gold">{session.user.name}</span></h1>
                 <div className="flex items-center gap-3">
-                    <ShareAppButton />
                     <NotificationBell userId={session.user.id} />
                     <LogoutButton />
                     <Link href="/profile" className="w-10 h-10 rounded-full bg-jazz-surface border border-white/10 flex items-center justify-center hover:border-jazz-gold transition-colors overflow-hidden relative">
@@ -110,6 +109,12 @@ export default async function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            <footer className="mt-12 pb-12 flex flex-col items-center gap-4">
+                <div className="h-px w-32 bg-white/10 mb-4" />
+                <ShareAppButton />
+                <p className="text-[10px] text-white/20 uppercase tracking-[0.2em]">Toca Tocar © 2026</p>
+            </footer>
         </div>
     );
 }
