@@ -12,9 +12,10 @@ interface ThemeDetailsModalProps {
     theme: Theme;
     currentUser: User | null;
     isHost?: boolean;
+    cityMusicians?: Partial<User>[];
 }
 
-export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser, isHost }: ThemeDetailsModalProps) {
+export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser, isHost, cityMusicians = [] }: ThemeDetailsModalProps) {
     const { participations, jam } = useJamStore();
     const [isInviting, setIsInviting] = useState(false);
     const [isLoadingInvite, setIsLoadingInvite] = useState<string | null>(null);
@@ -23,8 +24,18 @@ export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser,
 
     // Get current musicians in the Jam that are NOT in this theme
     const currentMusicianIds = new Set(participations.filter(p => p.themeId === theme.id).map(p => p.userId));
+
+    // Combine musicians in Jam and city musicians, filtering out self and existing participants
     const musiciansInJam = jam.attendance?.map(a => a.user).filter(Boolean) as User[] || [];
-    const availableMusicians = musiciansInJam.filter(u => !currentMusicianIds.has(u.id));
+
+    // Merge both lists, deduplicate by ID, and filter
+    const allPotential = [...musiciansInJam, ...cityMusicians as User[]];
+    const availableMusicians = Array.from(new Map(allPotential.map(u => [u.id, u])).values())
+        .filter(u =>
+            u.id &&
+            !currentMusicianIds.has(u.id) &&
+            u.id !== currentUser?.id
+        );
 
     const handleInvite = async (userId: string, musicianName: string) => {
         setIsLoadingInvite(userId);

@@ -13,6 +13,8 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
     const { themes, participations, currentUser, jam, joinTheme, leaveTheme } = useJamStore();
     const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
 
+    const cityMusicians = (jam as any)?.cityMusicians || [];
+
     const selectedTheme = themes.find(t => t.id === selectedThemeId);
 
     const filteredThemes = themes.filter(t => (t.type || 'SONG') === type);
@@ -118,6 +120,7 @@ export default function ThemeList({ type = 'SONG' }: ThemeListProps) {
                     theme={selectedTheme}
                     currentUser={currentUser}
                     isHost={isHost}
+                    cityMusicians={cityMusicians}
                 />
             )}
         </div>

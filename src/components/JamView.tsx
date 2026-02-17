@@ -50,7 +50,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
     // Initialize and Sync Store
     useEffect(() => {
-        setJamState(initialJam, initialThemes, initialParticipations);
+        setJamState({ ...initialJam, cityMusicians: initialCityMusicians } as any, initialThemes, initialParticipations);
 
         if (initialJam.startTime && !formattedDate) {
             const date = new Date(initialJam.startTime);

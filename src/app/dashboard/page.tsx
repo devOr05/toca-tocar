@@ -8,6 +8,7 @@ import LogoutButton from "@/components/LogoutButton";
 import NewsSection from "@/components/NewsSection";
 import MusicianSidebar from "@/components/MusicianSidebar";
 import NotificationBell from "@/components/NotificationBell";
+import ShareAppButton from "@/components/ShareAppButton";
 
 export default async function Dashboard() {
     const session = await auth();
@@ -53,6 +54,7 @@ export default async function Dashboard() {
             <header className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-white">Hola, <span className="text-jazz-gold">{session.user.name}</span></h1>
                 <div className="flex items-center gap-3">
+                    <ShareAppButton />
                     <NotificationBell userId={session.user.id} />
                     <LogoutButton />
                     <Link href="/profile" className="w-10 h-10 rounded-full bg-jazz-surface border border-white/10 flex items-center justify-center hover:border-jazz-gold transition-colors overflow-hidden relative">

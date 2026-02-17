@@ -40,9 +40,28 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
         setIsCheckingIn(false);
     };
 
-    // Filter out musicians already in Jam from City list
+    // Filter out musicians already in Jam and the current user from City list
     const attendanceIds = new Set(attendance.map(a => a.userId));
-    const filteredCityMusicians = cityMusicians.filter(u => u.id && !attendanceIds.has(u.id));
+    const filteredCityMusicians = cityMusicians.filter(u => u.id && !attendanceIds.has(u.id) && u.id !== currentUser?.id);
+
+    const handleInviteToJam = async (userId: string, name: string) => {
+        const { createNotification } = await import('@/lib/notifications');
+        // Simple notification for now, we could create a real invitation record later
+        toast.promise(
+            createNotification(
+                userId,
+                'JAM_INVITE',
+                `¡${currentUser?.name} te ha invitado a unirse a la Jam!`,
+                `/jam/${jamId}`,
+                currentUser?.id
+            ),
+            {
+                loading: 'Enviando invitación...',
+                success: `Invitación enviada a ${name}`,
+                error: 'Error al enviar invitación'
+            }
+        );
+    };
 
     return (
         <div className="bg-jazz-surface border border-white/5 rounded-2xl p-4 h-full flex flex-col gap-6">
@@ -98,15 +117,13 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                                 )}
                                 {(currentUser?.role === 'ADMIN' || isHost) && att.userId !== currentUser?.id && (
                                     <button
-                                        onClick={async () => {
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
                                             const name = att.user?.name || 'este usuario';
                                             if (confirm(`¿Eliminar ${isHost ? 'invitado' : 'usuario'} ${name}?`)) {
-                                                const { deleteUser, checkInToJam } = await import('@/app/actions');
+                                                const { deleteUser } = await import('@/app/actions');
 
                                                 if (att.userId.startsWith('guest-')) {
-                                                    // Guests are only in the UI/Store, they can't be "deleted" from DB in the same way 
-                                                    // unless we add a leaveJam action that removes from Store/Pusher trigger.
-                                                    // For now, if they are guests, we just reload or toast.
                                                     toast.info('Los invitados se eliminan al reiniciar o salir.');
                                                 } else {
                                                     await deleteUser(att.userId);
@@ -151,7 +168,7 @@ export default function MusicianList({ jamId, currentUser, attendance, cityMusic
                                 <span className="text-xs text-white truncate flex-1">{user.name}</span>
                                 <div className="flex items-center gap-1">
                                     <button
-                                        onClick={() => toast.success(`Invitación enviada a ${user.name}`)}
+                                        onClick={() => handleInviteToJam(user.id!, user.name || 'Músico')}
                                         className="text-jazz-gold hover:text-white p-1 text-[10px] font-bold uppercase border border-jazz-gold/30 rounded px-2 hover:bg-jazz-gold/20 transition-all"
                                         title="Invitar a la Jam"
                                     >

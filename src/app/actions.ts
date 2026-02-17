@@ -652,12 +652,22 @@ export async function inviteMusicianToTheme(themeId: string, userId: string, ins
             return { success: false, error: 'No autorizado' };
         }
 
-        const participation = await prisma.participation.create({
-            data: {
+        const participation = await prisma.participation.upsert({
+            where: {
+                userId_themeId: {
+                    userId,
+                    themeId
+                }
+            },
+            update: {
+                status: 'SELECTED',
+                instrument
+            },
+            create: {
                 userId,
                 themeId,
                 instrument,
-                status: 'SELECTED', // Direct selection
+                status: 'SELECTED',
             }
         });
 
