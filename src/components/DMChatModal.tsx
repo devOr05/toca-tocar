@@ -94,8 +94,8 @@ export default function DMChatModal({ isOpen, onClose, currentUser, receiver }: 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-jazz-surface border border-white/10 rounded-2xl w-full max-w-sm h-[80vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-[#0f0f0f] border border-white/10 rounded-2xl w-full max-w-sm h-[80vh] flex flex-col overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                 {/* Header */}
                 <div className="p-4 border-b border-white/5 bg-black/20 flex justify-between items-center">
                     <div className="flex items-center gap-3">
