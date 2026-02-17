@@ -64,6 +64,15 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                     {isPlaying && <span className="animate-pulse text-jazz-accent font-bold text-xs uppercase tracking-widest bg-jazz-accent/10 px-2 py-1 rounded">En Escenario</span>}
                     {isQueued && <span className="text-jazz-gold font-bold text-xs uppercase tracking-widest bg-jazz-gold/10 px-2 py-1 rounded">Siguiente</span>}
 
+                    {theme.type !== 'TOPIC' && (
+                        <button
+                            onClick={onShowDetails}
+                            className="text-white/40 hover:text-jazz-gold p-1 transition-colors"
+                            title="Ver Detalles / Chat"
+                        >
+                            <MessageSquare size={18} />
+                        </button>
+                    )}
                     {(isHost || currentUser?.role === 'ADMIN' || (currentUser && theme.proposedById === currentUser.id)) && (
                         <button onClick={() => setShowEdit(true)} className="text-white/40 hover:text-white p-1" title="Editar"><Pencil size={16} /></button>
                     )}
