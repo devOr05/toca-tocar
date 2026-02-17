@@ -39,8 +39,6 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
     const [refreshMedia, setRefreshMedia] = useState(0);
     const [isChatExpanded, setIsChatExpanded] = useState(false);
 
-    // Musician Profile Modal State
-    const [selectedMusicianId, setSelectedMusicianId] = useState<string | null>(null);
 
     const openCreateModal = (type: 'SONG' | 'TOPIC') => {
         setCreateType(type);
@@ -219,7 +217,6 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             attendance={mergedAttendance as any}
                             cityMusicians={initialCityMusicians}
                             isHost={isHost}
-                            onMusicianClick={(id) => setSelectedMusicianId(id)}
                         />
                     </div>
                 </aside>
@@ -305,11 +302,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                                     return (
                                                         <div className="flex flex-wrap gap-3">
                                                             {musicians.map((m: any) => (
-                                                                <button
-                                                                    key={m.userId}
-                                                                    onClick={() => setSelectedMusicianId(m.userId)}
                                                                     className="flex items-center gap-2 bg-black/40 hover:bg-jazz-gold/20 border border-white/10 hover:border-jazz-gold/50 rounded-full pl-1 pr-3 py-1 transition-all group"
-                                                                >
                                                                     <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden ring-2 ring-black/50 group-hover:ring-jazz-gold/50 transition-all">
                                                                         {m.image ? (
                                                                             <img src={m.image} alt={m.name} className="w-full h-full object-cover" />
@@ -325,139 +318,132 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                                                     </div>
                                                                 </button>
                                                             ))}
-                                                        </div>
-                                                    );
+                                </div>
+                                );
                                                 }
                                             } catch (e) {
-                                                console.error("Error parsing opening musicians", e);
+                                    console.error("Error parsing opening musicians", e);
                                             }
-                                            return null;
+                                return null;
                                         })()}
-                                    </div>
+                            </div>
                                     {initialJam.openingInfo && (
-                                        <p className="text-white/70 text-sm mb-4 leading-relaxed whitespace-pre-wrap max-w-2xl bg-black/20 p-3 rounded-lg border border-white/5">
-                                            {initialJam.openingInfo}
-                                        </p>
-                                    )}
-                                    {initialJam.openingThemes && (
-                                        <div className="space-y-2 border-l-2 border-jazz-gold/30 pl-4 py-1">
-                                            <h4 className="text-[10px] uppercase font-bold text-jazz-gold tracking-widest mb-2">Repertorio de Apertura</h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                {initialJam.openingThemes.split('\n').filter(t => t.trim()).map((t, i) => (
-                                                    <div key={i} className="bg-black/40 border border-white/10 px-3 py-1.5 rounded-lg text-xs text-white/80 flex items-center gap-2 transition-all hover:border-jazz-gold/40">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-jazz-gold/40" />
-                                                        {t.trim()}
-                                                    </div>
-                                                ))}
-                                            </div>
+                            <p className="text-white/70 text-sm mb-4 leading-relaxed whitespace-pre-wrap max-w-2xl bg-black/20 p-3 rounded-lg border border-white/5">
+                                {initialJam.openingInfo}
+                            </p>
+                        )}
+                        {initialJam.openingThemes && (
+                            <div className="space-y-2 border-l-2 border-jazz-gold/30 pl-4 py-1">
+                                <h4 className="text-[10px] uppercase font-bold text-jazz-gold tracking-widest mb-2">Repertorio de Apertura</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {initialJam.openingThemes.split('\n').filter(t => t.trim()).map((t, i) => (
+                                        <div key={i} className="bg-black/40 border border-white/10 px-3 py-1.5 rounded-lg text-xs text-white/80 flex items-center gap-2 transition-all hover:border-jazz-gold/40">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-jazz-gold/40" />
+                                            {t.trim()}
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
-                            </div>
-                        )}
-
-                        {/* HOST CONTROLS */}
-                        {(isHost || currentUser?.role === 'ADMIN') && activeTab === 'THEMES' && (
-                            <section className="shrink-0">
-                                <HostControlPanel jam={initialJam} themes={themes} />
-                            </section>
-                        )}
-
-                        {activeTab === 'THEMES' && (
-                            <div className="pb-24">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                                        <Music2 size={20} className="text-jazz-gold" />
-                                        Repertorio
-                                    </h3>
-                                    <button
-                                        onClick={() => openCreateModal('SONG')}
-                                        className="bg-jazz-gold text-black px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-jazz-gold/10"
-                                    >
-                                        <Plus size={16} /> Proponer Tema
-                                    </button>
-                                </div>
-                                <ThemeList type="SONG" />
-                            </div>
-                        )}
-
-                        {activeTab === 'SUGGESTED' && (
-                            <div className="pb-24">
-                                <SuggestedThemes jamCode={initialJam.code} />
-                            </div>
-                        )}
-
-                        {activeTab === 'FORUM' && (
-                            <div className="pb-24">
-                                <div className="mb-4 flex items-center justify-between">
-                                    <h3 className="text-xl font-bold text-white">Foro de Discusión</h3>
-                                    <button
-                                        onClick={() => openCreateModal('TOPIC')}
-                                        className="bg-jazz-accent/20 hover:bg-jazz-accent/40 text-jazz-accent px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
-                                    >
-                                        Crear Tópico
-                                    </button>
-                                </div>
-                                <ThemeList type="TOPIC" />
-                            </div>
-                        )}
-
-                        {activeTab === 'GALLERY' && (
-                            <div className="pb-24">
-                                <div className="mb-4 flex items-center justify-between">
-                                    <h3 className="text-xl font-bold text-white">Galería de Fotos y Videos</h3>
-                                    {currentUser && (
-                                        <MediaUploadButton
-                                            jamId={initialJam.id}
-                                            onUploadComplete={() => {
-                                                setRefreshMedia(prev => prev + 1);
-                                            }}
-                                        />
-                                    )}
-                                </div>
-                                <MediaGallery
-                                    jamId={initialJam.id}
-                                    currentUserId={currentUser?.id}
-                                    isHost={isHost}
-                                    refreshTrigger={refreshMedia}
-                                />
-                            </div>
-                        )}
-
-                        {/* MOBILE CHAT TAB CONTENT */}
-                        {activeTab === 'CHAT' && (
-                            <div className="flex-1 h-full min-h-[400px] pb-20">
-                                {currentUser && (
-                                    <JamChat
-                                        jamId={initialJam.id}
-                                        currentUser={currentUser}
-                                        hostId={initialJam.hostId}
-                                        users={uniqueMusicians}
-                                        title=""
-                                    />
-                                )}
-                            </div>
-                        )}
-
-                        {/* MOBILE MUSICIANS TAB CONTENT */}
-                        {activeTab === 'MUSICIANS' && (
-                            <div className="pb-24">
-                                <h3 className="text-xl font-bold text-white mb-4">Músicos en la Jam</h3>
-                                <MusicianList
-                                    jamId={initialJam.id}
-                                    currentUser={currentUser}
-                                    attendance={mergedAttendance as any}
-                                    cityMusicians={initialCityMusicians}
-                                    isHost={isHost}
-                                    onMusicianClick={(id) => setSelectedMusicianId(id)}
-                                />
                             </div>
                         )}
                     </div>
-                </main>
+            </div>
+                        )}
 
-                {/* RIGHT SIDEBAR: CHAT (DESKTOP) */}
-                <aside className="hidden xl:flex w-[450px] bg-jazz-surface/40 border-l border-white/5 flex-col overflow-hidden">
+            {/* HOST CONTROLS */}
+            {(isHost || currentUser?.role === 'ADMIN') && activeTab === 'THEMES' && (
+                <section className="shrink-0">
+                    <HostControlPanel jam={initialJam} themes={themes} />
+                </section>
+            )}
+
+            {activeTab === 'THEMES' && (
+                <div className="pb-24">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                            <Music2 size={20} className="text-jazz-gold" />
+                            Repertorio
+                        </h3>
+                        <button
+                            onClick={() => openCreateModal('SONG')}
+                            className="bg-jazz-gold text-black px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-jazz-gold/10"
+                        >
+                            <Plus size={16} /> Proponer Tema
+                        </button>
+                    </div>
+                    <ThemeList type="SONG" />
+                </div>
+            )}
+
+            {activeTab === 'SUGGESTED' && (
+                <div className="pb-24">
+                    <SuggestedThemes jamCode={initialJam.code} />
+                </div>
+            )}
+
+            {activeTab === 'FORUM' && (
+                <div className="pb-24">
+                    <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-white">Foro de Discusión</h3>
+                        <button
+                            onClick={() => openCreateModal('TOPIC')}
+                            className="bg-jazz-accent/20 hover:bg-jazz-accent/40 text-jazz-accent px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
+                        >
+                            Crear Tópico
+                        </button>
+                    </div>
+                    <ThemeList type="TOPIC" />
+                </div>
+            )}
+
+            {activeTab === 'GALLERY' && (
+                <div className="pb-24">
+                    <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-white">Galería de Fotos y Videos</h3>
+                        {currentUser && (
+                            <MediaUploadButton
+                                jamId={initialJam.id}
+                                onUploadComplete={() => {
+                                    setRefreshMedia(prev => prev + 1);
+                                }}
+                            />
+                        )}
+                    </div>
+                    <MediaGallery
+                        jamId={initialJam.id}
+                        currentUserId={currentUser?.id}
+                        isHost={isHost}
+                        refreshTrigger={refreshMedia}
+                    />
+                </div>
+            )}
+
+            {/* MOBILE CHAT TAB CONTENT */}
+            {activeTab === 'CHAT' && (
+                <div className="flex-1 h-full min-h-[400px] pb-20">
+                    {currentUser && (
+                        <JamChat
+                            jamId={initialJam.id}
+                            currentUser={currentUser}
+                            hostId={initialJam.hostId}
+                            users={uniqueMusicians}
+                            title=""
+                        />
+                    )}
+                </div>
+            )}
+
+            {/* MOBILE MUSICIANS TAB CONTENT */}
+            {activeTab === 'MUSICIANS' && (
+                <div className="pb-24">
+                    <h3 className="text-xl font-bold text-white mb-4">Músicos en la Jam</h3>
+                    isHost={isHost}
+                </div>
+            )}
+        </div>
+                </main >
+
+        {/* RIGHT SIDEBAR: CHAT (DESKTOP) */ }
+        < aside className = "hidden xl:flex w-[450px] bg-jazz-surface/40 border-l border-white/5 flex-col overflow-hidden" >
                     <div className="p-4 border-b border-white/5 bg-black/20 shrink-0">
                         <h3 className="text-[10px] font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
                             <MessageSquare size={14} /> Chat de la Jam
@@ -474,26 +460,28 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             />
                         )}
                     </div>
-                </aside>
-            </div>
+                </aside >
+            </div >
 
-            {/* FLOATING ACTION BUTTON (MOBILE) */}
-            {activeTab === 'THEMES' && (
-                <button
-                    onClick={() => openCreateModal('SONG')}
-                    className={`fixed bottom-[80px] right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] z-50 flex items-center justify-center active:scale-95 transition-all lg:hidden`}
-                >
-                    <Plus className="w-7 h-7" />
-                </button>
-            )}
+        {/* FLOATING ACTION BUTTON (MOBILE) */ }
+    {
+        (activeTab === 'THEMES' || activeTab === 'FORUM') && (
+            <button
+                onClick={() => openCreateModal(activeTab === 'FORUM' ? 'TOPIC' : 'SONG')}
+                className={`fixed bottom-[80px] right-6 w-14 h-14 ${activeTab === 'FORUM' ? 'bg-jazz-accent' : 'bg-jazz-gold'} text-black rounded-full shadow-2xl z-50 flex items-center justify-center active:scale-95 transition-all lg:hidden`}
+            >
+                <Plus className="w-7 h-7" />
+            </button>
+        )
+    }
 
-            <CreateThemeModal
-                isOpen={isCreateThemeOpen}
-                onClose={() => setIsCreateThemeOpen(false)}
-                jamCode={initialJam.code}
-                type={createType}
-            />
+    <CreateThemeModal
+        isOpen={isCreateThemeOpen}
+        onClose={() => setIsCreateThemeOpen(false)}
+        jamCode={initialJam.code}
+        type={createType}
+    />
 
-        </div>
+        </div >
     );
 }

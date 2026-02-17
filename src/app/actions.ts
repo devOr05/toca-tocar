@@ -891,7 +891,6 @@ export async function updateTheme(themeId: string, formData: FormData) {
 }
 
 
-import { pusherClient } from '@/lib/pusher';
 
 export async function sendMessage(jamId: string, content: string, themeId?: string, clientMsgId?: string) {
     const session = await auth();
