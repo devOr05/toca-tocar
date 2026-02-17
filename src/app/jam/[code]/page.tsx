@@ -1,6 +1,6 @@
 import JamClientLoader from '@/components/JamClientLoader';
 import { getJam } from '@/app/actions';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 
 interface PageProps {
@@ -16,11 +16,11 @@ export default async function JamPage({ params }: PageProps) {
         jamData = await getJam(code);
     } catch (error) {
         console.error('Error fetching jam:', error);
-        notFound();
+        redirect('/dashboard?error=Error al cargar la Jam. Es posible que haya sido eliminada.');
     }
 
     if (!jamData) {
-        notFound();
+        redirect('/dashboard?error=Esta Jam ya no existe o fue eliminada por el organizador.');
     }
 
     // Transform Prisma data to Store types

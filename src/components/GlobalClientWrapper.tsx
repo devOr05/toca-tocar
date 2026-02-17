@@ -1,6 +1,26 @@
-'use client';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 
-import { useState, useEffect } from 'react';
+function SearchToastHandler() {
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const error = searchParams.get('error');
+        const message = searchParams.get('message');
+
+        if (error) {
+            toast.error(error);
+            // Clean up URL without reload (optional but cleaner)
+            window.history.replaceState({}, '', window.location.pathname);
+        } else if (message) {
+            toast.success(message);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, [searchParams]);
+
+    return null;
+}
 
 export default function GlobalClientWrapper({ children }: { children: React.ReactNode }) {
     const [mounted, setMounted] = useState(false);
@@ -19,7 +39,11 @@ export default function GlobalClientWrapper({ children }: { children: React.Reac
 
     return (
         <div suppressHydrationWarning>
+            <Suspense fallback={null}>
+                <SearchToastHandler />
+            </Suspense>
             {children}
         </div>
     );
 }
+

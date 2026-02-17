@@ -47,15 +47,6 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                 <div className="flex-1 min-w-0 mr-2">
                     <div className="flex items-center gap-2">
                         <h3 className="font-bold text-lg text-white leading-tight truncate">{theme.name}</h3>
-                        {hasInfo && theme.type !== 'TOPIC' && (
-                            <button
-                                onClick={onShowDetails}
-                                className="text-jazz-gold hover:text-white transition-colors"
-                                title="Ver información del tema"
-                            >
-                                <Info size={16} />
-                            </button>
-                        )}
                         {theme.type === 'TOPIC' && (
                             <span className="text-[10px] font-bold text-jazz-accent uppercase tracking-widest mt-1 block">
                                 Discusión Abierta
@@ -154,39 +145,11 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
                                     return;
                                 }
 
-                                // Optimistic update handled by parent or revalidation, 
-                                // but we can add a local loading state if needed.
-                                // For now, checks are strict.
                                 onJoin(inst);
                             }}
                             onLeave={onLeave}
                         />
-
-                        <div className="flex gap-2">
-                            {/* Direct Chat Button for Songs */}
-                            <button
-                                onClick={onShowDetails}
-                                className={`py-2.5 px-4 bg-jazz-accent/10 hover:bg-jazz-accent/20 text-jazz-accent rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2 ${myParticipation ? 'w-full' : 'w-full'}`}
-                                title="Abrir Chat"
-                            >
-                                <MessageSquare size={16} />
-                                {myParticipation ? <span className="text-xs font-bold uppercase tracking-wider">Chat del Tema</span> : <span>Chat / Detalles</span>}
-                            </button>
-                        </div>
                     </div>
-                )
-            }
-
-            {/* Topic Discussion Button - Only for topics */}
-            {
-                theme.type === 'TOPIC' && (
-                    <button
-                        onClick={onShowDetails}
-                        className="w-full py-2.5 bg-jazz-accent/10 hover:bg-jazz-accent/40 text-jazz-accent text-sm font-bold rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2"
-                    >
-                        <MessageSquare size={16} />
-                        Entrar a la Discusión
-                    </button>
                 )
             }
 
