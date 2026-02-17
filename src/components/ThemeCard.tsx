@@ -133,40 +133,31 @@ export default function ThemeCard({ theme, participations, currentUser, isHost, 
 
             {/* Participation Section */}
             {/* Participation Section */}
-            <div className="mt-auto pt-4 space-y-3">
-                {theme.type !== 'TOPIC' ? (
-                    <>
-                        <InstrumentSelector
-                            participations={participations}
-                            currentUser={currentUser}
-                            myParticipation={myParticipation}
-                            onJoin={async (inst) => {
-                                if (!currentUser) {
-                                    toast.error('Debes iniciar sesión para anotarte.');
-                                    return;
-                                }
-                                onJoin(inst);
-                            }}
-                            onLeave={onLeave}
-                        />
-                        <button
-                            onClick={onShowDetails}
-                            className="w-full py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[10px] font-bold rounded-lg border border-white/5 transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
-                        >
-                            <MessageSquare size={12} />
-                            Ver Detalles y Chat
-                        </button>
-                    </>
-                ) : (
-                    <button
-                        onClick={onShowDetails}
-                        className="w-full py-2.5 bg-jazz-accent/10 hover:bg-jazz-accent/40 text-jazz-accent text-sm font-bold rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2"
-                    >
-                        <MessageSquare size={16} />
-                        Ver Comentarios del Foro
-                    </button>
-                )}
-            </div>
+            {theme.type !== 'TOPIC' ? (
+                <div className="space-y-4 pt-2">
+                    <InstrumentSelector
+                        participations={participations}
+                        currentUser={currentUser}
+                        myParticipation={myParticipation}
+                        onJoin={async (inst) => {
+                            if (!currentUser) {
+                                toast.error('Debes iniciar sesión para anotarte.');
+                                return;
+                            }
+                            onJoin(inst);
+                        }}
+                        onLeave={onLeave}
+                    />
+                </div>
+            ) : (
+                <button
+                    onClick={onShowDetails}
+                    className="w-full py-2.5 bg-jazz-accent/10 hover:bg-jazz-accent/40 text-jazz-accent text-sm font-bold rounded-xl border border-jazz-accent/20 transition-all flex items-center justify-center gap-2"
+                >
+                    <MessageSquare size={16} />
+                    Ver Comentarios del Foro
+                </button>
+            )}
 
 
             <EditThemeModal
