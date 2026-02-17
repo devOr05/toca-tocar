@@ -217,7 +217,7 @@ export default function JamChat({ jamId, currentUser, themeId, title = 'Chat de 
                 <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleSend} className="p-3 bg-white/5 border-t border-white/5 flex gap-2 order-2">
+            <form onSubmit={handleSend} className="p-3 bg-white/5 border-t border-white/10 flex gap-2 order-2 shrink-0">
                 <input
                     type="text"
                     value={newMessage}

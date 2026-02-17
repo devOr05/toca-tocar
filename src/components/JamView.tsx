@@ -206,7 +206,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
 
             {/* MAIN CONTAINER */}
             <div className="flex flex-1 min-h-0 overflow-hidden relative">
-                {/* LEFT SIDEBAR: MUSICIANS */}
+                {/* LEFT SIDEBAR: MUSICIANS (DESKTOP) */}
                 <aside className="hidden lg:flex w-[280px] bg-jazz-surface/40 border-r border-white/5 flex-col overflow-hidden">
                     <div className="p-4 border-b border-white/5 bg-black/20 shrink-0">
                         <h3 className="text-[10px] font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
@@ -228,7 +228,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 {/* CENTER: CONTENT */}
                 <main className="flex-1 flex flex-col min-w-0 bg-black/50 relative">
                     {/* Tabs */}
-                    <div className="flex items-center border-b border-white/10 bg-black/40 px-4 shrink-0 overflow-x-auto">
+                    <div className="flex items-center border-b border-white/10 bg-black/40 px-4 shrink-0 overflow-x-auto scrollbar-hide">
                         <button
                             onClick={() => setActiveTab('THEMES')}
                             className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'THEMES' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
@@ -244,7 +244,7 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         <button
                             onClick={() => setActiveTab('FORUM')}
                             className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'FORUM' ? 'border-jazz-accent text-white' : 'border-transparent text-white/40 hover:text-white'}`}>
-                            <Share2 size={16} /> Foro / Tópicos
+                            <Share2 size={16} /> Foro
                         </button>
                         <button
                             onClick={() => setActiveTab('GALLERY')}
@@ -252,22 +252,36 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         >
                             <ImageIcon size={16} /> Galería
                         </button>
+                        <button
+                            onClick={() => setActiveTab('CHAT')}
+                            className={`lg:hidden px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'CHAT' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
+                        >
+                            <MessageSquare size={16} /> Chat
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('MUSICIANS')}
+                            className={`lg:hidden px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'MUSICIANS' ? 'border-jazz-gold text-white' : 'border-transparent text-white/40 hover:text-white'}`}
+                        >
+                            <Users size={16} /> Músicos
+                        </button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
-                        {/* INFO CARD */}
-                        <div className="bg-jazz-surface border border-white/5 rounded-xl p-4 shadow-lg shrink-0">
-                            {initialJam.description && <p className="text-white/80 text-sm mb-2">{initialJam.description}</p>}
-                            {formattedDate && <p className="text-jazz-muted text-xs flex items-center gap-2"><Calendar size={14} /> {formattedDate}</p>}
-                            {(initialJam.location || initialJam.city) && (
-                                <p className="text-jazz-muted text-xs flex items-center gap-2 mt-1">
-                                    <MapPin size={14} />
-                                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((initialJam.location || '') + ' ' + (initialJam.city || ''))}`} target="_blank" rel="noopener noreferrer" className="hover:text-white underline">
-                                        {initialJam.location}{initialJam.city ? `, ${initialJam.city}` : ''}
-                                    </a>
-                                </p>
-                            )}
-                        </div>
+                        {/* THEMES TAB OR DEFAULT INFO */}
+                        {activeTab !== 'CHAT' && activeTab !== 'MUSICIANS' && (
+                            <div className="bg-jazz-surface border border-white/5 rounded-xl p-4 shadow-lg shrink-0">
+                                {initialJam.description && <p className="text-white/80 text-sm mb-2">{initialJam.description}</p>}
+                                {formattedDate && <p className="text-jazz-muted text-xs flex items-center gap-2"><Calendar size={14} /> {formattedDate}</p>}
+                                {(initialJam.location || initialJam.city) && (
+                                    <p className="text-jazz-muted text-xs flex items-center gap-2 mt-1">
+                                        <MapPin size={14} />
+                                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((initialJam.location || '') + ' ' + (initialJam.city || ''))}`} target="_blank" rel="noopener noreferrer" className="hover:text-white underline">
+                                            {initialJam.location}{initialJam.city ? `, ${initialJam.city}` : ''}
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         {/* OPENING SHOW SECTION */}
                         {initialJam.openingBand && activeTab === 'THEMES' && (
@@ -282,7 +296,6 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                             <h2 className="text-xl font-bold text-white tracking-tight">{initialJam.openingBand}</h2>
                                         </div>
 
-                                        {/* Opening Musicians Display */}
                                         {(() => {
                                             try {
                                                 const musicians = typeof initialJam.openingMusicians === 'string'
@@ -322,13 +335,11 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                             return null;
                                         })()}
                                     </div>
-
                                     {initialJam.openingInfo && (
                                         <p className="text-white/70 text-sm mb-4 leading-relaxed whitespace-pre-wrap max-w-2xl bg-black/20 p-3 rounded-lg border border-white/5">
                                             {initialJam.openingInfo}
                                         </p>
                                     )}
-
                                     {initialJam.openingThemes && (
                                         <div className="space-y-2 border-l-2 border-jazz-gold/30 pl-4 py-1">
                                             <h4 className="text-[10px] uppercase font-bold text-jazz-gold tracking-widest mb-2">Repertorio de Apertura</h4>
@@ -392,7 +403,6 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                             </div>
                         )}
 
-                        {/* GALLERY TAB */}
                         {activeTab === 'GALLERY' && (
                             <div className="pb-24">
                                 <div className="mb-4 flex items-center justify-between">
@@ -414,12 +424,41 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                                 />
                             </div>
                         )}
-                    </div>
 
+                        {/* MOBILE CHAT TAB CONTENT */}
+                        {activeTab === 'CHAT' && (
+                            <div className="flex-1 h-full min-h-[400px] pb-20">
+                                {currentUser && (
+                                    <JamChat
+                                        jamId={initialJam.id}
+                                        currentUser={currentUser}
+                                        hostId={initialJam.hostId}
+                                        users={uniqueMusicians}
+                                        title=""
+                                    />
+                                )}
+                            </div>
+                        )}
+
+                        {/* MOBILE MUSICIANS TAB CONTENT */}
+                        {activeTab === 'MUSICIANS' && (
+                            <div className="pb-24">
+                                <h3 className="text-xl font-bold text-white mb-4">Músicos en la Jam</h3>
+                                <MusicianList
+                                    jamId={initialJam.id}
+                                    currentUser={currentUser}
+                                    attendance={mergedAttendance as any}
+                                    cityMusicians={initialCityMusicians}
+                                    isHost={isHost}
+                                    onMusicianClick={(id) => setSelectedMusicianId(id)}
+                                />
+                            </div>
+                        )}
+                    </div>
                 </main>
 
-                {/* RIGHT SIDEBAR: CHAT */}
-                <aside className="hidden xl:flex w-[350px] bg-jazz-surface/40 border-l border-white/5 flex-col">
+                {/* RIGHT SIDEBAR: CHAT (DESKTOP) */}
+                <aside className="hidden xl:flex w-[350px] bg-jazz-surface/40 border-l border-white/5 flex-col overflow-hidden">
                     <div className="p-4 border-b border-white/5 bg-black/20 shrink-0">
                         <h3 className="text-[10px] font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
                             <MessageSquare size={14} /> Chat de la Jam
@@ -437,64 +476,22 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                         )}
                     </div>
                 </aside>
-            </div >
-
-            {/* REAL-TIME UPDATES FOR JAM */}
-            {/* Handled in useEffect above */}
+            </div>
 
             {/* FLOATING ACTION BUTTON (MOBILE) */}
-            <div className="lg:hidden fixed bottom-20 right-4 z-50">
-                {/* Already handled in Tabs usually, but here is extra FAB if needed */}
-            </div>
-
-            <div className="lg:hidden fixed bottom-[90px] right-6 z-50">
-                {/* Duplicate FAB logic from original if present */}
-            </div>
-
-
-            <div className="lg:hidden">
-                {/* Mobile Bottom Nav or similar could go here */}
-            </div>
-
-
-            {/* MOBILE FAB FOR CREATE */}
             {activeTab === 'THEMES' && (
                 <button
                     onClick={() => openCreateModal('SONG')}
-                    className={`fixed ${isChatExpanded ? 'bottom-[62vh]' : 'bottom-[80px]'} right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] z-50 flex items-center justify-center active:scale-95 transition-all lg:hidden`}
+                    className={`fixed bottom-[80px] right-6 w-14 h-14 bg-jazz-gold text-black rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] z-50 flex items-center justify-center active:scale-95 transition-all lg:hidden`}
                 >
                     <Plus className="w-7 h-7" />
                 </button>
             )}
 
-            {/* MOBILE ONLY STICKY CHAT */}
-            {currentUser && (
-                <div className="fixed bottom-0 left-0 right-0 z-[120] bg-jazz-surface border-t border-white/20 shadow-[0_-10px_40px_rgba(0,0,0,0.6)] flex flex-col h-[74px] sm:h-auto max-h-[40vh] transition-all lg:hidden">
-                    <div className="h-[48px] sm:h-auto shrink-0 w-full px-4 flex items-center justify-between bg-black/40 border-b border-white/5 sm:hidden">
-                        <div className="flex items-center gap-2">
-                            <MessageSquare size={16} className="text-jazz-gold" />
-                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">Chat en vivo</span>
-                        </div>
-                    </div>
-
-                    <div className="h-[74px] sm:h-[80px]">
-                        {currentUser && (
-                            <JamChat
-                                jamId={initialJam.id}
-                                currentUser={currentUser}
-                                hostId={initialJam.hostId}
-                                users={uniqueMusicians}
-                                title=""
-                            />
-                        )}
-                    </div>
-                </div>
-            )}
-
             <CreateThemeModal
                 isOpen={isCreateThemeOpen}
                 onClose={() => setIsCreateThemeOpen(false)}
-                jamCode={jam.code}
+                jamCode={initialJam.code}
                 type={createType}
             />
 
