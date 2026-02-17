@@ -635,13 +635,70 @@ export async function joinTheme(themeId: string, instrument: string) {
     }
 }
 
+export async function inviteMusicianToTheme(themeId: string, userId: string, instrument: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: 'No autenticado' };
+
+    try {
+        const theme = await prisma.theme.findUnique({
+            where: { id: themeId },
+            include: { jam: true }
+        });
+
+        if (!theme) return { success: false, error: 'Tema no encontrado' };
+
+        const isAdmin = session.user.role === 'ADMIN' || session.user.email?.toLowerCase() === 'orostizagamario@gmail.com';
+        if (theme.jam.hostId !== session.user.id && !isAdmin) {
+            return { success: false, error: 'No autorizado' };
+        }
+
+        const participation = await prisma.participation.create({
+            data: {
+                userId,
+                themeId,
+                instrument,
+                status: 'SELECTED', // Direct selection
+            }
+        });
+
+        // Trigger update
+        const { pusherServer } = await import('@/lib/pusher-server');
+        await pusherServer.trigger(`jam-${theme.jam.id}`, 'update-jam', {});
+
+        // Notify user
+        const { createNotification } = await import('@/lib/notifications');
+        await createNotification(
+            userId,
+            'JAM_INVITE',
+            `Has sido seleccionado para tocar ${theme.name} en ${theme.jam.name}`,
+            `/jam/${theme.jam.code}`,
+            session.user.id
+        );
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error inviting to theme:', error);
+        return { success: false, error: 'Error al invitar al músico' };
+    }
+}
+
 
 export async function updateParticipationStatus(participationId: string, status: string) {
     try {
-        await prisma.participation.update({
+        const participation = await prisma.participation.update({
             where: { id: participationId },
             data: { status },
+            include: { theme: true }
         });
+
+        // Trigger update
+        try {
+            const { pusherServer } = await import('@/lib/pusher-server');
+            await pusherServer.trigger(`jam-${participation.theme.jamId}`, 'update-jam', {});
+        } catch (e) {
+            console.warn('Pusher update failed (updateParticipationStatus):', e);
+        }
+
         return { success: true };
     } catch (error) {
         console.error('Error updating participation:', error);

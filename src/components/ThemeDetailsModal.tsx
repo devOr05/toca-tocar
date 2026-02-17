@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { Theme, User } from '@/types';
-import { X, Music, FileText, Link as LinkIcon, ExternalLink, MessageSquare } from 'lucide-react';
+import { X, Music, FileText, Link as LinkIcon, ExternalLink, MessageSquare, Plus, Check, Loader2 } from 'lucide-react';
 import JamChat from './JamChat';
+import { useJamStore } from '@/store/jamStore';
+import { inviteMusicianToTheme } from '@/app/actions';
+import { toast } from 'sonner';
 
 interface ThemeDetailsModalProps {
     isOpen: boolean;
@@ -11,135 +15,203 @@ interface ThemeDetailsModalProps {
 }
 
 export default function ThemeDetailsModal({ isOpen, onClose, theme, currentUser, isHost }: ThemeDetailsModalProps) {
+    const { participations, jam } = useJamStore();
+    const [isInviting, setIsInviting] = useState(false);
+    const [isLoadingInvite, setIsLoadingInvite] = useState<string | null>(null);
+
     if (!isOpen) return null;
 
+    // Get current musicians in the Jam that are NOT in this theme
+    const currentMusicianIds = new Set(participations.filter(p => p.themeId === theme.id).map(p => p.userId));
+    const musiciansInJam = jam.attendance?.map(a => a.user).filter(Boolean) as User[] || [];
+    const availableMusicians = musiciansInJam.filter(u => !currentMusicianIds.has(u.id));
+
+    const handleInvite = async (userId: string, musicianName: string) => {
+        setIsLoadingInvite(userId);
+        const result = await inviteMusicianToTheme(theme.id, userId, 'Varios');
+        if (result.success) {
+            toast.success(`Invitación enviada a ${musicianName}`);
+        } else {
+            toast.error(result.error || 'Error al invitar');
+        }
+        setIsLoadingInvite(null);
+    };
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto" onClick={onClose}>
-            <div className="bg-[#121212] border border-white/10 rounded-2xl w-full max-w-md h-auto max-h-[85vh] my-8 flex flex-col overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200 mb-24" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-[#121212] border border-white/10 rounded-3xl w-full max-w-xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
-                <div className="p-6 pb-4 border-b border-white/5 shrink-0">
+                <div className="p-6 border-b border-white/5 shrink-0 bg-[#0a0a0a]">
                     <div className="flex justify-between items-start">
-                        <div>
+                        <div className="flex-1">
                             <h2 className="text-2xl font-bold text-white leading-tight">{theme.name}</h2>
-                            <div className="flex gap-2 mt-1">
+                            <div className="flex items-center gap-2 mt-2">
                                 {theme.type !== 'TOPIC' && (
-                                    <span className="text-jazz-gold font-mono text-sm bg-jazz-gold/10 px-2 py-0.5 rounded">
-                                        {theme.tonality || 'Sin tonalidad'}
+                                    <span className="text-jazz-gold font-mono text-xs bg-jazz-gold/10 px-2.5 py-1 rounded-full border border-jazz-gold/20 font-bold uppercase tracking-widest">
+                                        {theme.tonality || 'Tonality: ?'}
                                     </span>
                                 )}
                                 {theme.type === 'TOPIC' && (
-                                    <span className="text-jazz-accent font-bold text-xs bg-jazz-accent/10 px-2 py-0.5 rounded uppercase tracking-wider">
-                                        Tópico
+                                    <span className="text-jazz-accent font-bold text-[10px] bg-jazz-accent/20 px-2 py-1 rounded-full uppercase tracking-wider border border-jazz-accent/30">
+                                        Foro / Tópico
                                     </span>
                                 )}
+                                <span className="text-[10px] text-white/40 font-mono">ID: {theme.id.slice(0, 8)}</span>
                             </div>
                         </div>
-                        <button onClick={onClose} className="text-white/40 hover:text-white transition-colors bg-white/5 p-2 rounded-full">
+                        <button onClick={onClose} className="text-white/40 hover:text-white transition-colors bg-white/5 p-2 rounded-xl hover:bg-white/10">
                             <X size={20} />
                         </button>
                     </div>
                 </div>
 
-                {/* Content - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-                    {/* Notes */}
-                    {theme.description && (
-                        <div className="bg-black/30 p-4 rounded-xl border border-white/5">
-                            <h3 className="text-xs font-bold text-jazz-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                <FileText size={14} /> {theme.type === 'TOPIC' ? 'Contenido' : 'Notas'}
-                            </h3>
-                            <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">
-                                {theme.description}
-                            </p>
-                        </div>
-                    )}
+                {/* Main Content Area - Split into Info and Chat */}
+                <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
 
-                    {/* Sheet Music */}
-                    {theme.sheetMusicUrl && (
-                        <div className="bg-black/30 p-4 rounded-xl border border-white/5">
-                            {(theme.sheetMusicUrl.match(/\.(jpg|jpeg|png|webp)$/i) || (theme.sheetMusicUrl.includes('cloudinary') && theme.sheetMusicUrl.endsWith('.pdf'))) ? (
-                                <div className="space-y-3">
-                                    <img
-                                        src={theme.sheetMusicUrl.endsWith('.pdf') ? theme.sheetMusicUrl.replace('.pdf', '.jpg') : theme.sheetMusicUrl}
-                                        alt="Partitura Completa"
-                                        className="w-full rounded-lg border border-white/10 bg-white/5"
-                                        onError={(e) => {
-                                            e.currentTarget.style.display = 'none';
-                                        }}
-                                    />
-                                    <a
-                                        href={theme.sheetMusicUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-center gap-2 text-jazz-gold hover:text-white text-sm py-2 border border-jazz-gold/30 rounded-lg hover:bg-jazz-gold/10 transition-all font-bold"
-                                    >
-                                        <ExternalLink size={16} /> Abrir Archivo
-                                    </a>
+                    {/* INFO SIDE (Scrollable) */}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-black/20">
+                        {/* Description */}
+                        {theme.description && (
+                            <div className="space-y-3">
+                                <h3 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
+                                    <FileText size={14} /> {theme.type === 'TOPIC' ? 'Contenido' : 'Descripción'}
+                                </h3>
+                                <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                    <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">
+                                        {theme.description}
+                                    </p>
                                 </div>
-                            ) : (
-                                <a
-                                    href={theme.sheetMusicUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-3 text-jazz-gold hover:underline group"
-                                >
-                                    <div className="w-10 h-10 rounded-lg bg-jazz-gold/10 flex items-center justify-center group-hover:bg-jazz-gold/20 transition-colors">
-                                        <Music size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="text-sm font-bold">Ver Partitura / Enlace</div>
-                                        <div className="text-xs text-white/40 truncate max-w-[200px]">{theme.sheetMusicUrl}</div>
-                                    </div>
-                                    <ExternalLink size={16} />
-                                </a>
-                            )}
-                        </div>
-                    )}
+                            </div>
+                        )}
 
-                    {/* Chat Section */}
-                    <div className="pt-4 border-t border-white/5 flex flex-col h-[450px]">
-                        <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2 uppercase tracking-wider">
-                            <MessageSquare size={14} className="text-jazz-gold" />
-                            {theme.type === 'TOPIC' ? 'Comentarios' : 'Chat del Tema'}
-                        </h3>
-                        {currentUser ? (
-                            <div className="h-full bg-black/20 rounded-xl overflow-hidden border border-white/5">
+                        {/* Sheet Music / Link */}
+                        {theme.sheetMusicUrl && (
+                            <div className="space-y-3">
+                                <h3 className="text-xs font-bold text-jazz-gold uppercase tracking-widest flex items-center gap-2">
+                                    <LinkIcon size={14} /> Material Adicional
+                                </h3>
+                                <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                    {(theme.sheetMusicUrl.match(/\.(jpg|jpeg|png|webp)$/i) || theme.sheetMusicUrl.includes('cloudinary')) ? (
+                                        <div className="space-y-4">
+                                            <div className="relative group">
+                                                <img
+                                                    src={theme.sheetMusicUrl.endsWith('.pdf') ? theme.sheetMusicUrl.replace('.pdf', '.jpg') : theme.sheetMusicUrl}
+                                                    alt="Vista previa"
+                                                    className="w-full rounded-xl border border-white/10 shadow-lg group-hover:opacity-90 transition-opacity"
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <a href={theme.sheetMusicUrl} target="_blank" className="bg-jazz-gold text-black p-3 rounded-full shadow-xl">
+                                                        <ExternalLink size={20} />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <a
+                                                href={theme.sheetMusicUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center justify-center gap-2 text-jazz-gold hover:text-white text-xs py-2.5 border border-jazz-gold/30 rounded-xl hover:bg-jazz-gold/10 transition-all font-bold uppercase tracking-wider"
+                                            >
+                                                Ver Pantalla Completa
+                                            </a>
+                                        </div>
+                                    ) : (
+                                        <a href={theme.sheetMusicUrl} target="_blank" className="flex items-center gap-4 text-jazz-gold hover:underline group">
+                                            <div className="w-12 h-12 rounded-xl bg-jazz-gold/10 flex items-center justify-center group-hover:bg-jazz-gold/20 transition-colors shrink-0">
+                                                <Music size={24} />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className="text-sm font-bold truncate">Ver Enlace Externo</div>
+                                                <div className="text-[10px] text-white/40 truncate">{theme.sheetMusicUrl}</div>
+                                            </div>
+                                            <ExternalLink size={16} className="ml-auto" />
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Host Tools - Invitation */}
+                        {isHost && (
+                            <div className="pt-4 border-t border-white/10">
+                                <button
+                                    onClick={() => setIsInviting(!isInviting)}
+                                    className="w-full flex items-center justify-between p-4 bg-jazz-gold/5 border border-jazz-gold/20 rounded-2xl text-jazz-gold hover:bg-jazz-gold/10 transition-all group"
+                                >
+                                    <span className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                                        <Plus size={18} /> Invitar Músicos
+                                    </span>
+                                    <div className="w-6 h-6 rounded-full bg-jazz-gold/20 flex items-center justify-center group-hover:bg-jazz-gold group-hover:text-black transition-colors">
+                                        <Plus size={14} />
+                                    </div>
+                                </button>
+
+                                {isInviting && (
+                                    <div className="mt-4 space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {availableMusicians.length === 0 ? (
+                                            <p className="text-[10px] text-white/30 italic text-center py-4">No hay más músicos disponibles en la Jam.</p>
+                                        ) : (
+                                            availableMusicians.map(user => (
+                                                <div key={user.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 group">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden">
+                                                            {user.image ? <img src={user.image} className="w-full h-full object-cover" /> : <div className="text-[10px] flex items-center justify-center h-full">👤</div>}
+                                                        </div>
+                                                        <span className="text-sm text-white font-medium">{user.name}</span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleInvite(user.id, user.name!)}
+                                                        disabled={!!isLoadingInvite}
+                                                        className="text-[10px] font-bold uppercase bg-jazz-gold text-black px-3 py-1.5 rounded-lg hover:scale-105 transition-transform disabled:opacity-50"
+                                                    >
+                                                        {isLoadingInvite === user.id ? <Loader2 size={12} className="animate-spin" /> : 'Invitar'}
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* CHAT/COMMENTS SIDE (Fixed Height Mobile, Flex-1 Desktop) */}
+                    <div className="w-full md:w-[320px] lg:w-[380px] border-l border-white/5 flex flex-col h-full bg-[#0d0d0d]">
+                        <div className="flex-1 min-h-0">
+                            {currentUser ? (
                                 <JamChat
                                     jamId={theme.jamId}
                                     currentUser={currentUser}
                                     themeId={theme.id}
                                     isCommentMode={theme.type === 'TOPIC'}
-                                    title=""
+                                    title={theme.type === 'TOPIC' ? 'Comentarios' : 'Chat del tema'}
                                 />
-                            </div>
-                        ) : (
-                            <p className="text-white/40 text-sm italic">Inicia sesión para comentar.</p>
-                        )}
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4 opacity-40">
+                                    <MessageSquare size={48} />
+                                    <p className="text-sm italic">Inicia sesión o regístrate para participar en la conversación.</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-white/5 shrink-0 bg-[#0a0a0a] flex gap-3 sticky bottom-0 z-10">
-                    {(isHost || (currentUser && theme.proposedById === currentUser.id)) && theme.status !== 'QUEUED' && theme.type !== 'TOPIC' && (
+                {/* Fixed Footer for Host Control */}
+                {(isHost || (currentUser && theme.proposedById === currentUser.id)) && theme.status !== 'QUEUED' && theme.type !== 'TOPIC' && (
+                    <div className="p-4 bg-[#0a0a0a] border-t border-white/10 shrink-0">
                         <button
                             onClick={async () => {
                                 const { updateThemeStatus } = await import('@/app/actions');
                                 const res = await updateThemeStatus(theme.id, 'QUEUED');
                                 if (res.success) onClose();
                             }}
-                            className="flex-1 bg-jazz-gold/20 hover:bg-jazz-gold/30 text-jazz-gold font-bold py-3 rounded-xl transition-colors border border-jazz-gold/20"
+                            className="w-full bg-jazz-gold text-black font-black py-4 rounded-2xl transition-all hover:scale-[1.01] active:scale-[0.99] uppercase tracking-tighter shadow-lg shadow-jazz-gold/10"
                         >
-                            Mandar a Cola
+                            Confirmar para Cola de Reproducción
                         </button>
-                    )}
-                    <button
-                        onClick={onClose}
-                        className="flex-1 bg-white/5 hover:bg-white/10 text-white font-medium py-3 rounded-xl transition-colors"
-                    >
-                        Cerrar
-                    </button>
-                </div>
+                    </div>
+                )}
             </div>
-        </div >
+        </div>
     );
 }

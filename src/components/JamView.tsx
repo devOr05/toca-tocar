@@ -48,20 +48,16 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
         setIsCreateThemeOpen(true);
     };
 
-    // Initialize Store
+    // Initialize and Sync Store
     useEffect(() => {
         setJamState(initialJam, initialThemes, initialParticipations);
 
-        if (initialJam.startTime) {
+        if (initialJam.startTime && !formattedDate) {
             const date = new Date(initialJam.startTime);
             const dateStr = date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
-            // FORCE 24H format to avoid "07:00 p.m. hs" weirdness
             const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
             setFormattedDate(`${dateStr} • ${timeStr} hs`);
         }
-
-        setMounted(true);
-        window.scrollTo(0, 0); // Force scroll to top on entry
 
         if (initialUser) {
             setAuthenticatedUser(initialUser);
@@ -77,9 +73,15 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
                 setAuthenticatedUser(guestUser as any);
             }
         }
-    }, []); // Run ONCE on mount
 
-    // Listen for attendance updates to update sidebar/list
+        setMounted(true);
+    }, [initialJam, initialThemes, initialParticipations, setJamState, initialUser, currentUser, setAuthenticatedUser]);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+    // Listen for real-time updates to themes/participations
     useEffect(() => {
         const channel = pusherClient.subscribe(`jam-${initialJam.id}`);
 
@@ -88,8 +90,14 @@ export default function JamView({ initialJam, initialThemes, initialParticipatio
             router.refresh();
         });
 
+        channel.bind('update-jam', () => {
+            console.log('Jam updated, refreshing...');
+            router.refresh();
+        });
+
         return () => {
-            channel.unbind('attendance-update');
+            channel.unbind_all();
+            pusherClient.unsubscribe(`jam-${initialJam.id}`);
         };
     }, [initialJam.id, router]);
 
